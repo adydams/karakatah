@@ -1,0 +1,37 @@
+POST https://karakatanodebe.onrender.com/api/categories
+Content-Type: application/json
+
+{
+    "name": "Electronics",
+    "description": "Devices and gadgets"
+}
+
+
+###
+
+GET https://karakatanodebe.onrender.com/products
+Content-Type: application/json
+
+###
+
+GET https://karakatanodebe.onrender.com/api/categories
+Content-Type: application/json
+
+
+###
+
+POST https://karakatanodebe.onrender.com/api/auth/register
+Content-Type: application/json
+
+{
+    "name": "opeyemi",
+    "email": "admin@mail.com",
+    "phone": "08159756109",
+    "password": "string123"
+}
+
+### 
+GET https://karakatanodebe.onrender.com/api/auth/me
+Content-Type: application/json
+# Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY1ZTE3YWRiLWFhOGUtNGQyYS1hMzRmLWRmYWJjMGQ4ZTM4NiIsInJvbGUiOiJ1c2VyIiwiaWF0IjoxNzU2NzMwNjQ0LCJleHAiOjE3NTc0MjE4NDR9.80HRgEUGe7mge_MPqFfMVkByEPLG_oE-Ef7IGiC_wjs
+
