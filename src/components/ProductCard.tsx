@@ -59,7 +59,7 @@ export default function ProductCard({ id, image, name, price }: ProductProp) {
               ADD TO WISHLIST
             </button>
 
-            <button className="absolute top-0 right-0 bottom-0 left-0 m-auto flex h-[30px] w-[50%] cursor-pointer items-center justify-center border border-white/50 py-3 text-xs text-white/50">
+            <button className="absolute top-0 right-0 bottom-0 left-0 m-auto flex h-[30px] w-[50%] cursor-pointer items-center justify-center border border-white/50 py-3 text-xs text-white/50 hover:border-white/80 hover:text-white/70">
               VIEW MORE
             </button>
           </div>

@@ -36,11 +36,10 @@ export default function Register() {
 
   async function onSubmit(data: TSignUpSchema) {
     const { name, email, phone, password } = data;
-    console.log(data,"onSubmit")
-    const success = await signUp({name, email, phone, password});
+    console.log(data, "onSubmit");
+    const success = await signUp({ name, email, phone, password });
 
     if (success) {
-
       toast.success(`Account creation is successful`);
     } else {
       toast.error("Account creation  failed");
@@ -158,7 +157,7 @@ export default function Register() {
 
           <div className="flex w-full flex-col items-center">
             <button
-              className="border-light-gray lg:border-dark-gray/20 lg:text-dark-gray/70 flex cursor-pointer items-center justify-center gap-2 rounded-full border px-5 py-2.5 text-xs font-medium text-white"
+              className="border-light-gray/20 lg:border-dark-gray/20 lg:text-dark-gray/70 flex cursor-pointer items-center justify-center gap-2 rounded-full border px-5 py-2.5 text-xs font-medium text-white"
               disabled={isSubmitting}
             >
               <FcGoogle size={20} />

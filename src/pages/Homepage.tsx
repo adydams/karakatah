@@ -2,8 +2,10 @@ import { MdDensitySmall } from "react-icons/md";
 import ProductCard from "../components/ProductCard";
 import Pagination from "../components/Pagination";
 import Filter from "../components/Filter";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import SliderHero from "../components/SliderHero";
+import { useUser } from "../contexts/hooks/useUser";
+import toast from "react-hot-toast";
 
 const categories = [
   {
@@ -176,6 +178,7 @@ const products = [
 export default function Homepage() {
   const [showFilter, setShowFilter] = useState(false);
   const categoriesLength = categories.length;
+  const { getCurrentUser, user } = useUser();
 
   console.log(categoriesLength);
 
@@ -183,6 +186,19 @@ export default function Homepage() {
     setShowFilter((filter) => !filter);
     console.log("show filter ");
   }
+
+  useEffect(() => {
+    async function fetchCurrentUser() {
+      if (!user) {
+        const success = await getCurrentUser();
+
+        if (success) {
+          toast.success(`Welcome back, ${success.user.name}`);
+        }
+      }
+    }
+    fetchCurrentUser();
+  }, [getCurrentUser, user]);
 
   return (
     <>

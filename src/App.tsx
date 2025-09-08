@@ -31,7 +31,11 @@ export default function App() {
     },
     {
       path: "/register",
-      element: <GuestOnly><Register /></GuestOnly>,
+      element: (
+        <GuestOnly>
+          <Register />
+        </GuestOnly>
+      ),
     },
     {
       path: "/login",
@@ -48,7 +52,7 @@ export default function App() {
       <UserProvider>
         <RouterProvider router={router} />
         <Toaster
-          position="top-right"
+          position="top-center"
           gutter={12}
           containerStyle={{ margin: "8px" }}
           toastOptions={{

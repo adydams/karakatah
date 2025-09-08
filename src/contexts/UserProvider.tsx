@@ -1,5 +1,10 @@
 import { useState, type ReactNode } from "react";
-import { createUser, login, type CreateUserParams } from "../services/apiAuth";
+import {
+  createUser,
+  currentUser,
+  login,
+  type CreateUserParams,
+} from "../services/apiAuth";
 import { UserContext, type User } from "./UserContext";
 // import { data } from "react-router";
 
@@ -41,11 +46,32 @@ export function UserProvider({ children }: UserProviderProp) {
       throw Error("Sign Up failed");
     }
   }
-  //   const signUp = createUser;
-  //   const useGoogle = googleAuth;
+
+  async function getCurrentUser() {
+    try {
+      const data = await currentUser();
+
+      if (data.success) {
+        setUser(data.user);
+      }
+      return data;
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new Error(error.message);
+      }
+      throw Error("No Current User");
+    }
+  }
+
+  function logout() {
+    setUser(null);
+    localStorage.removeItem("token");
+  }
 
   return (
-    <UserContext.Provider value={{ user, userLogin, setUser, signUp }}>
+    <UserContext.Provider
+      value={{ user, userLogin, setUser, signUp, getCurrentUser, logout }}
+    >
       {children}
     </UserContext.Provider>
   );

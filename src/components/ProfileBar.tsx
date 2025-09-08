@@ -8,7 +8,7 @@ import { useUser } from "../contexts/hooks/useUser";
 
 export default function ProfileBar() {
   const [showMenu, setShowMenu] = useState(false);
-  const { user } = useUser();
+  const { user, logout } = useUser();
 
   // const navigate = useNavigate();
 
@@ -17,7 +17,7 @@ export default function ProfileBar() {
   }
 
   function handleLogout() {
-    // setIsAuthenticated(false);
+    logout();
     // navigate("/");
   }
   return (

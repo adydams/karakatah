@@ -21,8 +21,8 @@ type UserContextType = {
   setUser: React.Dispatch<React.SetStateAction<User | null>>;
   userLogin: (email: string, password: string) => Promise<Response>;
   signUp: (params: CreateUserParams) => Promise<Response>;
-  //   signUp: (name: string, email: string, phone: string, password: string) => Promise<any>;
-  //   useGoogle: () => Promise<any>;
+  getCurrentUser: () => Promise<Response>;
+  logout: () => void;
 };
 
 export const UserContext = createContext<UserContextType | null>(null);

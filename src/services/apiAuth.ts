@@ -5,7 +5,7 @@ export interface CreateUserParams {
   phone: string;
   password: string;
 }
-console.log("hello")
+console.log("hello");
 export async function createUser(params: CreateUserParams) {
   try {
     const response = await fetch(`${ROOT_URL}/api/auth/register`, {
@@ -59,13 +59,13 @@ export function googleAuth() {
   window.location.href = `${ROOT_URL}/api/auth/google`;
 }
 
-export async function currentUser(token: string) {
+export async function currentUser() {
   try {
     const response = await fetch(`${ROOT_URL}/api/auth/me`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`, // 🔑 include token
+        Authorization: `Bearer ${localStorage.getItem("token")}`, // 🔑 include token
       },
     });
 
@@ -75,7 +75,7 @@ export async function currentUser(token: string) {
       throw new Error(data.message || `Error: ${response.status}`);
     }
 
-    return data; // e.g. { success: true, user: {...} }
+    return data;
   } catch (err) {
     console.error("Fetch current user failed:", err);
     throw err;
