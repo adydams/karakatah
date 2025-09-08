@@ -5,7 +5,7 @@ export interface CreateUserParams {
   phone: string;
   password: string;
 }
-
+console.log("hello")
 export async function createUser(params: CreateUserParams) {
   try {
     const response = await fetch(`${ROOT_URL}/api/auth/register`, {
