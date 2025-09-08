@@ -1,11 +1,11 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import toast from "react-hot-toast";
-import { FcGoogle } from "react-icons/fc";
 import { Link, useNavigate } from "react-router";
 import Spinner from "../../components/Spinner";
 import { z } from "zod";
 import { useUser } from "../../contexts/hooks/useUser";
+import SignUpWithGoogle from "../../components/SignUpWithGoogle";
 // import { useEffect } from "react";
 
 // type loginValues = {
@@ -139,13 +139,7 @@ export default function Login() {
           <hr className="border-dark-gray/5 my-10 w-full rounded-full border" />
 
           <div className="flex w-full flex-col items-center">
-            <button
-              className="border-light-gray/20 lg:border-dark-gray/20 lg:text-dark-gray/70 flex cursor-pointer items-center justify-center gap-2 rounded-full border px-5 py-2.5 text-xs font-medium text-white"
-              disabled={isSubmitting}
-            >
-              <FcGoogle size={20} />
-              Sign in with Google
-            </button>
+            <SignUpWithGoogle isSubmitting={isSubmitting} />
 
             <p className="mt-[10px] text-xs">
               Don't have an account?{" "}

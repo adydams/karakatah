@@ -10,7 +10,7 @@ export default function Filter({ showFilter, setShowFilter }: filterProp) {
 
   return (
     <div
-      className={`absolute left-0 ${showFilter ? "z-50 translate-x-28 opacity-100 shadow-sm/10" : "z-[-999] translate-x-0 opacity-0"} font-primary top-8 hidden h-auto w-[310px] flex-col items-start justify-start bg-white px-5 pb-10 transition-all duration-1000 lg:flex`}
+      className={`absolute left-0 ${showFilter ? "z-50 translate-x-3 opacity-100 shadow-sm/10 lg:translate-x-28" : "z-[-999] translate-x-0 opacity-0"} font-primary top-8 flex h-auto w-[310px] flex-col items-start justify-start bg-white px-5 pb-10 transition-all duration-1000`}
     >
       <div className="w-full">
         <FilterHeader title="Categories" />
