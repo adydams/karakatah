@@ -20,7 +20,7 @@ export default function SliderHero() {
     <div className="flex h-[250px] w-full items-center justify-center overflow-hidden lg:h-full lg:w-[68%]">
       <Slider {...settings}>
         {data.map((pic, index) => (
-          <div className="h-full w-full bg-green-400" key={index}>
+          <div className="h-full w-full" key={index}>
             <img
               className="h-full w-full bg-cover bg-center"
               src={pic}
