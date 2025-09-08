@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from "react";
-import { createUser, login } from "../services/apiAuth";
+import { createUser, login, type CreateUserParams } from "../services/apiAuth";
 import { UserContext, type User } from "./UserContext";
 // import { data } from "react-router";
 
@@ -26,15 +26,9 @@ export function UserProvider({ children }: UserProviderProp) {
     }
   }
 
-  
-  async function signUp(
-    name: string,
-    phone: string,
-    email: string,
-    password: string,
-  ) {
+  async function signUp(params: CreateUserParams) {
     try {
-      const data = await createUser(name, email, phone, password);
+      const data = await createUser(params);
       if (data.success) {
         setUser(data.user);
         localStorage.setItem("token", data.token);
@@ -51,7 +45,7 @@ export function UserProvider({ children }: UserProviderProp) {
   //   const useGoogle = googleAuth;
 
   return (
-    <UserContext.Provider value={{ user, userLogin, setUser }}>
+    <UserContext.Provider value={{ user, userLogin, setUser, signUp }}>
       {children}
     </UserContext.Provider>
   );

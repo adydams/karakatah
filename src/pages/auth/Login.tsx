@@ -34,30 +34,9 @@ export default function Login() {
     resolver: zodResolver(loginSchema),
   });
 
-  // useEffect(() => {
-  //   if (user) {
-  //     navigate("/");
-  //   }
-  // }, [user, navigate]);
-
-  // async function onSubmit(data: TLoginSchema) {
-  //   const { email, password } = data;
-  //   console.log(data);
-
-  //   const success = await userLogin(email, password);
-  //   if (success) {
-  //     navigate("/");
-  //     toast.success(`Hi, ${success.user.name}`);
-  //   } else if (!success) {
-  //     console.log("FAILED");
-  //     toast.error(`Login failed`);
-  //   }
-  //   console.log(success);
-  // }
-
   async function onSubmit(data: TLoginSchema) {
     const { email, password } = data;
-    console.log(data);
+    // console.log(data);
 
     try {
       const success = await userLogin(email, password);

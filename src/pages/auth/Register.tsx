@@ -4,6 +4,8 @@ import { useForm } from "react-hook-form";
 import Spinner from "../../components/Spinner";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useUser } from "../../contexts/hooks/useUser";
+import toast from "react-hot-toast";
 
 // type signUpValues = {
 //   name: string;
@@ -22,6 +24,8 @@ const signUpSchema = z.object({
 type TSignUpSchema = z.infer<typeof signUpSchema>;
 
 export default function Register() {
+  const { signUp } = useUser();
+
   const {
     register,
     handleSubmit,
@@ -30,8 +34,17 @@ export default function Register() {
     resolver: zodResolver(signUpSchema),
   });
 
-  function onSubmit(data: TSignUpSchema) {
-    console.log(data);
+  async function onSubmit(data: TSignUpSchema) {
+    const { name, email, phone, password } = data;
+    console.log(data,"onSubmit")
+    const success = await signUp({name, email, phone, password});
+
+    if (success) {
+
+      toast.success(`Account creation is successful`);
+    } else {
+      toast.error("Account creation  failed");
+    }
   }
 
   return (

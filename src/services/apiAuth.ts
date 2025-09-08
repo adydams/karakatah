@@ -1,18 +1,19 @@
 const ROOT_URL = "https://karakatanodebe.onrender.com";
+export interface CreateUserParams {
+  name: string;
+  email: string;
+  phone: string;
+  password: string;
+}
 
-export async function createUser(
-  name: string,
-  email: string,
-  phone: string,
-  password: string,
-) {
+export async function createUser(params: CreateUserParams) {
   try {
     const response = await fetch(`${ROOT_URL}/api/auth/register`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ name, email, phone, password }),
+      body: JSON.stringify(params),
     });
 
     // Check if the response is OK (2xx)
@@ -39,10 +40,9 @@ export async function login(email: string, password: string) {
       },
       body: JSON.stringify({ email, password }),
     });
-    // Check if the response is OK (2xx)
+    // Check if the response is OK
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || `Error: ${response.status}`);
+      throw new Error("Login failed");
     }
 
     // Parse JSON
