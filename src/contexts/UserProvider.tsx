@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from "react";
-import { login } from "../services/apiAuth";
+import { createUser, login } from "../services/apiAuth";
 import { UserContext, type User } from "./UserContext";
 // import { data } from "react-router";
 
@@ -15,7 +15,7 @@ export function UserProvider({ children }: UserProviderProp) {
       const data = await login(email, password);
       if (data.success) {
         setUser(data.user);
-        localStorage.setItem('token', data.token)
+        localStorage.setItem("token", data.token);
       }
       return data;
     } catch (error) {
@@ -23,6 +23,28 @@ export function UserProvider({ children }: UserProviderProp) {
         throw new Error(error.message);
       }
       throw Error("Login failed");
+    }
+  }
+
+  
+  async function signUp(
+    name: string,
+    phone: string,
+    email: string,
+    password: string,
+  ) {
+    try {
+      const data = await createUser(name, email, phone, password);
+      if (data.success) {
+        setUser(data.user);
+        localStorage.setItem("token", data.token);
+      }
+      return data;
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new Error(error.message);
+      }
+      throw Error("Sign Up failed");
     }
   }
   //   const signUp = createUser;

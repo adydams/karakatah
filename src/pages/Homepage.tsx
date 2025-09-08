@@ -1,5 +1,9 @@
 import { MdDensitySmall } from "react-icons/md";
 import ProductCard from "../components/ProductCard";
+import Pagination from "../components/Pagination";
+import Filter from "../components/Filter";
+import { useState } from "react";
+import SliderHero from "../components/SliderHero";
 
 const categories = [
   {
@@ -170,16 +174,22 @@ const products = [
 ];
 
 export default function Homepage() {
+  const [showFilter, setShowFilter] = useState(false);
   const categoriesLength = categories.length;
 
   console.log(categoriesLength);
 
+  function handleShowFilter() {
+    setShowFilter((filter) => !filter);
+    console.log("show filter ");
+  }
+
   return (
     <>
-      <main className="flex w-full items-center justify-center py-5 lg:h-[70vh]">
+      <main className="flex w-full items-center justify-center py-8 lg:h-[70vh] lg:py-5">
         <div className="w-[92%] items-center justify-between lg:flex lg:h-full lg:w-[85%]">
-          <div className="bg-beige h-[250px] w-full lg:h-full lg:w-[65%]"></div>
-          <div className="mt-5 flex w-full items-center justify-between gap-5 lg:mt-0 lg:h-full lg:w-[30%] lg:flex-col">
+          <SliderHero />
+          <div className="mt-3 flex w-full items-center justify-between gap-2 lg:mt-0 lg:h-full lg:w-[30%] lg:flex-col">
             <div className="bg-beige flex h-[200px] w-[50%] items-center justify-center lg:h-[50%] lg:w-full">
               Advert
             </div>
@@ -189,20 +199,23 @@ export default function Homepage() {
           </div>
         </div>
       </main>
-      <section className="my-2 flex w-full flex-col items-center justify-center font-bold">
-        <div className="bg-orange font-primary flex w-[92%] items-center justify-start gap-10 py-2 text-xs text-white lg:w-[85%]">
-          <h2 className="flex cursor-pointer items-center justify-start gap-1 font-medium">
+      <section className="relative mt-2 mb-10 flex w-full flex-col items-center justify-center font-bold">
+        <div className="bg-orange font-primary flex h-full w-[92%] items-center justify-start gap-10 text-xs text-white lg:w-[85%]">
+          <h2
+            onClick={handleShowFilter}
+            className="hover:bg-deep-blue/50 flex cursor-pointer items-center justify-start gap-1 px-3 py-1 font-medium"
+          >
             <MdDensitySmall size={20} /> <span>All Categories</span>
           </h2>
           <div
-            className="hidden w-[80%] lg:grid"
+            className="hidden h-full w-[80%] lg:grid"
             style={{
               gridTemplateColumns: `repeat(${categoriesLength}, minmax(0, 1fr))`,
             }}
           >
             {categories.map((category, index) => (
               <p
-                className="cursor-pointer transition-all duration-700 hover:font-medium"
+                className="hover:bg-deep-blue/50 h-full cursor-pointer px-4 py-2 text-center transition-all duration-700 hover:font-medium"
                 key={index}
               >
                 {category.title}
@@ -221,6 +234,9 @@ export default function Homepage() {
             />
           ))}
         </div>
+        <Pagination />
+
+        <Filter showFilter={showFilter} setShowFilter={setShowFilter} />
       </section>
     </>
   );

@@ -64,7 +64,7 @@ export default function Login() {
 
       if (success) {
         navigate("/");
-        toast.success(`Hi, ${success.user.name}`);
+        toast.success(`Welcome, ${success.user.name}`);
       } else {
         console.log("FAILED");
         toast.error("Login failed");
