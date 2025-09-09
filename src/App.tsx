@@ -8,6 +8,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { UserProvider } from "./contexts/UserProvider";
 import GuestOnly from "./components/GuestsOnly";
+import ProductDetail from "./pages/ProductDetail";
+import CartPage from "./pages/CartPage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -26,6 +28,14 @@ export default function App() {
         {
           index: true,
           element: <Homepage />,
+        },
+        {
+          path: "products/:name/:id",
+          element: <ProductDetail />,
+        },
+        {
+          path: "cart",
+          element: <CartPage />,
         },
       ],
     },

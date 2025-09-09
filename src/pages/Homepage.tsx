@@ -196,6 +196,9 @@ export default function Homepage() {
           toast.success(`Welcome back, ${success.user.name}`);
         }
       }
+      // } else {
+      //   toast.success("No user logged in");
+      // }
     }
     fetchCurrentUser();
   }, [getCurrentUser, user]);

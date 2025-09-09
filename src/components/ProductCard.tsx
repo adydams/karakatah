@@ -2,12 +2,11 @@ import { useState } from "react";
 import { CiHeart } from "react-icons/ci";
 import { GoHeartFill } from "react-icons/go";
 import type { ProductProp } from "../types/type";
+import { Link } from "react-router";
 
 export default function ProductCard({ id, image, name, price }: ProductProp) {
   const [addWish, setAddWish] = useState(false);
   const [showAddtoCart, setShowAddtoCart] = useState(false);
-
-  console.log(id);
 
   function handleWish() {
     setAddWish((wish) => !wish);
@@ -49,19 +48,21 @@ export default function ProductCard({ id, image, name, price }: ProductProp) {
       {showAddtoCart && (
         <div className="bg-light-gray/30 absolute top-0 flex h-full w-full shadow-sm/10">
           <div className="relative flex h-full w-full items-end justify-between gap-2">
-            <button className="bg-orange font-primary hover:bg-orange/90 w-[50%] cursor-pointer px-5 py-3 text-center text-xs text-white">
+            <button className="bg-orange font-primary hover:bg-orange/90 w-[50%] cursor-pointer px-5 py-3 text-center text-[10px] text-white">
               ADD TO CART
             </button>
             <button
               onClick={handleWish}
-              className="bg-muted-green font-primary hover:bg-muted-green/90 w-[50%] cursor-pointer px-3 py-3 text-center text-xs text-white"
+              className="bg-muted-green font-primary hover:bg-muted-green/90 w-[50%] cursor-pointer px-2 py-3 text-center text-[10px] text-white"
             >
               ADD TO WISHLIST
             </button>
 
-            <button className="absolute top-0 right-0 bottom-0 left-0 m-auto flex h-[30px] w-[50%] cursor-pointer items-center justify-center border border-white/50 py-3 text-xs text-white/50 hover:border-white/80 hover:text-white/70">
-              VIEW MORE
-            </button>
+            <Link to={`products/${name.replaceAll(" ", "-")}/${id}`}>
+              <button className="absolute top-0 right-0 bottom-0 left-0 m-auto flex h-[30px] w-[50%] cursor-pointer items-center justify-center border border-white/50 py-3 text-xs text-white/50 hover:border-white/80 hover:text-white/70">
+                VIEW MORE
+              </button>
+            </Link>
           </div>
         </div>
       )}
