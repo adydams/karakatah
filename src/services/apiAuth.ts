@@ -1,4 +1,4 @@
-const ROOT_URL = "https://karakatanodebe.onrender.com";
+export const ROOT_URL = "https://karakatanodebe.onrender.com";
 export interface CreateUserParams {
   name: string;
   email: string;

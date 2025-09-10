@@ -46,7 +46,7 @@ export default function ProductCard({ id, image, name, price }: ProductProp) {
       </div>
 
       {showAddtoCart && (
-        <div className="bg-light-gray/30 absolute top-0 flex h-full w-full shadow-sm/10">
+        <div className="bg-light-gray/40 absolute top-0 flex h-full w-full shadow-sm/10">
           <div className="relative flex h-full w-full items-end justify-between gap-2">
             <button className="bg-orange font-primary hover:bg-orange/90 w-[50%] cursor-pointer px-5 py-3 text-center text-[10px] text-white">
               ADD TO CART
@@ -58,10 +58,11 @@ export default function ProductCard({ id, image, name, price }: ProductProp) {
               ADD TO WISHLIST
             </button>
 
-            <Link to={`products/${name.replaceAll(" ", "-")}/${id}`}>
-              <button className="absolute top-0 right-0 bottom-0 left-0 m-auto flex h-[30px] w-[50%] cursor-pointer items-center justify-center border border-white/50 py-3 text-xs text-white/50 hover:border-white/80 hover:text-white/70">
-                VIEW MORE
-              </button>
+            <Link
+              className="text-dark-gray border-dark-gray hover:bg-beige/80 hover:text-dark-gray/90 absolute top-0 right-0 bottom-0 left-0 m-auto flex h-[30px] w-[50%] cursor-pointer items-center justify-center rounded-xs border-3 py-3 text-xs shadow-md transition-all duration-500 hover:border-0"
+              to={`products/${name.replaceAll(" ", "-")}/${id}`}
+            >
+              <button>VIEW MORE</button>
             </Link>
           </div>
         </div>

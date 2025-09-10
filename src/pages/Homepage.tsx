@@ -6,6 +6,10 @@ import { useEffect, useState } from "react";
 import SliderHero from "../components/SliderHero";
 import { useUser } from "../contexts/hooks/useUser";
 import toast from "react-hot-toast";
+import { useQuery } from "@tanstack/react-query";
+import { getProducts } from "../services/apiProducts";
+import Spinner from "../components/Spinner";
+import { formatPrice } from "../utils/utils";
 
 const categories = [
   {
@@ -28,159 +32,166 @@ const categories = [
   },
 ];
 
-const products = [
-  {
-    id: "1",
-    name: "Women's Summer Floral Dress",
-    price: "12500",
-    image: "bg.png",
-  },
-  {
-    id: "2",
-    name: "Men's Classic White Shirt",
-    price: "9000",
-    image: "bg.png",
-  },
-  {
-    id: "3",
-    name: "Kids' Playful Sneakers",
-    price: "7800",
-    image: "bg.png",
-  },
-  {
-    id: "4",
-    name: "Women's High-Waist Jeans",
-    price: "15200",
-    image: "bg.png",
-  },
-  {
-    id: "5",
-    name: "Men's Casual Polo Shirt",
-    price: "8500",
-    image: "bg.png",
-  },
-  {
-    id: "6",
-    name: "Kids' Cartoon Print T-shirt",
-    price: "4200",
-    image: "bg.png",
-  },
-  {
-    id: "7",
-    name: "Women's Leather Handbag",
-    price: "18000",
-    image: "bg.png",
-  },
-  {
-    id: "8",
-    name: "Men's Slim Fit Jeans",
-    price: "14000",
-    image: "bg.png",
-  },
-  {
-    id: "9",
-    name: "Kids' Hooded Jacket",
-    price: "10500",
-    image: "bg.png",
-  },
-  {
-    id: "10",
-    name: "Women's Elegant Heels",
-    price: "20000",
-    image: "bg.png",
-  },
-  {
-    id: "11",
-    name: "Men's Running Sneakers",
-    price: "17000",
-    image: "bg.png",
-  },
-  {
-    id: "12",
-    name: "Women's Office Blazer",
-    price: "22000",
-    image: "bg.png",
-  },
-  {
-    id: "13",
-    name: "Kids' Denim Overalls",
-    price: "9500",
-    image: "bg.png",
-  },
-  {
-    id: "14",
-    name: "Men's Formal Suit Jacket",
-    price: "28000",
-    image: "bg.png",
-  },
-  {
-    id: "15",
-    name: "Women's Casual Crop Top",
-    price: "6500",
-    image: "bg.png",
-  },
-  {
-    id: "16",
-    name: "Kids' Sports Tracksuit",
-    price: "12000",
-    image: "bg.png",
-  },
-  {
-    id: "17",
-    name: "Men's Hooded Sweatshirt",
-    price: "13500",
-    image: "bg.png",
-  },
-  {
-    id: "18",
-    name: "Women's Maxi Gown",
-    price: "19500",
-    image: "bg.png",
-  },
-  {
-    id: "19",
-    name: "Kids' School Backpack",
-    price: "8000",
-    image: "bg.png",
-  },
-  {
-    id: "20",
-    name: "Men's Leather Belt",
-    price: "5000",
-    image: "bg.png",
-  },
-  {
-    id: "21",
-    name: "Women's Sports Leggings",
-    price: "11000",
-    image: "bg.png",
-  },
-  {
-    id: "22",
-    name: "Men's Casual Shorts",
-    price: "7500",
-    image: "bg.png",
-  },
-  {
-    id: "23",
-    name: "Kids' Party Dress",
-    price: "13000",
-    image: "bg.png",
-  },
-  {
-    id: "24",
-    name: "Women's Stylish Sunglasses",
-    price: "6000",
-    image: "bg.png",
-  },
-];
+// const products = [
+//   {
+//     id: "1",
+//     name: "Women's Summer Floral Dress",
+//     price: "12500",
+//     image: "bg.png",
+//   },
+//   {
+//     id: "2",
+//     name: "Men's Classic White Shirt",
+//     price: "9000",
+//     image: "bg.png",
+//   },
+//   {
+//     id: "3",
+//     name: "Kids' Playful Sneakers",
+//     price: "7800",
+//     image: "bg.png",
+//   },
+//   {
+//     id: "4",
+//     name: "Women's High-Waist Jeans",
+//     price: "15200",
+//     image: "bg.png",
+//   },
+//   {
+//     id: "5",
+//     name: "Men's Casual Polo Shirt",
+//     price: "8500",
+//     image: "bg.png",
+//   },
+//   {
+//     id: "6",
+//     name: "Kids' Cartoon Print T-shirt",
+//     price: "4200",
+//     image: "bg.png",
+//   },
+//   {
+//     id: "7",
+//     name: "Women's Leather Handbag",
+//     price: "18000",
+//     image: "bg.png",
+//   },
+//   {
+//     id: "8",
+//     name: "Men's Slim Fit Jeans",
+//     price: "14000",
+//     image: "bg.png",
+//   },
+//   {
+//     id: "9",
+//     name: "Kids' Hooded Jacket",
+//     price: "10500",
+//     image: "bg.png",
+//   },
+//   {
+//     id: "10",
+//     name: "Women's Elegant Heels",
+//     price: "20000",
+//     image: "bg.png",
+//   },
+//   {
+//     id: "11",
+//     name: "Men's Running Sneakers",
+//     price: "17000",
+//     image: "bg.png",
+//   },
+//   {
+//     id: "12",
+//     name: "Women's Office Blazer",
+//     price: "22000",
+//     image: "bg.png",
+//   },
+//   {
+//     id: "13",
+//     name: "Kids' Denim Overalls",
+//     price: "9500",
+//     image: "bg.png",
+//   },
+//   {
+//     id: "14",
+//     name: "Men's Formal Suit Jacket",
+//     price: "28000",
+//     image: "bg.png",
+//   },
+//   {
+//     id: "15",
+//     name: "Women's Casual Crop Top",
+//     price: "6500",
+//     image: "bg.png",
+//   },
+//   {
+//     id: "16",
+//     name: "Kids' Sports Tracksuit",
+//     price: "12000",
+//     image: "bg.png",
+//   },
+//   {
+//     id: "17",
+//     name: "Men's Hooded Sweatshirt",
+//     price: "13500",
+//     image: "bg.png",
+//   },
+//   {
+//     id: "18",
+//     name: "Women's Maxi Gown",
+//     price: "19500",
+//     image: "bg.png",
+//   },
+//   {
+//     id: "19",
+//     name: "Kids' School Backpack",
+//     price: "8000",
+//     image: "bg.png",
+//   },
+//   {
+//     id: "20",
+//     name: "Men's Leather Belt",
+//     price: "5000",
+//     image: "bg.png",
+//   },
+//   {
+//     id: "21",
+//     name: "Women's Sports Leggings",
+//     price: "11000",
+//     image: "bg.png",
+//   },
+//   {
+//     id: "22",
+//     name: "Men's Casual Shorts",
+//     price: "7500",
+//     image: "bg.png",
+//   },
+//   {
+//     id: "23",
+//     name: "Kids' Party Dress",
+//     price: "13000",
+//     image: "bg.png",
+//   },
+//   {
+//     id: "24",
+//     name: "Women's Stylish Sunglasses",
+//     price: "6000",
+//     image: "bg.png",
+//   },
+// ];
 
 export default function Homepage() {
   const [showFilter, setShowFilter] = useState(false);
   const categoriesLength = categories.length;
   const { getCurrentUser, user } = useUser();
 
-  console.log(categoriesLength);
+  const { isLoading, data, error } = useQuery({
+    queryKey: ["products"],
+    queryFn: getProducts,
+  });
+
+  const products = data?.data;
+
+  console.log(isLoading, error, products);
 
   function handleShowFilter() {
     setShowFilter((filter) => !filter);
@@ -242,16 +253,22 @@ export default function Homepage() {
             ))}
           </div>
         </div>
-        <div className="mt-4 grid w-[92%] grid-cols-1 gap-x-7 gap-y-5 md:grid-cols-2 lg:w-[85%] lg:grid-cols-4">
-          {products.map((product) => (
-            <ProductCard
-              name={product.name}
-              id={product.id}
-              key={product.id}
-              image={product.image}
-              price={product.price}
-            />
-          ))}
+        <div
+          className={`mt-4 ${isLoading ? "flex h-[400px] items-center justify-center" : "grid"} w-[92%] grid-cols-1 gap-x-7 gap-y-5 md:grid-cols-2 lg:w-[85%] lg:grid-cols-4`}
+        >
+          {isLoading ? (
+            <Spinner size="big" />
+          ) : (
+            products?.map((product) => (
+              <ProductCard
+                name={product.name}
+                id={product.id}
+                key={product.id}
+                image={product.images[0].url}
+                price={formatPrice(product.price)}
+              />
+            ))
+          )}
         </div>
         <Pagination />
 

@@ -1,6 +1,8 @@
+// import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { FaArrowAltCircleLeft, FaArrowAltCircleRight } from "react-icons/fa";
 import { useParams } from "react-router";
+// import { getProduct } from "../services/apiProducts";
 
 export default function ProductDetail() {
   const [quantity, setQuantity] = useState(1);
@@ -10,6 +12,13 @@ export default function ProductDetail() {
   }
 
   const { name } = useParams();
+  // console.log(id);
+
+  // useQuery({
+  //   queryKey: ['productDetail'],
+  //   queryFn: getProduct(id)
+  // })
+
   const formattedname = name?.replaceAll("-", " ");
 
   return (

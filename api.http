@@ -9,7 +9,7 @@ Content-Type: application/json
 
 ###
 
-GET https://karakatanodebe.onrender.com/api/products
+GET https://karakatanodebe.onrender.com/api/products/6ae11c66-16a5-4ea1-abf0-014b21a813ff
 Content-Type: application/json
 
 ###
