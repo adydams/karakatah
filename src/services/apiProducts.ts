@@ -1,5 +1,9 @@
 import { ROOT_URL } from "./apiAuth";
-import type { ProductsResponse } from "./serviceTypes";
+import type {
+  CategoriesResponse,
+  ProductResponse,
+  ProductsResponse,
+} from "./serviceTypes";
 // import type { Product } from "./serviceTypes";
 
 export async function getProducts(): Promise<ProductsResponse> {
@@ -15,7 +19,7 @@ export async function getProducts(): Promise<ProductsResponse> {
   //   console.log("This is the data", data);
 }
 
-export async function getProduct(id: string): Promise<ProductsResponse> {
+export async function getProduct(id: string): Promise<ProductResponse> {
   const response = await fetch(`${ROOT_URL}/api/products/${id}`);
 
   if (!response.ok) {
@@ -26,4 +30,17 @@ export async function getProduct(id: string): Promise<ProductsResponse> {
 
   return data;
   //   console.log("This is the data", data);
+}
+
+// Categories
+export async function getCategories(): Promise<CategoriesResponse> {
+  const response = await fetch(`${ROOT_URL}/api/categories`);
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch categories");
+  }
+
+  const data = await response.json();
+
+  return data;
 }

@@ -1,9 +1,14 @@
 export function formatPrice(
-  price: string | number,
+  price?: string | number, // allow undefined
   locale = "en-NG",
   currency?: string,
 ): string {
+  // handle undefined or invalid price
+  if (price == null || price === "") return "0.00";
+
   const number = typeof price === "string" ? parseFloat(price) : price;
+
+  if (isNaN(number)) return "0.00";
 
   // Without currency → just formatted number (e.g., 35,000.00)
   if (!currency) {

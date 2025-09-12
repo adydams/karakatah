@@ -1,9 +1,19 @@
+import { useQuery } from "@tanstack/react-query";
+import { getCategories } from "../services/apiProducts";
+import Spinner from "./Spinner";
+
 type filterProp = {
   showFilter: boolean;
   setShowFilter: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 export default function Filter({ showFilter, setShowFilter }: filterProp) {
+  const { isLoading: isGettingCategories, data: categoryData } = useQuery({
+    queryKey: ["categories"],
+    queryFn: getCategories,
+  });
+  const categories = categoryData?.data;
+
   function handleFilter() {
     setShowFilter((filter) => !filter);
   }
@@ -15,24 +25,26 @@ export default function Filter({ showFilter, setShowFilter }: filterProp) {
       <div className="w-full">
         <FilterHeader title="Categories" />
         <ul>
-          <li className="mb-3 cursor-pointer text-sm font-light hover:text-gray-800">
-            Yoga & Pilates
-          </li>
-          <li className="mb-3 cursor-pointer text-sm font-light hover:text-gray-800">
-            Cardio Equipments
-          </li>
-          <li className="mb-3 cursor-pointer text-sm font-light hover:text-gray-800">
-            Strength Training
-          </li>
-          <li className="mb-3 cursor-pointer text-sm font-light hover:text-gray-800">
-            Workout Gear
-          </li>
-          <li className="mb-3 cursor-pointer text-sm font-light hover:text-gray-800">
-            Active wears
-          </li>
-          <li className="mb-3 cursor-pointer text-sm font-light hover:text-gray-800">
-            Accessories
-          </li>
+          {isGettingCategories ? (
+            <Spinner size="big" />
+          ) : (
+            categories?.map((category, index) => (
+              <li
+                key={index}
+                className="mb-3 flex cursor-pointer flex-wrap items-center justify-start gap-0.5 text-sm font-light hover:text-gray-800"
+              >
+                {category.name}
+                {category.subCategories.map((subCategory, index) => (
+                  <span
+                    key={index}
+                    className="border-dark-gray/20 font-secondary hover:text-dark-gray/90 text-dark-gray/70 mx-1 rounded-full border px-3 py-0.5 text-[10px]"
+                  >
+                    {subCategory.name}
+                  </span>
+                ))}
+              </li>
+            ))
+          )}
         </ul>
       </div>
       <div className="w-full">

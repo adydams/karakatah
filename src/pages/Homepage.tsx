@@ -7,30 +7,30 @@ import SliderHero from "../components/SliderHero";
 import { useUser } from "../contexts/hooks/useUser";
 import toast from "react-hot-toast";
 import { useQuery } from "@tanstack/react-query";
-import { getProducts } from "../services/apiProducts";
+import { getCategories, getProducts } from "../services/apiProducts";
 import Spinner from "../components/Spinner";
 import { formatPrice } from "../utils/utils";
 
-const categories = [
-  {
-    title: "Dresses",
-  },
-  {
-    title: "Tops",
-  },
-  {
-    title: "Shirts",
-  },
-  {
-    title: "Pants",
-  },
-  {
-    title: "Jackets",
-  },
-  {
-    title: "Underweaar",
-  },
-];
+// const categories = [
+//   {
+//     title: "Dresses",
+//   },
+//   {
+//     title: "Tops",
+//   },
+//   {
+//     title: "Shirts",
+//   },
+//   {
+//     title: "Pants",
+//   },
+//   {
+//     title: "Jackets",
+//   },
+//   {
+//     title: "Underweaar",
+//   },
+// ];
 
 // const products = [
 //   {
@@ -181,22 +181,33 @@ const categories = [
 
 export default function Homepage() {
   const [showFilter, setShowFilter] = useState(false);
-  const categoriesLength = categories.length;
   const { getCurrentUser, user } = useUser();
 
-  const { isLoading, data, error } = useQuery({
+  const {
+    isLoading: isGettingProducts,
+    data: productData,
+    // error: productError,
+  } = useQuery({
     queryKey: ["products"],
     queryFn: getProducts,
   });
 
-  const products = data?.data;
+  const products = productData?.data;
 
-  console.log(isLoading, error, products);
+  // console.log(isGettingProducts, productError, products);
+
+  const { isLoading: isGettingCategories, data: categoryData } = useQuery({
+    queryKey: ["categories"],
+    queryFn: getCategories,
+  });
+  const categories = categoryData?.data;
+  console.log(isGettingCategories, categoryData);
 
   function handleShowFilter() {
     setShowFilter((filter) => !filter);
     console.log("show filter ");
   }
+  // const categoriesLength = categories?.length;
 
   useEffect(() => {
     async function fetchCurrentUser() {
@@ -238,25 +249,27 @@ export default function Homepage() {
             <MdDensitySmall size={20} /> <span>All Categories</span>
           </h2>
           <div
-            className="hidden h-full w-[80%] lg:grid"
-            style={{
-              gridTemplateColumns: `repeat(${categoriesLength}, minmax(0, 1fr))`,
-            }}
+            className="hidden h-full w-[80%] items-center justify-start gap-5 lg:flex"
+          
           >
-            {categories.map((category, index) => (
-              <p
-                className="hover:bg-deep-blue/50 h-full cursor-pointer px-4 py-2 text-center transition-all duration-700 hover:font-medium"
-                key={index}
-              >
-                {category.title}
-              </p>
-            ))}
+            {isGettingCategories ? (
+              <Spinner size="small" />
+            ) : (
+              categories?.map((category, index) => (
+                <p
+                  className="hover:bg-deep-blue/50 h-full cursor-pointer px-4 py-2 text-center transition-all duration-700 hover:font-medium"
+                  key={index}
+                >
+                  {category?.name}
+                </p>
+              ))
+            )}
           </div>
         </div>
         <div
-          className={`mt-4 ${isLoading ? "flex h-[400px] items-center justify-center" : "grid"} w-[92%] grid-cols-1 gap-x-7 gap-y-5 md:grid-cols-2 lg:w-[85%] lg:grid-cols-4`}
+          className={`mt-4 ${isGettingProducts ? "flex h-[400px] items-center justify-center" : "grid"} w-[92%] grid-cols-1 gap-x-7 gap-y-5 md:grid-cols-2 lg:w-[85%] lg:grid-cols-4`}
         >
-          {isLoading ? (
+          {isGettingProducts ? (
             <Spinner size="big" />
           ) : (
             products?.map((product) => (

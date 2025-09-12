@@ -1,9 +1,13 @@
 type SpinnerProp = {
   size: string;
+  color?: string;
 };
 
-export default function Spinner({ size }: SpinnerProp) {
+export default function Spinner({ size, color }: SpinnerProp) {
   return (
-    <span className={`${size === "big" ? "bigloader" : "smallLoader"}`}></span>
+    <span
+      style={{ color }}
+      className={`${size === "big" ? "bigloader" : "smallLoader"}`}
+    ></span>
   );
 }

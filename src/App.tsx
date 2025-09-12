@@ -58,7 +58,7 @@ export default function App() {
   ]);
   return (
     <QueryClientProvider client={queryClient}>
-      <ReactQueryDevtools initialIsOpen={false} />
+      <ReactQueryDevtools initialIsOpen={true} />
       <UserProvider>
         <RouterProvider router={router} />
         <Toaster
