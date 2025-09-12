@@ -6,6 +6,7 @@ import ImageSlider from "../components/ImageSlider";
 import { getProduct } from "../services/apiProducts";
 import { formatPrice } from "../utils/utils";
 import ProductDetailsSkeleton from "../components/ProductDetailsSkeleton";
+import ProductImagePulse from "../components/ProductImagePulse";
 // import Spinner from "../components/Spinner";
 // import { formatPrice } from "../utils/utils";
 
@@ -34,7 +35,7 @@ export default function ProductDetail() {
       <section className="mb-10 flex h-auto w-full items-center justify-center lg:mb-0 lg:h-screen">
         <div className="block h-4/5 w-[92%] items-start justify-between gap-14 lg:flex lg:w-4/5">
           {isGettingProduct ? (
-            <ProductDetailsSkeleton />
+            <ProductImagePulse />
           ) : (
             <ImageSlider images={product?.images} />
           )}
