@@ -54,3 +54,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjJhY2U3OGM3L
 GET https://karakatanodebe.onrender.com/api/auth/google
 Content-Type: application/json
 
+### 
+GET https://karakatanodebe.onrender.com/api/carts
+Content-Type: application/json
+

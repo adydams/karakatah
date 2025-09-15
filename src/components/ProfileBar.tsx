@@ -40,14 +40,14 @@ export default function ProfileBar() {
           <Link
             onClick={handleMenu}
             className="hover:text-beige transition-all duration-1000 hover:font-medium"
-            to="profile"
+            to="cart"
           >
             Cart
           </Link>
           <Link
             onClick={handleMenu}
             className="hover:text-beige transition-all duration-1000 hover:font-medium"
-            to="profile"
+            to="orders"
           >
             Orders
           </Link>
