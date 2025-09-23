@@ -10,6 +10,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getCategories, getProducts } from "../services/apiProducts";
 import Spinner from "../components/Spinner";
 import { formatPrice } from "../utils/utils";
+import { useCart } from "../contexts/hooks/useCart";
 
 // const categories = [
 //   {
@@ -182,6 +183,7 @@ import { formatPrice } from "../utils/utils";
 export default function Homepage() {
   const [showFilter, setShowFilter] = useState(false);
   const { getCurrentUser, user } = useUser();
+  const { cartCreation } = useCart();
 
   const {
     isLoading: isGettingProducts,
@@ -201,7 +203,7 @@ export default function Homepage() {
     queryFn: getCategories,
   });
   const categories = categoryData?.data;
-  console.log(isGettingCategories, categoryData);
+  // console.log(isGettingCategories, categoryData);
 
   function handleShowFilter() {
     setShowFilter((filter) => !filter);
@@ -209,6 +211,7 @@ export default function Homepage() {
   }
   // const categoriesLength = categories?.length;
 
+  // ✅ Effect 1: Fetch current user
   useEffect(() => {
     async function fetchCurrentUser() {
       if (!user) {
@@ -218,12 +221,27 @@ export default function Homepage() {
           toast.success(`Welcome back, ${success.user.name}`);
         }
       }
-      // } else {
-      //   toast.success("No user logged in");
-      // }
     }
     fetchCurrentUser();
   }, [getCurrentUser, user]);
+
+  // ✅ Effect 2: Ensure cart exists when user logs in
+  useEffect(() => {
+    async function ensureCart() {
+      if (user) {
+        const cartId = localStorage.getItem("cartId");
+        if (!cartId) {
+          try {
+            await cartCreation();
+            toast.success("Cart created successfully");
+          } catch {
+            toast.error("Failed to create cart");
+          }
+        }
+      }
+    }
+    ensureCart();
+  }, [user, cartCreation]);
 
   return (
     <>
@@ -248,10 +266,7 @@ export default function Homepage() {
           >
             <MdDensitySmall size={20} /> <span>All Categories</span>
           </h2>
-          <div
-            className="hidden h-full w-[80%] items-center justify-start gap-5 lg:flex"
-          
-          >
+          <div className="hidden h-full w-[80%] items-center justify-start gap-5 lg:flex">
             {isGettingCategories ? (
               <Spinner size="small" />
             ) : (

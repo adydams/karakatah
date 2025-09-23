@@ -41,20 +41,34 @@ POST https://karakatanodebe.onrender.com/api/auth/login
 Content-Type: application/json
 
 {
-    "email": "tolu@mail.com",
+    "email": "femi@mail.com",
     "password": "string123"
 }
 
 ### 
 GET https://karakatanodebe.onrender.com/api/auth/me
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjJhY2U3OGM3LTdiZmItNDlhYy1iYjNkLWY1ZGJlYmZlYzlkZiIsInJvbGUiOiJ1c2VyIiwiaWF0IjoxNzU3MzM5NjcxLCJleHAiOjE3NTgwMzA4NzF9.ZN0B_s8NBLsEeSDYiVcxsWBMJ1nmHZvr8eG2MuBpNpQ
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjJhY2U3OGM3LTdiZmItNDlhYy1iYjNkLWY1ZGJlYmZlYzlkZiIsInJvbGUiOiJ1c2VyIiwiaWF0IjoxNzU4NTI5ODQ3LCJleHAiOjE3NTkyMjEwNDd9.Meog-tAaZc-2FslCVNTuPHquFS5EIrE1-PdmceCdOkg
 
 ### 
 GET https://karakatanodebe.onrender.com/api/auth/google
 Content-Type: application/json
 
-### 
-GET https://karakatanodebe.onrender.com/api/carts
-Content-Type: application/json
 
+
+### create cart
+### 
+POST https://karakatanodebe.onrender.com/api/carts
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjExZDRmZDc1LTMwZjUtNDlhYi04MGU4LTY2ZGJmMzRkNzM3YyIsInJvbGUiOiJ1c2VyIiwiaWF0IjoxNzU4NTM5ODUzLCJleHAiOjE3NTkyMzEwNTN9.mXSD22DEg6zpplFaBH68EfxY-T1tYJ-jOo_RyLLU2QU
+
+###  Get cart
+GET https://karakatanodebe.onrender.com/api/carts/557c1455-f68b-43be-91d4-4ccafa9c1da8
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjExZDRmZDc1LTMwZjUtNDlhYi04MGU4LTY2ZGJmMzRkNzM3YyIsInJvbGUiOiJ1c2VyIiwiaWF0IjoxNzU4NTM5ODUzLCJleHAiOjE3NTkyMzEwNTN9.mXSD22DEg6zpplFaBH68EfxY-T1tYJ-jOo_RyLLU2QU
+
+
+### Delete cart
+DELETE https://karakatanodebe.onrender.com/api/carts/b970e906-3587-4454-9f5d-9b8db67e680d
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjExZDRmZDc1LTMwZjUtNDlhYi04MGU4LTY2ZGJmMzRkNzM3YyIsInJvbGUiOiJ1c2VyIiwiaWF0IjoxNzU4NTM5ODUzLCJleHAiOjE3NTkyMzEwNTN9.mXSD22DEg6zpplFaBH68EfxY-T1tYJ-jOo_RyLLU2QU

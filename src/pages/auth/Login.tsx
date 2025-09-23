@@ -49,7 +49,7 @@ export default function Login() {
         toast.error("Login failed");
       }
 
-      console.log(success);
+      // console.log(success);
     } catch (error) {
       console.error("Login error:", error);
       toast.error("An error occurred while logging in");
@@ -139,7 +139,7 @@ export default function Login() {
           <hr className="border-dark-gray/5 my-10 w-full rounded-full border" />
 
           <div className="flex w-full flex-col items-center">
-            <SignUpWithGoogle isSubmitting={isSubmitting} />
+            <SignUpWithGoogle isSubmitting={isSubmitting} status="in" />
 
             <p className="mt-[10px] text-xs">
               Don't have an account?{" "}

@@ -7,34 +7,14 @@ import { HiMenuAlt3 } from "react-icons/hi";
 import { Link } from "react-router";
 import { useUser } from "../contexts/hooks/useUser";
 import ProfileBar from "./ProfileBar";
-// import type { NavItem } from "../types/type";
-
-// const navigation = [
-//   {
-//     title: "Help",
-//     icon: <IoHelpCircle className="text-2xl" />,
-//     path: "/help",
-//   },
-//   {
-//     title: "Cart",
-//     icon: <BsCart3 className="text-lg lg:text-xl" />,
-//     path: "#",
-//     showMobile: true,
-//   },
-//   {
-//     title: "Login",
-//     icon: <CiLogin className="text-xl" />,
-//     path: "/login",
-//   },
-//   {
-//     title: "Sign up",
-//     icon: <FaUserPlus className="text-xl" />,
-//     path: "/register",
-//   },
-// ];
+import { useCart } from "../contexts/hooks/useCart";
+// import { useEffect } from "react";
 
 export default function Navbar() {
   const { user } = useUser();
+  const { cart } = useCart();
+  console.log(cart);
+
   return (
     <nav className="font-primary sticky top-0 z-[999] flex h-[60px] w-full items-center justify-center bg-white shadow-sm/10 lg:h-[90px]">
       <div className="relative flex h-full w-[92%] items-center justify-between lg:w-[85%]">

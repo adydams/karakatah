@@ -156,7 +156,7 @@ export default function Register() {
           <hr className="border-dark-gray/5 my-10 w-full rounded-full border" />
 
           <div className="flex w-full flex-col items-center">
-            <SignUpWithGoogle isSubmitting={isSubmitting} />
+            <SignUpWithGoogle isSubmitting={isSubmitting} status="up" />
 
             <p className="mt-[10px] text-xs">
               Have an account?{" "}

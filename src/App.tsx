@@ -10,6 +10,7 @@ import { UserProvider } from "./contexts/UserProvider";
 import GuestOnly from "./components/GuestsOnly";
 import ProductDetail from "./pages/ProductDetail";
 import CartPage from "./pages/CartPage";
+import { CartProvider } from "./contexts/CartProvider";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -60,26 +61,28 @@ export default function App() {
     <QueryClientProvider client={queryClient}>
       <ReactQueryDevtools initialIsOpen={true} />
       <UserProvider>
-        <RouterProvider router={router} />
-        <Toaster
-          position="top-center"
-          gutter={12}
-          containerStyle={{ margin: "8px" }}
-          toastOptions={{
-            success: {
-              duration: 5000,
-            },
-            error: {
-              duration: 6000,
-            },
-            style: {
-              fontSize: "14px",
-              maxWidth: "500px",
-              padding: "8px 24px",
-              backgroundColor: "#f1f5f9",
-            },
-          }}
-        />
+        <CartProvider>
+          <RouterProvider router={router} />
+          <Toaster
+            position="top-center"
+            gutter={12}
+            containerStyle={{ margin: "8px" }}
+            toastOptions={{
+              success: {
+                duration: 5000,
+              },
+              error: {
+                duration: 6000,
+              },
+              style: {
+                fontSize: "14px",
+                maxWidth: "500px",
+                padding: "8px 24px",
+                backgroundColor: "#f1f5f9",
+              },
+            }}
+          />
+        </CartProvider>
       </UserProvider>
     </QueryClientProvider>
   );
