@@ -41,7 +41,7 @@ POST https://karakatanodebe.onrender.com/api/auth/login
 Content-Type: application/json
 
 {
-    "email": "femi@mail.com",
+    "email": "horpeepzee@mail.com",
     "password": "string123"
 }
 
@@ -72,3 +72,28 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjExZDRmZDc1L
 DELETE https://karakatanodebe.onrender.com/api/carts/b970e906-3587-4454-9f5d-9b8db67e680d
 Content-Type: application/json
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjExZDRmZDc1LTMwZjUtNDlhYi04MGU4LTY2ZGJmMzRkNzM3YyIsInJvbGUiOiJ1c2VyIiwiaWF0IjoxNzU4NTM5ODUzLCJleHAiOjE3NTkyMzEwNTN9.mXSD22DEg6zpplFaBH68EfxY-T1tYJ-jOo_RyLLU2QU
+
+
+### Add items to cart
+
+POST https://karakatanodebe.onrender.com/api/cart-items
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjdmN2Q2ODAyLTg3YTEtNDUzYS04ZjAzLTIyODU3NmU3YjJiOSIsInJvbGUiOiJ1c2VyIiwiaWF0IjoxNzU4NjQwMzA4LCJleHAiOjE3NTkzMzE1MDh9.aZM2K8PUeWOj-dQ0n75RBmhLurS5SOFREQ9mW1G5-TE
+
+{
+  "cartId": "b970e906-3587-4454-9f5d-9b8db67e680d",
+  "items": [
+    {
+      "productId": "98f24f14-dd92-4d51-ad3f-d3eaa60f9c40",
+      "quantity": 6,
+      "name": "Security Door"
+    }
+  ]
+}
+
+
+### Get all items in a cart
+
+GET https://karakatanodebe.onrender.com/api/cart-items/cart/b970e906-3587-4454-9f5d-9b8db67e680d
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjdmN2Q2ODAyLTg3YTEtNDUzYS04ZjAzLTIyODU3NmU3YjJiOSIsInJvbGUiOiJ1c2VyIiwiaWF0IjoxNzU4NjQwMzA4LCJleHAiOjE3NTkzMzE1MDh9.aZM2K8PUeWOj-dQ0n75RBmhLurS5SOFREQ9mW1G5-TE

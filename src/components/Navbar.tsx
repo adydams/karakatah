@@ -8,12 +8,45 @@ import { Link } from "react-router";
 import { useUser } from "../contexts/hooks/useUser";
 import ProfileBar from "./ProfileBar";
 import { useCart } from "../contexts/hooks/useCart";
+import { useQuery } from "@tanstack/react-query";
+import { getCart } from "../services/apiCarts";
+import { type Cart } from "../contexts/CartContext";
+import { useEffect, useState } from "react";
+import CartItemCardNav from "./CartItemCardNav";
 // import { useEffect } from "react";
 
 export default function Navbar() {
+  const [showCart, setShowCart] = useState(false);
   const { user } = useUser();
-  const { cart } = useCart();
+  const { setCart } = useCart();
+  // console.log(setCart);
+  function handleMouseOver() {
+    if (!showCart) setShowCart((cart) => !cart);
+  }
+  function handleMouseOut() {
+    if (showCart) setShowCart((cart) => !cart);
+  }
+
+  const cartId = localStorage.getItem("cartId");
+  console.log(cartId);
+
+  // fetch the cart using the cartId
+  const { data: cart, isLoading: isGettingCart } = useQuery<Cart>({
+    queryKey: ["cart"],
+    queryFn: () => getCart(cartId as string),
+  });
+
+  console.log(cart, isGettingCart);
+
+  useEffect(() => {
+    if (cart && !isGettingCart) {
+      setCart(cart);
+    }
+  }, [cart, isGettingCart, setCart]);
   console.log(cart);
+
+  const itemsNum = cart?.data.items.length;
+  console.log("Number of items in the cart", itemsNum);
 
   return (
     <nav className="font-primary sticky top-0 z-[999] flex h-[60px] w-full items-center justify-center bg-white shadow-sm/10 lg:h-[90px]">
@@ -35,22 +68,7 @@ export default function Navbar() {
           </form>
         </div>
 
-        <ul className="flex items-center justify-end gap-1 lg:gap-4">
-          {/* {navigation.map((item, index) => (
-            <li
-              key={index}
-              className={`${item.showMobile ? "" : "hidden"} lg:block`}
-            >
-              <Link
-                to={item.path}
-                className="hover:text-dark-gray flex items-center justify-start gap-1 font-medium transition-all duration-1000"
-              >
-                {item.icon}
-                <p className="hidden text-sm lg:block">{item.title}</p>
-              </Link>
-            </li>
-          ))} */}
-
+        <ul className="flex h-full items-center justify-end gap-1 lg:gap-4">
           <li className={`lg:block`}>
             <Link
               to="/help"
@@ -60,14 +78,28 @@ export default function Navbar() {
               <p className="hidden text-sm lg:block">Help</p>
             </Link>
           </li>
-          <li className={`lg:block`}>
-            <Link
-              to="/cart"
-              className="hover:text-dark-gray flex items-center justify-start gap-1 font-medium transition-all duration-1000"
+          <li
+            className={`relative mr-1 flex h-full cursor-pointer items-center justify-center px-1 lg:mr-0 lg:flex`}
+            onMouseEnter={handleMouseOver}
+            onMouseLeave={handleMouseOut}
+            onClick={handleMouseOut}
+          >
+            <div
+              // to="/cart"
+              className="hover:text-dark-gray relative flex items-center justify-start gap-1 font-medium transition-all duration-1000"
             >
               <BsCart3 className="text-lg lg:text-xl" />
               <p className="hidden text-sm lg:block">Cart</p>
-            </Link>
+
+              {itemsNum ? (
+                <span className="bg-orange absolute top-[-7px] left-1 z-50 rounded-full px-2.5 py-0.5 text-[9px] font-semibold text-white lg:top-[-13px] lg:text-xs">
+                  {itemsNum}
+                </span>
+              ) : (
+                ""
+              )}
+              {showCart && <CartItemCardNav />}
+            </div>
           </li>
           {user ? (
             <ProfileBar />

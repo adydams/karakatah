@@ -54,3 +54,37 @@ export async function getCart(id: string) {
 
   return data;
 }
+
+export async function addItemToCart(
+  cartId: string,
+  name: string,
+  productId: string,
+  quantity: number = 1,
+) {
+  const response = await fetch(`${ROOT_URL}/api/cart-items`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+    },
+    body: JSON.stringify({
+      cartId: cartId,
+      items: [
+        {
+          productId: productId,
+          quantity: quantity,
+          name: name,
+        },
+      ],
+    }),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(errorText || "Failed to add items to cart");
+  }
+
+  const data = await response.json();
+
+  return data;
+}

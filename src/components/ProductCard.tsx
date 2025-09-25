@@ -3,10 +3,41 @@ import { CiHeart } from "react-icons/ci";
 import { GoHeartFill } from "react-icons/go";
 import type { ProductProp } from "../types/type";
 import { Link } from "react-router";
+import { addItemToCart } from "../services/apiCarts";
+import toast from "react-hot-toast";
+import Spinner from "./Spinner";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+
+type AddItemVariables = {
+  cartId: string;
+  productId: string;
+  // quantity: number;
+  name: string;
+};
 
 export default function ProductCard({ id, image, name, price }: ProductProp) {
   const [addWish, setAddWish] = useState(false);
   const [showAddtoCart, setShowAddtoCart] = useState(false);
+
+  const cartId: string | null = localStorage.getItem("cartId");
+
+  const queryClient = useQueryClient();
+
+  // Add item to cart
+
+  const { mutate, isPending: isAddingToCart } = useMutation({
+    mutationFn: ({ cartId, name, productId }: AddItemVariables) =>
+      addItemToCart(cartId, name, productId),
+    onSuccess: () => {
+      toast.success("Product added to cart");
+      queryClient.invalidateQueries({ queryKey: ["cart"] });
+    },
+    onError: (err) => toast.error(err.message),
+  });
+
+  function handleAddToCart() {
+    mutate({ cartId: cartId as string, name, productId: id });
+  }
 
   function handleWish() {
     setAddWish((wish) => !wish);
@@ -48,8 +79,12 @@ export default function ProductCard({ id, image, name, price }: ProductProp) {
       {showAddtoCart && (
         <div className="bg-light-gray/40 absolute top-0 flex h-full w-full shadow-sm/10">
           <div className="relative flex h-full w-full items-end justify-between gap-2">
-            <button className="bg-orange font-primary hover:bg-orange/90 w-[50%] cursor-pointer px-5 py-3 text-center text-[10px] text-white">
-              ADD TO CART
+            <button
+              className="bg-orange font-primary hover:bg-orange/90 w-[50%] cursor-pointer px-5 py-3 text-center text-[10px] text-white"
+              disabled={isAddingToCart}
+              onClick={handleAddToCart}
+            >
+              {isAddingToCart ? <Spinner size="small" /> : "ADD TO CART"}
             </button>
             <button
               onClick={handleWish}
