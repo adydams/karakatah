@@ -47,6 +47,10 @@ export default function Checkout() {
                 Door Delivery (from ₦ 3, 500)
               </label>
             </div>
+
+            <button className="bg-muted-green font-primary self-end rounded-lg px-4 py-3 text-xs font-semibold text-white">
+              Confirm Delivery Details
+            </button>
           </form>
           <div className="h-auto w-full space-y-2 rounded-lg bg-white px-3 pb-3">
             <h1 className="border-dark-gray/10 w-full border-b py-3 text-base font-medium">
