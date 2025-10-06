@@ -67,6 +67,17 @@ GET https://karakatanodebe.onrender.com/api/carts/c7ebc30e-f173-4cbe-ae3c-4e802b
 Content-Type: application/json
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjNjZTczZGE1LTcyMGUtNDgyNC04OWIzLTgyYWJmZmNmZDM0OCIsInJvbGUiOiJ1c2VyIiwiY2FydElkIjoiYzdlYmMzMGUtZjE3My00Y2JlLWFlM2MtNGU4MDJiODAwMGExIiwiaWF0IjoxNzU5MjM4OTM4LCJleHAiOjE3NTk5MzAxMzh9.6ts_F7hwhjeXhjthDuTqbQkyJmGt-tSQ9wFQrWScmbk
 
+### endpoint 2
+###  Get cart
+GET https://karakatanodebe.onrender.com/api/cart-items/cart/c7ebc30e-f173-4cbe-ae3c-4e802b8000a1
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjNjZTczZGE1LTcyMGUtNDgyNC04OWIzLTgyYWJmZmNmZDM0OCIsInJvbGUiOiJ1c2VyIiwiY2FydElkIjoiYzdlYmMzMGUtZjE3My00Y2JlLWFlM2MtNGU4MDJiODAwMGExIiwiaWF0IjoxNzU5MjM4OTM4LCJleHAiOjE3NTk5MzAxMzh9.6ts_F7hwhjeXhjthDuTqbQkyJmGt-tSQ9wFQrWScmbk
+
+###  update cart quantity
+GET https://karakatanodebe.onrender.com/api/cart-items/c7ebc30e-f173-4cbe-ae3c-4e802b8000a1
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjNjZTczZGE1LTcyMGUtNDgyNC04OWIzLTgyYWJmZmNmZDM0OCIsInJvbGUiOiJ1c2VyIiwiY2FydElkIjoiYzdlYmMzMGUtZjE3My00Y2JlLWFlM2MtNGU4MDJiODAwMGExIiwiaWF0IjoxNzU5MjM4OTM4LCJleHAiOjE3NTk5MzAxMzh9.6ts_F7hwhjeXhjthDuTqbQkyJmGt-tSQ9wFQrWScmbk
+
 
 ### Delete cart
 DELETE https://karakatanodebe.onrender.com/api/carts/b970e906-3587-4454-9f5d-9b8db67e680d

@@ -89,3 +89,59 @@ export async function addItemToCart(
 
   return data;
 }
+
+export async function updateItemQuantity(
+  id: string,
+  quantity: string | number,
+) {
+  const cartId = getCartIdFromToken();
+  if (!cartId) throw new Error("No cartId in token");
+
+  const response = await fetch(`${ROOT_URL}/api/cart-items/${id}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+    },
+    body: JSON.stringify({
+      cartId: cartId,
+      items: [
+        {
+          quantity: quantity,
+        },
+      ],
+    }),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(errorText || "Failed to update the item's quantity");
+  }
+
+  const data = await response.json();
+
+  return data;
+}
+
+// Delete item in the cart
+export async function deleteItemCart(id: string) {
+  const cartId = getCartIdFromToken();
+  if (!cartId) throw new Error("No cartId in token");
+
+  const response = await fetch(`${ROOT_URL}/api/cart-items/${id}`, {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+    },
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(errorText || "Failed to delete the items in the cart");
+  }
+
+  const data = await response.json();
+
+  return data;
+}

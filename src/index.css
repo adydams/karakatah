@@ -76,5 +76,55 @@
   }
 }
 
+/* input[type="radio"] {
+  accent-color: #f97316; /* Change the accent color to orange */
+/* } */
 
+.radio-container input {
+  display: none;
+}
 
+/* Modifying the radio inputs on the checkout page */
+.radio-container label {
+  cursor: pointer;
+  position: relative;
+  padding: 0 30px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  /* background-color: blue; */
+}
+
+.radio-container label::before {
+  content: "";
+  width: 20px;
+  height: 20px;
+  display: inline-block;
+  border: 1px solid rgba(0, 0, 0, 0.582);
+  border-radius: 50%;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  margin: auto;
+  /* transform: translate(50%, -50%); */
+}
+
+.radio-container label::after {
+  content: "";
+  background-color: #f97316;
+  width: 15px;
+  height: 15px;
+  display: inline-block;
+  border-radius: 50%;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 2.2px;
+  margin: auto;
+  opacity: 0;
+}
+
+.radio-container input[type="radio"]:checked + label::after {
+  opacity: 1;
+}

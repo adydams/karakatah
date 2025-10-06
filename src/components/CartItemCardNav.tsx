@@ -9,7 +9,8 @@ export default function CartItemCardNav() {
   // const {user} =
   const { cart } = useCart();
 
- const items = cart?.data?.items ?? [];
+  const items = cart?.data?.items ?? [];
+  const totalAmount = cart?.data?.totalAmount;
 
   console.log(cart);
   console.log("This are the products in the cart", items);
@@ -57,16 +58,20 @@ export default function CartItemCardNav() {
             className="border-dark-gray/20 flex h-[80px] w-full items-center justify-start gap-2 border-b py-1.5"
           >
             <div className="h-full w-[65px] overflow-hidden rounded-lg">
-              <img src="bg.png" className="h-full w-full object-cover" alt="" />
+              <img
+                src={product.product.image}
+                className="h-full w-full object-cover"
+                alt=""
+              />
             </div>
             <div className="flex h-full flex-col items-start justify-center text-xs">
               <h2 className="font-primary text-xs font-medium lg:text-lg">
-                Zealot s67
+                {product.product.name}
               </h2>
               <p className="font-light">
                 Price:{" "}
                 <span className="font-primary text-muted-green font-bold">
-                  ₦{formatPrice(product.price)}
+                  ₦{formatPrice(product.product.price)}
                 </span>
               </p>
               <p className="font-light">
@@ -81,7 +86,10 @@ export default function CartItemCardNav() {
       )}
 
       <h3 className="my-3 flex w-full items-center justify-start gap-2 text-sm font-medium">
-        Total <span className="text-orange font-bold">₦500,000</span>
+        Total{" "}
+        <span className="text-orange font-bold">
+          ₦{formatPrice(totalAmount)}
+        </span>
       </h3>
       <Link
         to={"/cart"}

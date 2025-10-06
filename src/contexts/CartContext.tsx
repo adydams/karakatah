@@ -1,10 +1,14 @@
 import { createContext } from "react";
 
 type Item = {
-  name: string;
-  price: number;
   quantity: number;
   id: string;
+  product: {
+    id: string;
+    name: string;
+    price: string;
+    image: string;
+  };
 };
 
 export type Cart = {
@@ -14,6 +18,7 @@ export type Cart = {
     createdAt: string;
     updatedAt: string;
     items: Item[];
+    totalAmount: string;
   };
 };
 export type getCart = {

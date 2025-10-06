@@ -11,6 +11,7 @@ import GuestOnly from "./components/GuestsOnly";
 import ProductDetail from "./pages/ProductDetail";
 import CartPage from "./pages/CartPage";
 import { CartProvider } from "./contexts/CartProvider";
+import Checkout from "./pages/Checkout";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -37,6 +38,10 @@ export default function App() {
         {
           path: "cart",
           element: <CartPage />,
+        },
+        {
+          path: "checkout",
+          element: <Checkout />,
         },
       ],
     },
