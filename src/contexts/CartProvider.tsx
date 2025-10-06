@@ -1,6 +1,7 @@
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { CartContext, type Cart } from "./CartContext";
-import { createCart } from "../services/apiCarts";
+import { createCart, getCart } from "../services/apiCarts";
+import { getCartIdFromToken } from "../utils/utils";
 
 type CartProviderProp = {
   children: ReactNode;
@@ -12,20 +13,50 @@ export function CartProvider({ children }: CartProviderProp) {
   async function cartCreation() {
     try {
       const cart = await createCart();
-      console.log(cart);
-
       if (cart.success) {
         setCart(cart.data);
-        localStorage.setItem("cartId", cart.data.id);
+        console.log(cart);
         return cart.data;
       }
     } catch (error) {
       console.error("Cart creation error", error);
-
       throw Error("Cart creation failed");
     }
   }
 
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+
+    // if no token set the cart to null
+    if (!token) {
+      // no token = no user = reset cart
+      setCart(null);
+    
+    }
+
+    async function initCart() {
+      const cartId = getCartIdFromToken();
+
+      if (cartId) {
+        try {
+          const existingCart = await getCart();
+          if (existingCart.success) {
+            setCart(existingCart.data);
+
+            return;
+          }
+        } catch (err) {
+          console.error(err);
+        }
+      } else {
+        // if no cartId or fetching failed → create new cart
+        const newCart = await cartCreation();
+        if (newCart) setCart(newCart);
+      }
+    }
+    initCart();
+  }, []);
+  console.log(cart);
 
   return (
     <CartContext.Provider value={{ cart, setCart, cartCreation }}>

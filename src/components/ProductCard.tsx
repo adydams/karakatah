@@ -9,7 +9,6 @@ import Spinner from "./Spinner";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 type AddItemVariables = {
-  cartId: string;
   productId: string;
   // quantity: number;
   name: string;
@@ -19,15 +18,15 @@ export default function ProductCard({ id, image, name, price }: ProductProp) {
   const [addWish, setAddWish] = useState(false);
   const [showAddtoCart, setShowAddtoCart] = useState(false);
 
-  const cartId: string | null = localStorage.getItem("cartId");
+  // const cartId: string | null = localStorage.getItem("cartId");
 
   const queryClient = useQueryClient();
 
   // Add item to cart
 
   const { mutate, isPending: isAddingToCart } = useMutation({
-    mutationFn: ({ cartId, name, productId }: AddItemVariables) =>
-      addItemToCart(cartId, name, productId),
+    mutationFn: ({ name, productId }: AddItemVariables) =>
+      addItemToCart(name, productId),
     onSuccess: () => {
       toast.success("Product added to cart");
       queryClient.invalidateQueries({ queryKey: ["cart"] });
@@ -36,7 +35,7 @@ export default function ProductCard({ id, image, name, price }: ProductProp) {
   });
 
   function handleAddToCart() {
-    mutate({ cartId: cartId as string, name, productId: id });
+    mutate({  name, productId: id });
   }
 
   function handleWish() {

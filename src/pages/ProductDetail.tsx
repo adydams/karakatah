@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { FaArrowAltCircleLeft, FaArrowAltCircleRight } from "react-icons/fa";
 import { useParams } from "react-router";
@@ -7,17 +7,24 @@ import { getProduct } from "../services/apiProducts";
 import { formatPrice } from "../utils/utils";
 import ProductDetailsSkeleton from "../components/ProductDetailsSkeleton";
 import ProductImagePulse from "../components/ProductImagePulse";
+import { addItemToCart } from "../services/apiCarts";
+import toast from "react-hot-toast";
+import Spinner from "../components/Spinner";
+// import { addItemToCart } from "../services/apiCarts";
+// import toast from "react-hot-toast";
 // import Spinner from "../components/Spinner";
 // import { formatPrice } from "../utils/utils";
 
 export default function ProductDetail() {
   const [quantity, setQuantity] = useState(1);
+  const queryClient = useQueryClient();
 
   if (quantity < 0) {
     setQuantity(0);
   }
 
   const { id } = useParams<{ id: string }>();
+  const productId = id;
   // console.log(id);
 
   const { isLoading: isGettingProduct, data: productData } = useQuery({
@@ -26,8 +33,32 @@ export default function ProductDetail() {
   });
 
   const product = productData?.data;
+  const name = product?.name;
 
-  console.log(product, isGettingProduct);
+  // Add item to cart
+  type AddItemVariables = {
+    productId: string | undefined;
+    quantity: number;
+    name: string | undefined;
+  };
+
+  const { mutate, isPending } = useMutation({
+    mutationFn: ({ name, productId, quantity }: AddItemVariables) =>
+      addItemToCart(name, productId, quantity),
+    onSuccess: () => {
+      // Invalidate and refetch
+      queryClient.invalidateQueries({ queryKey: ["cart"] });
+      toast.success("Product added to cart");
+    },
+
+    onError: (err) => toast.error(err.message),
+  });
+
+  function handleAddToCart() {
+    mutate({ name, productId, quantity });
+  }
+
+  // console.log(product, isGettingProduct);
   // const formattedname = name?.replaceAll("-", " ");
 
   return (
@@ -86,8 +117,11 @@ export default function ProductDetail() {
                     className="text-secondary cursor-pointer"
                   />
                 </div>
-                <button className="bg-orange mt-3 rounded-md px-5 py-2 text-xs font-medium text-white">
-                  ADD TO CART
+                <button
+                  onClick={handleAddToCart}
+                  className="bg-orange mt-3 w-[150px] cursor-pointer rounded-md px-5 py-2 text-xs font-medium text-white"
+                >
+                  {isPending ? <Spinner size="small" /> : "ADD TO CART"}
                 </button>
               </div>
             </div>

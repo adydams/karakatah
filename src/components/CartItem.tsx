@@ -4,7 +4,7 @@ import { formatPrice } from "../utils/utils";
 // import { FaArrowAltCircleLeft, FaArrowAltCircleRight } from "react-icons/fa";
 import { IoMdAdd } from "react-icons/io";
 import { FiMinus } from "react-icons/fi";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 interface CartItemProps {
   name: string;
@@ -15,11 +15,13 @@ interface CartItemProps {
 export default function CartItem({ name, price, quantity }: CartItemProps) {
   const [quantityItem, setQuantityItem] = useState(1);
 
-  if (quantityItem < 0) {
-    setQuantityItem(0);
-  }
+  useEffect(() => {
+    if (quantityItem < 0) {
+      setQuantityItem(0);
+    }
+  }, [quantityItem]);
 
-  console.log(quantityItem);
+  // console.log(quantityItem);
   return (
     <div className="border-dark-gray/10 flex h-[120px] w-full items-center justify-between border-b pb-3">
       <div className="b flex h-full items-center justify-start gap-5">

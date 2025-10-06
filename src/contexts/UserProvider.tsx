@@ -18,9 +18,11 @@ export function UserProvider({ children }: UserProviderProp) {
   async function userLogin(email: string, password: string) {
     try {
       const data = await login(email, password);
+      // console.log(data);
       if (data.success) {
-        setUser(data.user);
+        // setUser(data.user);
         localStorage.setItem("token", data.token);
+        getCurrentUser();
       }
       return data;
     } catch (error) {
@@ -53,6 +55,7 @@ export function UserProvider({ children }: UserProviderProp) {
 
       if (data.success) {
         setUser(data.user);
+        // console.log(user);
       }
       return data;
     } catch (error) {

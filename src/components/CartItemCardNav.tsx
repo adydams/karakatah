@@ -9,7 +9,7 @@ export default function CartItemCardNav() {
   // const {user} =
   const { cart } = useCart();
 
-  const items = cart?.data.items;
+ const items = cart?.data?.items ?? [];
 
   console.log(cart);
   console.log("This are the products in the cart", items);

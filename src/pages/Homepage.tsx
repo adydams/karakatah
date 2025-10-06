@@ -10,7 +10,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getCategories, getProducts } from "../services/apiProducts";
 import Spinner from "../components/Spinner";
 import { formatPrice } from "../utils/utils";
-import { useCart } from "../contexts/hooks/useCart";
+// import { useCart } from "../contexts/hooks/useCart";
 
 // const categories = [
 //   {
@@ -183,7 +183,8 @@ import { useCart } from "../contexts/hooks/useCart";
 export default function Homepage() {
   const [showFilter, setShowFilter] = useState(false);
   const { getCurrentUser, user } = useUser();
-  const { cartCreation } = useCart();
+  // const { cartCreation } = useCart();
+  // console.log(user);
 
   const {
     isLoading: isGettingProducts,
@@ -226,22 +227,22 @@ export default function Homepage() {
   }, [getCurrentUser, user]);
 
   // ✅ Effect 2: Ensure cart exists when user logs in
-  useEffect(() => {
-    async function ensureCart() {
-      if (user) {
-        const cartId = localStorage.getItem("cartId");
-        if (!cartId) {
-          try {
-            await cartCreation();
-            toast.success("Cart created successfully");
-          } catch {
-            toast.error("Failed to create cart");
-          }
-        }
-      }
-    }
-    ensureCart();
-  }, [user, cartCreation]);
+  // useEffect(() => {
+  //   async function ensureCart() {
+  //     if (user) {
+  //       const cartId = localStorage.getItem("cartId");
+  //       if (!cartId) {
+  //         try {
+  //           await cartCreation();
+  //           toast.success("Cart created successfully");
+  //         } catch {
+  //           toast.error("Failed to create cart");
+  //         }
+  //       }
+  //     }
+  //   }
+  //   ensureCart();
+  // }, [user, cartCreation]);
 
   return (
     <>

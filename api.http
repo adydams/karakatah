@@ -29,9 +29,9 @@ POST https://karakatanodebe.onrender.com/api/auth/register
 Content-Type: application/json
 
 {
-    "name": "tolu",
-    "email": "tolu@mail.com",
-    "phone": "08159756109",
+    "name": "muyiwa",
+    "email": "muyiwa@mail.com",
+    "phone": "08159756102",
     "password": "string123"
 }
 
@@ -41,14 +41,14 @@ POST https://karakatanodebe.onrender.com/api/auth/login
 Content-Type: application/json
 
 {
-    "email": "horpeepzee@mail.com",
+    "email": "muyiwa@mail.com",
     "password": "string123"
 }
 
 ### 
 GET https://karakatanodebe.onrender.com/api/auth/me
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjJhY2U3OGM3LTdiZmItNDlhYy1iYjNkLWY1ZGJlYmZlYzlkZiIsInJvbGUiOiJ1c2VyIiwiaWF0IjoxNzU4NTI5ODQ3LCJleHAiOjE3NTkyMjEwNDd9.Meog-tAaZc-2FslCVNTuPHquFS5EIrE1-PdmceCdOkg
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjdmN2Q2ODAyLTg3YTEtNDUzYS04ZjAzLTIyODU3NmU3YjJiOSIsInJvbGUiOiJ1c2VyIiwiY2FydElkIjoiYjk3MGU5MDYtMzU4Ny00NDU0LTlmNWQtOWI4ZGI2N2U2ODBkIiwiaWF0IjoxNzU5MjM3MTQxLCJleHAiOjE3NTk5MjgzNDF9.wL8u6ooK1ZwPtYaQnDgNcTMKAFLuyCK03chBOZIGtxA
 
 ### 
 GET https://karakatanodebe.onrender.com/api/auth/google
@@ -60,25 +60,25 @@ Content-Type: application/json
 ### 
 POST https://karakatanodebe.onrender.com/api/carts
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjExZDRmZDc1LTMwZjUtNDlhYi04MGU4LTY2ZGJmMzRkNzM3YyIsInJvbGUiOiJ1c2VyIiwiaWF0IjoxNzU4NTM5ODUzLCJleHAiOjE3NTkyMzEwNTN9.mXSD22DEg6zpplFaBH68EfxY-T1tYJ-jOo_RyLLU2QU
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjNjZTczZGE1LTcyMGUtNDgyNC04OWIzLTgyYWJmZmNmZDM0OCIsInJvbGUiOiJ1c2VyIiwiY2FydElkIjoiYzdlYmMzMGUtZjE3My00Y2JlLWFlM2MtNGU4MDJiODAwMGExIiwiaWF0IjoxNzU5MjM4OTM4LCJleHAiOjE3NTk5MzAxMzh9.6ts_F7hwhjeXhjthDuTqbQkyJmGt-tSQ9wFQrWScmbk
 
 ###  Get cart
-GET https://karakatanodebe.onrender.com/api/carts/557c1455-f68b-43be-91d4-4ccafa9c1da8
+GET https://karakatanodebe.onrender.com/api/carts/c7ebc30e-f173-4cbe-ae3c-4e802b8000a1
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjExZDRmZDc1LTMwZjUtNDlhYi04MGU4LTY2ZGJmMzRkNzM3YyIsInJvbGUiOiJ1c2VyIiwiaWF0IjoxNzU4NTM5ODUzLCJleHAiOjE3NTkyMzEwNTN9.mXSD22DEg6zpplFaBH68EfxY-T1tYJ-jOo_RyLLU2QU
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjNjZTczZGE1LTcyMGUtNDgyNC04OWIzLTgyYWJmZmNmZDM0OCIsInJvbGUiOiJ1c2VyIiwiY2FydElkIjoiYzdlYmMzMGUtZjE3My00Y2JlLWFlM2MtNGU4MDJiODAwMGExIiwiaWF0IjoxNzU5MjM4OTM4LCJleHAiOjE3NTk5MzAxMzh9.6ts_F7hwhjeXhjthDuTqbQkyJmGt-tSQ9wFQrWScmbk
 
 
 ### Delete cart
 DELETE https://karakatanodebe.onrender.com/api/carts/b970e906-3587-4454-9f5d-9b8db67e680d
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjExZDRmZDc1LTMwZjUtNDlhYi04MGU4LTY2ZGJmMzRkNzM3YyIsInJvbGUiOiJ1c2VyIiwiaWF0IjoxNzU4NTM5ODUzLCJleHAiOjE3NTkyMzEwNTN9.mXSD22DEg6zpplFaBH68EfxY-T1tYJ-jOo_RyLLU2QU
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjNjZTczZGE1LTcyMGUtNDgyNC04OWIzLTgyYWJmZmNmZDM0OCIsInJvbGUiOiJ1c2VyIiwiY2FydElkIjoiYzdlYmMzMGUtZjE3My00Y2JlLWFlM2MtNGU4MDJiODAwMGExIiwiaWF0IjoxNzU5MjM4OTM4LCJleHAiOjE3NTk5MzAxMzh9.6ts_F7hwhjeXhjthDuTqbQkyJmGt-tSQ9wFQrWScmbk
 
 
 ### Add items to cart
 
 POST https://karakatanodebe.onrender.com/api/cart-items
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjdmN2Q2ODAyLTg3YTEtNDUzYS04ZjAzLTIyODU3NmU3YjJiOSIsInJvbGUiOiJ1c2VyIiwiaWF0IjoxNzU4NjQwMzA4LCJleHAiOjE3NTkzMzE1MDh9.aZM2K8PUeWOj-dQ0n75RBmhLurS5SOFREQ9mW1G5-TE
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjNjZTczZGE1LTcyMGUtNDgyNC04OWIzLTgyYWJmZmNmZDM0OCIsInJvbGUiOiJ1c2VyIiwiY2FydElkIjoiYzdlYmMzMGUtZjE3My00Y2JlLWFlM2MtNGU4MDJiODAwMGExIiwiaWF0IjoxNzU5MjM4OTM4LCJleHAiOjE3NTk5MzAxMzh9.6ts_F7hwhjeXhjthDuTqbQkyJmGt-tSQ9wFQrWScmbk
 
 {
   "cartId": "b970e906-3587-4454-9f5d-9b8db67e680d",

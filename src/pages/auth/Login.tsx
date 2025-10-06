@@ -22,9 +22,9 @@ const loginSchema = z.object({
 type TLoginSchema = z.infer<typeof loginSchema>;
 
 export default function Login() {
-  const { user, userLogin } = useUser();
+  const { userLogin } = useUser();
   const navigate = useNavigate();
-  console.log(user);
+  // console.log(user);
 
   const {
     register,
@@ -43,7 +43,8 @@ export default function Login() {
 
       if (success) {
         navigate("/");
-        toast.success(`Welcome, ${success.user.name}`);
+        // setUser(success.user);
+        // toast.success(`Welcome, ${success.user.name}`);
       } else {
         console.log("FAILED");
         toast.error("Login failed");
@@ -58,12 +59,7 @@ export default function Login() {
 
   return (
     <main className="lg:text-dark-gray/90 relative h-screen w-full items-center justify-between text-white lg:flex">
-      {/* <Link
-        to="/"
-        className="text-orange font-primary absolute top-5 right-5 text-sm font-extrabold lg:text-lg"
-      >
-        Karakata
-      </Link> */}
+    
       <div
         style={{
           backgroundImage: 'url("/bg.png")',

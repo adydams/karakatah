@@ -1,3 +1,4 @@
+import { getCartIdFromToken } from "../utils/utils";
 import { ROOT_URL } from "./apiAuth";
 
 export async function createCart() {
@@ -36,31 +37,31 @@ export async function deleteCart(id: string) {
   return data;
 }
 
-export async function getCart(id: string) {
-  const response = await fetch(`${ROOT_URL}/api/carts/${id}`, {
-    method: "GET",
+export async function getCart() {
+  const cartId = getCartIdFromToken();
+  if (!cartId) throw new Error("No cartId in token");
+
+  const response = await fetch(`${ROOT_URL}/api/carts/${cartId}`, {
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${localStorage.getItem("token")}`,
     },
   });
 
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(errorText || "Failed to fetch cart");
-  }
+  if (!response.ok) throw new Error("Failed to fetch cart");
 
-  const data = await response.json();
-
-  return data;
+  return response.json();
 }
 
 export async function addItemToCart(
-  cartId: string,
-  name: string,
-  productId: string,
+  name: string | undefined,
+  productId: string | undefined,
   quantity: number = 1,
 ) {
+  // Get the cartId
+  const cartId = getCartIdFromToken();
+  if (!cartId) throw new Error("No cartId in token");
+
   const response = await fetch(`${ROOT_URL}/api/cart-items`, {
     method: "POST",
     headers: {

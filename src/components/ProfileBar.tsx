@@ -5,10 +5,12 @@ import { FaUserCircle } from "react-icons/fa";
 import { Link } from "react-router";
 import { useState } from "react";
 import { useUser } from "../contexts/hooks/useUser";
+import { useCart } from "../contexts/hooks/useCart";
 
 export default function ProfileBar() {
   const [showMenu, setShowMenu] = useState(false);
   const { user, logout } = useUser();
+  const { setCart } = useCart();
 
   // const navigate = useNavigate();
 
@@ -18,6 +20,7 @@ export default function ProfileBar() {
 
   function handleLogout() {
     logout();
+    setCart(null);
     // navigate("/");
   }
   return (

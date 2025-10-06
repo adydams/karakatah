@@ -27,26 +27,25 @@ export default function Navbar() {
     if (showCart) setShowCart((cart) => !cart);
   }
 
-  const cartId = localStorage.getItem("cartId");
-  console.log(cartId);
+  // console.log(cartId);
 
   // fetch the cart using the cartId
   const { data: cart, isLoading: isGettingCart } = useQuery<Cart>({
     queryKey: ["cart"],
-    queryFn: () => getCart(cartId as string),
+    queryFn: () => getCart(),
   });
 
-  console.log(cart, isGettingCart);
+  // console.log(cart, isGettingCart);
 
   useEffect(() => {
     if (cart && !isGettingCart) {
       setCart(cart);
     }
   }, [cart, isGettingCart, setCart]);
-  console.log(cart);
+  // console.log(cart);
 
   const itemsNum = cart?.data.items.length;
-  console.log("Number of items in the cart", itemsNum);
+  // console.log("Number of items in the cart", itemsNum);
 
   return (
     <nav className="font-primary sticky top-0 z-[999] flex h-[60px] w-full items-center justify-center bg-white shadow-sm/10 lg:h-[90px]">

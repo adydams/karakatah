@@ -1,3 +1,28 @@
+import { jwtDecode } from "jwt-decode";
+
+type MyJwtPayload = {
+  id: string;
+  role: string;
+  cartId: string;
+  iat: number;
+  exp: number;
+};
+
+export function getCartIdFromToken(): string | null {
+  const token = localStorage.getItem("token");
+  if (!token) return null;
+
+  try {
+    const decoded = jwtDecode<MyJwtPayload>(token);
+    return decoded.cartId ?? null;
+  } catch (err) {
+    console.error("Invalid token", err);
+    return null;
+  }
+}
+
+
+
 export function formatPrice(
   price?: string | number, // allow undefined
   locale = "en-NG",

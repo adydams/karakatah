@@ -6,6 +6,7 @@ export interface CreateUserParams {
   password: string;
 }
 
+// SIGN UP
 export async function createUser(params: CreateUserParams) {
   try {
     const response = await fetch(`${ROOT_URL}/api/auth/register`, {
@@ -24,13 +25,17 @@ export async function createUser(params: CreateUserParams) {
 
     // Parse JSON
     const data = await response.json();
-    return data; // e.g. { success: true, user: {...}, token: "..." }
+
+    return data;
+
+    // return data; // e.g. { success: true, user: {...}, token: "..." }
   } catch (err) {
     console.error("Create user failed:", err);
     throw err; // rethrow so the caller can handle
   }
 }
 
+// LOGIN
 export async function login(email: string, password: string) {
   try {
     const response = await fetch(`${ROOT_URL}/api/auth/login`, {
@@ -47,7 +52,8 @@ export async function login(email: string, password: string) {
 
     // Parse JSON
     const data = await response.json();
-    return data; // e.g. { success: true, user: {...}, token: "..." }
+
+    return data;
   } catch (err) {
     console.error("Login failed", err);
     // return err
@@ -59,6 +65,7 @@ export function googleAuth() {
   window.location.href = `${ROOT_URL}/api/auth/google`;
 }
 
+// GET CURRENT USER
 export async function currentUser() {
   try {
     const response = await fetch(`${ROOT_URL}/api/auth/me`, {
@@ -82,8 +89,24 @@ export async function currentUser() {
   }
 }
 
-// const token = localStorage.getItem("token"); // or however you store it
-// if (token) {
-//   const user = await currentUser(token);
-//   console.log(user);
-// }
+//  if (data.token) {
+//       localStorage.setItem("token", data.token);
+
+//       // Fetch user details as the response only contains a success boolean and a token variable
+
+//       const userResponse = await fetch(`${ROOT_URL}/api/auth/me`, {
+//         method: "GET",
+//         headers: {
+//           "Content-Type": "application/json",
+//           Authorization: `Bearer ${localStorage.getItem("token")}`,
+//         },
+//       });
+
+//       if (userResponse.ok) {
+//         throw new Error("Failed to fetch user details");
+//       }
+
+//       const userData = await userResponse.json();
+
+//       return userData;
+//     }
