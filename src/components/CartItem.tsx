@@ -104,7 +104,7 @@ export default function CartItem({
         <div className="mt-auto flex w-full items-center justify-between gap-2">
           <FiMinus
             onClick={() => {
-              setQuantityItem((prev) => prev + 1);
+              setQuantityItem((prev) => prev - 1);
               handleUpdate();
             }}
             // size={20}

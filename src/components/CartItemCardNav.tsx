@@ -59,7 +59,7 @@ export default function CartItemCardNav() {
           >
             <div className="h-full w-[65px] overflow-hidden rounded-lg">
               <img
-                src={product.product.image}
+                src={product.product.images[0].url}
                 className="h-full w-full object-cover"
                 alt=""
               />

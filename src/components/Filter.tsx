@@ -12,6 +12,8 @@ export default function Filter({ showFilter, setShowFilter }: filterProp) {
     queryKey: ["categories"],
     queryFn: getCategories,
   });
+  console.log(categoryData);
+  
   const categories = categoryData?.data;
 
   function handleFilter() {
@@ -34,14 +36,14 @@ export default function Filter({ showFilter, setShowFilter }: filterProp) {
                 className="mb-3 flex cursor-pointer flex-wrap items-center justify-start gap-0.5 text-sm font-light hover:text-gray-800"
               >
                 {category.name}
-                {category.subCategories.map((subCategory, index) => (
+                {/* {category.subCategories.map((subCategory, index) => (
                   <span
                     key={index}
                     className="border-dark-gray/20 font-secondary hover:text-dark-gray/90 text-dark-gray/70 mx-1 rounded-full border px-3 py-0.5 text-[10px]"
                   >
                     {subCategory.name}
                   </span>
-                ))}
+                ))} */}
               </li>
             ))
           )}

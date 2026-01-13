@@ -1,5 +1,8 @@
 import { createContext } from "react";
 
+type images = {
+  url: string;
+};
 type Item = {
   quantity: number;
   id: string;
@@ -7,7 +10,7 @@ type Item = {
     id: string;
     name: string;
     price: string;
-    image: string;
+    images: images[];
   };
 };
 

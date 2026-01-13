@@ -12,6 +12,8 @@ export default function ProfileBar() {
   const { user, logout } = useUser();
   const { setCart } = useCart();
 
+  console.log(user);
+
   // const navigate = useNavigate();
 
   function handleMenu() {

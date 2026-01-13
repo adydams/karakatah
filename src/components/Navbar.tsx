@@ -37,9 +37,12 @@ export default function Navbar() {
 
   // console.log(cart, isGettingCart);
 
+  // Come check this piece of code (useEffect)
   useEffect(() => {
     if (cart && !isGettingCart) {
       setCart(cart);
+    } else {
+      setCart(null);
     }
   }, [cart, isGettingCart, setCart]);
   // console.log(cart);
