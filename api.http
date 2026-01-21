@@ -114,4 +114,13 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjdmN2Q2ODAyL
 
 POST https://karakatanodebe.onrender.com/api/orders/checkout
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImRhNWViZWIwLWNkYWItNDY5Yy1iOTg5LWNkNWExNTYyNTM2ZSIsInJvbGUiOiJ1c2VyIiwiY2FydElkIjoiOTc5MGM3OTgtMGFhNy00MTM4LTg3MTctYWQ4ZThjYjdiZTY3IiwiaWF0IjoxNzYwMDEyNTc4LCJleHAiOjE3NjA3MDM3Nzh9.sG1h2jxn57Ai9sHZ78NHt-2q6FclM0ymxzo745pAYHg
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImVmMGVjMDE2LTAxMmItNDk0My04NGU1LTkyNDhhYWVmNzAxMiIsInJvbGUiOiJ1c2VyIiwiY2FydElkIjoiOTNiNTE5MzQtNmVkNC00MzJmLWI4ZDMtMzBlYjk1YWVjMGJmIiwiaWF0IjoxNzY4OTkyNjc3LCJleHAiOjE3Njk2ODM4Nzd9.TwYdeo4rj4kAeDwhhRK6z1Ih8pv2TPbR6f4VhJhzA_g
+
+
+  {
+  "shippingAddressId": "123 Main St, Abuja",
+  "phone": "+2348012345678",
+  "notes": "Leave package at the door",
+  "gateway": "paystack"
+}
+

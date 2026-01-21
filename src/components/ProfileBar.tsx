@@ -6,15 +6,17 @@ import { Link } from "react-router";
 import { useState } from "react";
 import { useUser } from "../contexts/hooks/useUser";
 import { useCart } from "../contexts/hooks/useCart";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function ProfileBar() {
   const [showMenu, setShowMenu] = useState(false);
   const { user, logout } = useUser();
-  const { setCart } = useCart();
+  const { SetCart } = useCart();
 
-  console.log(user);
+  // console.log(user);
 
   // const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   function handleMenu() {
     setShowMenu((menu) => !menu);
@@ -22,9 +24,16 @@ export default function ProfileBar() {
 
   function handleLogout() {
     logout();
-    setCart(null);
-    // navigate("/");
+
+    // Clear cart context
+    SetCart(null);
+
+    // 🔥 Clear React Query cache
+    queryClient.removeQueries({ queryKey: ["cart"] });
+
+    // console.log("Logged out");
   }
+
   return (
     <div className="relative flex items-center justify-between gap-3">
       <div

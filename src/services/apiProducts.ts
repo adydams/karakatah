@@ -9,38 +9,48 @@ import type {
 export async function getProducts(): Promise<ProductsResponse> {
   const response = await fetch(`${ROOT_URL}/api/products`);
 
-  if (!response.ok) {
-    throw new Error("Failed to get the products");
-  }
-
   const data = await response.json();
 
+  if (!response.ok) {
+    throw new Error(
+      data?.message || data?.detail || data?.error || "Failed to get products",
+    );
+  }
+
   return data;
-  //   console.log("This is the data", data);
 }
 
 export async function getProduct(id: string): Promise<ProductResponse> {
   const response = await fetch(`${ROOT_URL}/api/products/${id}`);
 
-  if (!response.ok) {
-    throw new Error("Failed to get the product");
-  }
-
   const data = await response.json();
 
+  if (!response.ok) {
+    throw new Error(
+      data?.message ||
+        data?.detail ||
+        data?.error ||
+        "Failed to get the product, You sure it exist?",
+    );
+  }
+
   return data;
-  //   console.log("This is the data", data);
 }
 
 // Categories
 export async function getCategories(): Promise<CategoriesResponse> {
   const response = await fetch(`${ROOT_URL}/api/categories`);
 
-  if (!response.ok) {
-    throw new Error("Failed to fetch categories");
-  }
-
   const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(
+      data?.message ||
+        data?.detail ||
+        data?.error ||
+        "Failed to get categories",
+    );
+  }
 
   return data;
 }

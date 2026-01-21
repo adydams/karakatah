@@ -24,6 +24,7 @@ export type Cart = {
     totalAmount: string;
   };
 };
+
 export type getCart = {
   id: string;
   userId: string;
@@ -39,7 +40,7 @@ export type CartResponse = {
 
 type CartContextType = {
   cart: Cart | null;
-  setCart: React.Dispatch<React.SetStateAction<Cart | null>>;
+  SetCart: React.Dispatch<React.SetStateAction<Cart | null>>;
   cartCreation: () => Promise<CartResponse>;
 };
 

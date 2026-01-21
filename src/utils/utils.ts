@@ -21,7 +21,26 @@ export function getCartIdFromToken(): string | null {
   }
 }
 
+// export function getCartIdFromToken(): string | null {
+//   const token = localStorage.getItem("token");
+//   if (!token) return null;
 
+//   try {
+//     const decoded = jwtDecode<MyJwtPayload>(token);
+
+//     if (decoded) {
+//       console.log("this is the cartId", decoded);
+
+//       return decoded.cartId;
+//     }
+
+//     return decoded.cartId ?? null;
+//     // return decoded.cartId ?? null;
+//   } catch (err) {
+//     console.error("Invalid token", err);
+//     return null;
+//   }
+// }
 
 export function formatPrice(
   price?: string | number, // allow undefined
@@ -48,4 +67,14 @@ export function formatPrice(
     style: "currency",
     currency,
   }).format(number);
+}
+
+export function shortenText(text: string, maxLength = 12): string {
+  if (!text) return "";
+
+  if (text.length <= maxLength) {
+    return text;
+  }
+
+  return `${text.slice(0, maxLength)}...`;
 }

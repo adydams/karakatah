@@ -9,17 +9,14 @@ import toast from "react-hot-toast";
 import { useQuery } from "@tanstack/react-query";
 import { getCategories, getProducts } from "../services/apiProducts";
 import Spinner from "../components/Spinner";
-import { formatPrice } from "../utils/utils";
+import { formatPrice, shortenText } from "../utils/utils";
 // import { useCart } from "../contexts/hooks/useCart";
-
-
-
 
 export default function Homepage() {
   const [showFilter, setShowFilter] = useState(false);
   const { getCurrentUser, user } = useUser();
   // const { cartCreation } = useCart();
-  console.log(user);  
+  // console.log(user);
 
   const {
     isLoading: isGettingProducts,
@@ -32,20 +29,15 @@ export default function Homepage() {
 
   const products = productData?.data;
 
-  // console.log(isGettingProducts, productError, products);
-
   const { isLoading: isGettingCategories, data: categoryData } = useQuery({
     queryKey: ["categories"],
     queryFn: getCategories,
   });
   const categories = categoryData?.data;
-  // console.log(isGettingCategories, categoryData);
 
   function handleShowFilter() {
     setShowFilter((filter) => !filter);
-    console.log("show filter ");
   }
-  // const categoriesLength = categories?.length;
 
   // ✅ Effect 1: Fetch current user
   useEffect(() => {
@@ -108,10 +100,10 @@ export default function Homepage() {
             ) : (
               categories?.map((category, index) => (
                 <p
-                  className="hover:bg-deep-blue/50 h-full cursor-pointer px-4 py-2 text-center transition-all duration-700 hover:font-medium"
+                  className="hover:bg-deep-blue/50 h-full cursor-pointer px-4 py-2 text-center transition-all duration-700 hover:font-medium text-[10px]"
                   key={index}
                 >
-                  {category?.name}
+                  {shortenText(category?.name)}
                 </p>
               ))
             )}
@@ -120,6 +112,8 @@ export default function Homepage() {
         <div
           className={`mt-4 ${isGettingProducts ? "flex h-[400px] items-center justify-center" : "grid"} w-[92%] grid-cols-1 gap-x-7 gap-y-5 md:grid-cols-2 lg:w-[85%] lg:grid-cols-4`}
         >
+          <Filter showFilter={showFilter} setShowFilter={setShowFilter} />
+
           {isGettingProducts ? (
             <Spinner size="big" />
           ) : (
@@ -136,7 +130,7 @@ export default function Homepage() {
         </div>
         <Pagination />
 
-        <Filter showFilter={showFilter} setShowFilter={setShowFilter} />
+        {/* <Filter showFilter={showFilter} setShowFilter={setShowFilter} /> */}
       </section>
     </>
   );

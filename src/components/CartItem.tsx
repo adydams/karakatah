@@ -32,7 +32,7 @@ export default function CartItem({
 
   const queryClient = useQueryClient();
 
-  console.log(id);
+  // console.log(id);
   // Add item to cart
 
   const { mutate, isPending } = useMutation({

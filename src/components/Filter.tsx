@@ -12,8 +12,8 @@ export default function Filter({ showFilter, setShowFilter }: filterProp) {
     queryKey: ["categories"],
     queryFn: getCategories,
   });
-  console.log(categoryData);
-  
+  console.log(showFilter);
+
   const categories = categoryData?.data;
 
   function handleFilter() {
@@ -21,8 +21,11 @@ export default function Filter({ showFilter, setShowFilter }: filterProp) {
   }
 
   return (
+    // <div
+    //   className={`absolute left-0 ${showFilter ? "z-50 translate-x-3 opacity-100 shadow-sm/10 lg:translate-x-28" : "z-[-999] translate-x-0 opacity-0"} font-primary top-8 flex h-auto w-[310px] flex-col items-start justify-start bg-white px-5 pb-10 transition-all duration-1000`}
+    // >
     <div
-      className={`absolute left-0 ${showFilter ? "z-50 translate-x-3 opacity-100 shadow-sm/10 lg:translate-x-28" : "z-[-999] translate-x-0 opacity-0"} font-primary top-8 flex h-auto w-[310px] flex-col items-start justify-start bg-white px-5 pb-10 transition-all duration-1000`}
+      className={`font-primary top-8 ${showFilter ? "row-span-2" : "hidden"} flex h-full w-full flex-col items-start justify-start rounded-lg bg-gray-100 px-5 pb-10 shadow-xl transition-all duration-1000 hover:bg-white`}
     >
       <div className="w-full">
         <FilterHeader title="Categories" />

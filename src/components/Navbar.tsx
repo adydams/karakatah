@@ -7,19 +7,19 @@ import { HiMenuAlt3 } from "react-icons/hi";
 import { Link } from "react-router";
 import { useUser } from "../contexts/hooks/useUser";
 import ProfileBar from "./ProfileBar";
-import { useCart } from "../contexts/hooks/useCart";
+// import { useCart } from "../contexts/hooks/useCart";
 import { useQuery } from "@tanstack/react-query";
 import { getCart } from "../services/apiCarts";
 import { type Cart } from "../contexts/CartContext";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import CartItemCardNav from "./CartItemCardNav";
 // import { useEffect } from "react";
 
 export default function Navbar() {
   const [showCart, setShowCart] = useState(false);
   const { user } = useUser();
-  const { setCart } = useCart();
-  // console.log(setCart);
+  // const { SetCart } = useCart();
+  // console.log(SetCart);
   function handleMouseOver() {
     if (!showCart) setShowCart((cart) => !cart);
   }
@@ -30,25 +30,29 @@ export default function Navbar() {
   // console.log(cartId);
 
   // fetch the cart using the cartId
-  const { data: cart, isLoading: isGettingCart } = useQuery<Cart>({
+  const { data: cart } = useQuery<Cart>({
     queryKey: ["cart"],
     queryFn: () => getCart(),
+    enabled: !!localStorage.getItem("token"),
   });
+
+  // console.log(isGettingCart);
 
   // console.log(cart, isGettingCart);
 
   // Come check this piece of code (useEffect)
-  useEffect(() => {
-    if (cart && !isGettingCart) {
-      setCart(cart);
-    } else {
-      setCart(null);
-    }
-  }, [cart, isGettingCart, setCart]);
+  // useEffect(() => {
+  //   if (cart && !isGettingCart) {
+  //     SetCart(cart);
+  //   } else {
+  //     SetCart(null);
+  //   }
+  // }, [cart, isGettingCart, SetCart]);
   // console.log(cart);
 
   const itemsNum = cart?.data.items.length;
   // console.log("Number of items in the cart", itemsNum);
+  // console.log("Testing testing", cart);
 
   return (
     <nav className="font-primary sticky top-0 z-[999] flex h-[60px] w-full items-center justify-center bg-white shadow-sm/10 lg:h-[90px]">

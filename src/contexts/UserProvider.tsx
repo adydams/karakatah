@@ -37,8 +37,8 @@ export function UserProvider({ children }: UserProviderProp) {
     try {
       const data = await createUser(params);
       if (data.success) {
-        setUser(data.user);
-        localStorage.setItem("token", data.token);
+        // setUser(data.user);
+        // localStorage.setItem("token", data.token);
       }
       return data;
     } catch (error) {

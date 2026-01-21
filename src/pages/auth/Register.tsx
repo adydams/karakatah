@@ -1,30 +1,15 @@
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { useForm } from "react-hook-form";
 import Spinner from "../../components/Spinner";
-import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useUser } from "../../contexts/hooks/useUser";
 import toast from "react-hot-toast";
 import SignUpWithGoogle from "../../components/SignUpWithGoogle";
-
-// type signUpValues = {
-//   name: string;
-//   email: string;
-//   phone: string;
-//   password: string;
-// };
-
-const signUpSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters"),
-  email: z.string().trim().email("Enter a valid email"),
-  phone: z.string().regex(/^\+?[0-9]{7,15}$/, "Enter a valid phone number"), // supports intl format
-  password: z.string().min(8, "Password must be at least 8 characters"),
-});
-
-type TSignUpSchema = z.infer<typeof signUpSchema>;
+import { signUpSchema, type TSignUpSchema } from "../../types/formSchema";
 
 export default function Register() {
   const { signUp } = useUser();
+  const navigate = useNavigate();
 
   const {
     register,
@@ -36,13 +21,20 @@ export default function Register() {
 
   async function onSubmit(data: TSignUpSchema) {
     const { name, email, phone, password } = data;
-    console.log(data, "onSubmit");
-    const success = await signUp({ name, email, phone, password });
 
-    if (success) {
-      toast.success(`Account creation is successful`);
-    } else {
-      toast.error("Account creation  failed");
+    try {
+      const success = await signUp({ name, email, phone, password });
+
+      if (success) {
+        toast.success(`Account creation is successful`);
+        navigate("/login");
+      }
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        toast.error(err.message);
+      } else {
+        toast("An unexpected error occurred");
+      }
     }
   }
 

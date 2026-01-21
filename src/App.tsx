@@ -12,6 +12,7 @@ import ProductDetail from "./pages/ProductDetail";
 import CartPage from "./pages/CartPage";
 import { CartProvider } from "./contexts/CartProvider";
 import Checkout from "./pages/Checkout";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -37,11 +38,19 @@ export default function App() {
         },
         {
           path: "cart",
-          element: <CartPage />,
+          element: (
+            <ProtectedRoute>
+              <CartPage />
+            </ProtectedRoute>
+          ),
         },
         {
           path: "checkout",
-          element: <Checkout />,
+          element: (
+            <ProtectedRoute>
+              <Checkout />
+            </ProtectedRoute>
+          ),
         },
       ],
     },

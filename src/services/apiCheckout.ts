@@ -1,9 +1,9 @@
 import { ROOT_URL } from "./apiAuth";
 
 type OrderProp = {
-  shippindAddressId: string;
+  shippingAddressId: string;
   phone: string;
-  notes: string;
+  notes: string | undefined;
   gateway: string;
 };
 
@@ -17,11 +17,13 @@ export async function createOrder(order: OrderProp) {
     body: JSON.stringify(order),
   });
 
-  if (!response.ok) {
-    throw new Error("Failed to create order");
-  }
-
   const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(
+      data?.message || data?.detail || data?.error || "Failed to create order",
+    );
+  }
 
   return data;
 }

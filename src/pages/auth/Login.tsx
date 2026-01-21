@@ -3,23 +3,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import toast from "react-hot-toast";
 import { Link, useNavigate } from "react-router";
 import Spinner from "../../components/Spinner";
-import { z } from "zod";
 import { useUser } from "../../contexts/hooks/useUser";
 import SignUpWithGoogle from "../../components/SignUpWithGoogle";
-// import { useEffect } from "react";
-
-// type loginValues = {
-//   email: string;
-//   password: string;
-//   // remember: boolean;
-// };
-
-const loginSchema = z.object({
-  email: z.string().trim().email("Enter a valid email"),
-  password: z.string().min(8, "Password must be at least 8 characters"),
-});
-
-type TLoginSchema = z.infer<typeof loginSchema>;
+import { loginSchema, type TLoginSchema } from "../../types/formSchema";
 
 export default function Login() {
   const { userLogin } = useUser();
@@ -43,23 +29,19 @@ export default function Login() {
 
       if (success) {
         navigate("/");
-        // setUser(success.user);
-        // toast.success(`Welcome, ${success.user.name}`);
-      } else {
-        console.log("FAILED");
-        toast.error("Login failed");
+    
       }
-
-      // console.log(success);
-    } catch (error) {
-      console.error("Login error:", error);
-      toast.error("An error occurred while logging in");
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        toast.error(err.message);
+      } else {
+        toast("An unexpected error occurred");
+      }
     }
   }
 
   return (
     <main className="lg:text-dark-gray/90 relative h-screen w-full items-center justify-between text-white lg:flex">
-    
       <div
         style={{
           backgroundImage: 'url("/bg.png")',

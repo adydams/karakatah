@@ -1,11 +1,22 @@
 import { useNavigate } from "react-router";
 import CartItem from "../components/CartItem";
 import EmptyCart from "../components/EmptyCart";
-import { useCart } from "../contexts/hooks/useCart";
+// import { useCart } from "../contexts/hooks/useCart";
 import { formatPrice } from "../utils/utils";
+import { useQuery } from "@tanstack/react-query";
+import type { Cart } from "../contexts/CartContext";
+import { getCart } from "../services/apiCarts";
+import Spinner from "../components/Spinner";
 
 export default function CartPage() {
-  const { cart } = useCart();
+  // const { cart } = useCart();
+
+  // fetch the cart using the cartId
+  const { data: cart, isLoading } = useQuery<Cart>({
+    queryKey: ["cart"],
+    queryFn: () => getCart(),
+    enabled: !!localStorage.getItem("token"),
+  });
   const navigate = useNavigate();
 
   function handleMovetoCheckout() {
@@ -14,6 +25,13 @@ export default function CartPage() {
 
   const items = cart?.data?.items ?? [];
   const totalAmount = cart?.data?.totalAmount;
+
+  if (isLoading)
+    return (
+      <div className="flex h-screen w-full items-center justify-center">
+        <Spinner size="big" />
+      </div>
+    );
 
   return (
     <>
@@ -49,7 +67,7 @@ export default function CartPage() {
                 onClick={handleMovetoCheckout}
                 className="bg-orange/90 hover:bg-orange font-primary w-full cursor-pointer rounded-lg py-3 font-semibold text-white"
               >
-                Checkout{" "}
+                Proceed to Checkout
               </button>
             </div>
           </div>
