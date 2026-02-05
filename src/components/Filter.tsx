@@ -12,7 +12,6 @@ export default function Filter({ showFilter, setShowFilter }: filterProp) {
     queryKey: ["categories"],
     queryFn: getCategories,
   });
-  console.log(showFilter);
 
   const categories = categoryData?.data;
 

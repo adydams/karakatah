@@ -1,4 +1,5 @@
 // import EmptyCart from "../components/EmptyCart";
+import { IoMdArrowDropright } from "react-icons/io";
 import { useQuery } from "@tanstack/react-query";
 import { formatPrice } from "../utils/utils";
 import type { Cart } from "../contexts/CartContext";
@@ -9,6 +10,8 @@ import { checkoutSchema, type TCheckoutSchema } from "../types/formSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import toast from "react-hot-toast";
 import { createOrder } from "../services/apiCheckout";
+import { Link } from "react-router";
+import { getShippingAddress } from "../services/apiShipping";
 
 export default function Checkout() {
   // const { cart } = useCart();
@@ -26,6 +29,11 @@ export default function Checkout() {
     queryKey: ["cart"],
     queryFn: () => getCart(),
     enabled: !!localStorage.getItem("token"),
+  });
+
+  const { data: shippingAddress, isLoading: IsFetchingAddress } = useQuery({
+    queryKey: ["shippingAddress"],
+    queryFn: getShippingAddress,
   });
 
   //   const items = cart?.data?.items ?? [];
@@ -51,7 +59,9 @@ export default function Checkout() {
       });
 
       if (success) {
-        toast.success(`Account creation is successful`);
+        console.log(success);
+
+        toast.success(success.message);
       }
     } catch (err: unknown) {
       if (err instanceof Error) {
@@ -71,19 +81,54 @@ export default function Checkout() {
         <div className="grid h-full w-[92%] grid-cols-1 gap-5 lg:w-[85%] lg:grid-cols-[2fr_1fr]">
           <div className="flex h-full w-full flex-col items-start justify-start rounded-lg bg-white px-3 py-5">
             {/* Shipping Address */}
-            <label
-              htmlFor="address"
-              className="font-primary w-full text-lg font-semibold"
-            >
-              Customer Address
-            </label>
-            <input
-              className="border-dark-gray/20 text-dark-gray/70 focus:bg-light-gray/20 focus:text-dark-gray/90 w-full rounded-lg border-b px-5 py-2.5 text-xs transition-all duration-700 focus:outline-0"
-              type="text"
-              placeholder="Enter your Address"
-              id="shippingAddressId"
-              {...register("shippingAddressId")}
-            />
+            <div className="flex w-full items-center justify-between">
+              <label
+                htmlFor="address"
+                className="font-primary w-full text-lg font-semibold"
+              >
+                Customer Address
+              </label>
+              <Link
+                className="text-orange font-primary flex items-center justify-center gap-0 text-xs font-medium underline-offset-2 transition-all duration-1000 hover:gap-1 hover:underline"
+                to="/checkout/address"
+              >
+                Change <IoMdArrowDropright size={18} />
+              </Link>
+            </div>
+
+            {IsFetchingAddress ? (
+              <Spinner size="small" />
+            ) : shippingAddress.addresses.length === 0 ? (
+              <Link
+                to="/checkout/address"
+                className="border-orange/40 mt-7 w-full border-2 border-dashed bg-gray-100 px-10 py-5 text-center text-xs font-medium tracking-widest text-gray-500"
+              >
+                <p className="">Add an address</p>
+              </Link>
+            ) : (
+              <select
+                id="shippingAddressId"
+                {...register("shippingAddressId")}
+                className="border-dark-gray/20 text-dark-gray/70 focus:bg-light-gray/20 focus:text-dark-gray/90 w-full rounded-lg border-b px-5 py-2.5 text-xs transition-all duration-700 focus:outline-0"
+              >
+                {shippingAddress.addresses.map(
+                  (address: {
+                    id: string;
+                    line1: string;
+                    line2: string;
+                    city: string;
+                    state: string;
+                    country: string;
+                  }) => (
+                    <option key={address.id} value={address.id}>
+                      {address.line1} {address.line2}, {address.city},{" "}
+                      {address.state}, {address.country}
+                    </option>
+                  ),
+                )}
+              </select>
+            )}
+
             {errors.shippingAddressId && (
               <p className="text-xs text-red-500">{`${errors.shippingAddressId.message}`}</p>
             )}
@@ -121,9 +166,9 @@ export default function Checkout() {
               <label className="text-sm" htmlFor="pick-up">
                 Pick-up Station (from ₦ 1, 500)
               </label>
-            </div> */}
+            </div>
 
-            {/* <div className="radio-container mt-3 flex w-full items-center justify-start gap-3">
+            <div className="radio-container mt-3 flex w-full items-center justify-start gap-3">
               <input type="radio" id="door" name="delivery" value="door" />
               <label className="text-sm" htmlFor="door">
                 Door Delivery (from ₦ 3, 500)

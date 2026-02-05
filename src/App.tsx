@@ -13,6 +13,7 @@ import CartPage from "./pages/CartPage";
 import { CartProvider } from "./contexts/CartProvider";
 import Checkout from "./pages/Checkout";
 import ProtectedRoute from "./components/ProtectedRoute";
+import CheckoutAddress from "./pages/CheckoutAddress";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -49,6 +50,14 @@ export default function App() {
           element: (
             <ProtectedRoute>
               <Checkout />
+            </ProtectedRoute>
+          ),
+        },
+        {
+          path: "checkout/address",
+          element: (
+            <ProtectedRoute>
+              <CheckoutAddress />
             </ProtectedRoute>
           ),
         },

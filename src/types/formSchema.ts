@@ -16,8 +16,6 @@ export const loginSchema = z.object({
 
 export type TLoginSchema = z.infer<typeof loginSchema>;
 
-
-
 export const checkoutSchema = z.object({
   shippingAddressId: z.string().min(1, "Shipping address is required"),
 
@@ -33,3 +31,38 @@ export const checkoutSchema = z.object({
 });
 
 export type TCheckoutSchema = z.infer<typeof checkoutSchema>;
+
+// Shipping Address form
+
+export const shippingAddressSchema = z.object({
+  line1: z
+    .string()
+    .min(3, "Street address is required")
+    .max(200, "Street address is too long"),
+
+  line2: z
+    .string()
+    .max(200, "Bus-Stop is too long")
+    .optional()
+    .or(z.literal("")), // allows empty string
+
+  city: z.string().min(2, "City is required").max(50, "City name is too long"),
+
+  state: z
+    .string()
+    .min(2, "State is required")
+    .max(50, "State name is too long"),
+
+  country: z
+    .string()
+    .min(2, "Country is required")
+    .max(50, "Country name is too long"),
+
+  postalCode: z
+    .string()
+    .min(3, "Postal code is required")
+    .max(12, "Postal code is too long")
+    .regex(/^[a-zA-Z0-9\- ]+$/, "Invalid postal code format"),
+});
+
+export type ShippingAddressFormValues = z.infer<typeof shippingAddressSchema>;
