@@ -13,7 +13,7 @@ export default function ProtectedRoute({ children }: ProtectedRouteProp) {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!user) navigate("/");
+    if (!user) navigate("/home");
   }, [user, navigate]);
 
   return user ? children : <Spinner size="big" />;

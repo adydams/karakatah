@@ -14,6 +14,22 @@ import { CartProvider } from "./contexts/CartProvider";
 import Checkout from "./pages/Checkout";
 import ProtectedRoute from "./components/ProtectedRoute";
 import CheckoutAddress from "./pages/CheckoutAddress";
+import PaymentVerify from "./pages/PaymentVerify";
+import Overview from "./pages/adminDashboard/Overview";
+import AdminHomeLayout from "./pages/adminDashboard/AdminHomeLayout";
+import Orders from "./pages/adminDashboard/Orders";
+import Categories from "./pages/adminDashboard/Categories";
+import Products from "./pages/adminDashboard/Products";
+import Customer from "./pages/adminDashboard/Customer";
+import Report from "./pages/adminDashboard/Report";
+import Transactions from "./pages/adminDashboard/Transactions";
+import Shipment from "./pages/adminDashboard/Shipment";
+import Help from "./pages/adminDashboard/Help";
+import Settings from "./pages/adminDashboard/Settings";
+import Auth from "./pages/adminDashboard/Auth";
+import { LoginProvider } from "./contexts/LoginProvider";
+import { ModalProvider } from "./contexts/ModalProvider";
+import ProtectedRouteAdmin from "./components/adminDashboard/ProtectedRouteAdmin";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -26,7 +42,7 @@ const queryClient = new QueryClient({
 export default function App() {
   const router = createBrowserRouter([
     {
-      path: "/",
+      path: "/home",
       element: <HomeLayout />,
       children: [
         {
@@ -61,6 +77,14 @@ export default function App() {
             </ProtectedRoute>
           ),
         },
+        {
+          path: "payment-success",
+          element: (
+            <ProtectedRoute>
+              <PaymentVerify />
+            </ProtectedRoute>
+          ),
+        },
       ],
     },
     {
@@ -79,34 +103,97 @@ export default function App() {
         </GuestOnly>
       ),
     },
+
+    {
+      path: "/dashboard",
+      element: (
+        <ProtectedRouteAdmin>
+          <AdminHomeLayout />
+        </ProtectedRouteAdmin>
+      ),
+      children: [
+        {
+          index: true,
+          element: <Overview />,
+        },
+        {
+          path: "overview",
+          element: <Overview />,
+        },
+        {
+          path: "orders",
+          element: <Orders />,
+        },
+        {
+          path: "categories",
+          element: <Categories />,
+        },
+        {
+          path: "products",
+          element: <Products />,
+        },
+        {
+          path: "customers",
+          element: <Customer />,
+        },
+        {
+          path: "reports",
+          element: <Report />,
+        },
+        {
+          path: "transactions",
+          element: <Transactions />,
+        },
+        {
+          path: "shipment",
+          element: <Shipment />,
+        },
+        {
+          path: "help",
+          element: <Help />,
+        },
+        {
+          path: "settings",
+          element: <Settings />,
+        },
+      ],
+    },
+    {
+      path: "/sign-in",
+      element: <Auth />,
+    },
   ]);
   return (
     <QueryClientProvider client={queryClient}>
       <ReactQueryDevtools initialIsOpen={true} />
-      <UserProvider>
-        <CartProvider>
-          <RouterProvider router={router} />
-          <Toaster
-            position="top-center"
-            gutter={12}
-            containerStyle={{ margin: "8px" }}
-            toastOptions={{
-              success: {
-                duration: 5000,
-              },
-              error: {
-                duration: 6000,
-              },
-              style: {
-                fontSize: "14px",
-                maxWidth: "500px",
-                padding: "8px 24px",
-                backgroundColor: "#f1f5f9",
-              },
-            }}
-          />
-        </CartProvider>
-      </UserProvider>
+      <LoginProvider>
+        <UserProvider>
+          <ModalProvider>
+            <CartProvider>
+              <RouterProvider router={router} />
+              <Toaster
+                position="top-center"
+                gutter={12}
+                containerStyle={{ margin: "8px" }}
+                toastOptions={{
+                  success: {
+                    duration: 5000,
+                  },
+                  error: {
+                    duration: 6000,
+                  },
+                  style: {
+                    fontSize: "14px",
+                    maxWidth: "500px",
+                    padding: "8px 24px",
+                    backgroundColor: "#f1f5f9",
+                  },
+                }}
+              />
+            </CartProvider>
+          </ModalProvider>
+        </UserProvider>
+      </LoginProvider>
     </QueryClientProvider>
   );
 }

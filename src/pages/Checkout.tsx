@@ -13,6 +13,10 @@ import { createOrder } from "../services/apiCheckout";
 import { Link } from "react-router";
 import { getShippingAddress } from "../services/apiShipping";
 
+// Payment on success page
+
+// https://karakatang.vercel.app/api/payments/verify?gateway=paystack&orderId=885036e9-e4bd-4dce-bd56-4c290d82fb16&trxref=order_885036e9-e4bd-4dce-bd56-4c290d82fb16_1776077522047&reference=order_885036e9-e4bd-4dce-bd56-4c290d82fb16_1776077522047
+
 export default function Checkout() {
   // const { cart } = useCart();
 
@@ -47,7 +51,7 @@ export default function Checkout() {
     );
 
   async function onSubmit(data: TCheckoutSchema) {
-    console.log(data);
+    // console.log(data);
     const { shippingAddressId, notes, gateway, phone } = data;
 
     try {
@@ -62,6 +66,11 @@ export default function Checkout() {
         console.log(success);
 
         toast.success(success.message);
+        toast.success("Redirecting to payment...");
+
+        setTimeout(() => {
+          window.location.href = success.paymentUrl;
+        }, 1500);
       }
     } catch (err: unknown) {
       if (err instanceof Error) {
@@ -74,6 +83,9 @@ export default function Checkout() {
 
   return (
     <>
+      <Link to="/payment/verify" className="text-sm text-blue-500 underline">
+        Verify Payment
+      </Link>
       <form
         onSubmit={handleSubmit(onSubmit)}
         className="text-deep-blue flex w-full items-center justify-center pt-14 pb-5 lg:py-16"

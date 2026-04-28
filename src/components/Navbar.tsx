@@ -61,6 +61,8 @@ export default function Navbar() {
           Karakata
         </Link>
 
+        {/* Searchbar */}
+
         <div className="absolute bottom-[-80%] w-full lg:static lg:w-auto">
           <form className="relative block">
             <input

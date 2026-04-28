@@ -8,6 +8,18 @@ type MyJwtPayload = {
   exp: number;
 };
 
+export function decodeToken(token: string | null) {
+  if (!token) return null;
+
+  try {
+    const decoded = jwtDecode<MyJwtPayload>(token);
+    return decoded ?? null;
+  } catch (err) {
+    console.error("Invalid token", err);
+    return null;
+  }
+}
+
 export function getCartIdFromToken(): string | null {
   const token = localStorage.getItem("token");
   if (!token) return null;

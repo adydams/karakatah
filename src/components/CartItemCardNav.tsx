@@ -31,7 +31,7 @@ export default function CartItemCardNav() {
     return (
       <>
         <div className="fixed top-0 left-0 h-screen w-full bg-gray-900/40 md:hidden"></div>
-        <div className="absolute top-[55px] left-[-130%] flex w-[300px] flex-col items-center justify-center bg-white px-3 py-2 shadow-md/10">
+        <div className="absolute top-full mt-10 left-[-130%] flex w-[300px] flex-col items-center justify-center bg-white px-3 py-2 shadow-md/10">
           <div className="w-full">
             <img src="images/cart_toon.svg" alt="" />
           </div>
@@ -50,12 +50,12 @@ export default function CartItemCardNav() {
       return (
         <>
           <div className="fixed top-0 left-0 h-screen w-full bg-gray-900/40 md:hidden"></div>
-          <div className="absolute top-[100px] left-[-130%] flex w-[300px] flex-col items-center justify-center bg-white px-3 py-2 shadow-md/10">
+          <div className="absolute top-full mt-8 left-[-130%] flex w-[300px] flex-col items-center justify-center bg-white px-3 py-2 shadow-md/10">
             <div className="w-full">
               <img src="images/cart_toon.svg" alt="" />
             </div>
             <Link
-              to={""}
+              to={"/"}
               className="bg-muted-green/90 hover:bg-muted-green font-primary flex w-full items-center justify-center py-3 text-sm font-bold text-white"
             >
               Empty Cart
@@ -68,7 +68,7 @@ export default function CartItemCardNav() {
   return (
     <>
       <div className="fixed top-0 left-0 h-screen w-full bg-gray-900/40 md:hidden"></div>
-      <div className="fixed top-[80px] right-0 left-0 m-auto flex w-[92%] flex-col items-center justify-center bg-white px-3 py-2 shadow-md/10 md:absolute md:top-[57px] md:left-[-130%] md:w-[300px]">
+      <div className="fixed top-full mt-0 right-0 left-0 m-auto flex w-[92%] flex-col items-center justify-center bg-white px-3 py-2 shadow-md/10 md:absolute md:top-[57px] md:left-[-130%] md:w-[300px]">
         {!items ? (
           <Spinner size="big" />
         ) : (

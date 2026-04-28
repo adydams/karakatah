@@ -79,7 +79,7 @@ export default function ProductCard({ id, image, name, price }: ProductProp) {
         <div className="bg-light-gray/40 absolute top-0 flex h-full w-full shadow-sm/10">
           <div className="relative flex h-full w-full items-end justify-between gap-2">
             <button
-              className="bg-orange font-primary hover:bg-orange/90 w-[50%] cursor-pointer px-5 py-3 text-center text-[10px] text-white"
+              className="bg-orange font-primary h-9 hover:bg-orange/90 w-[50%] cursor-pointer px-5 py-3 text-center text-[10px] text-white"
               disabled={isAddingToCart}
               onClick={handleAddToCart}
             >
@@ -87,7 +87,7 @@ export default function ProductCard({ id, image, name, price }: ProductProp) {
             </button>
             <button
               onClick={handleWish}
-              className="bg-muted-green font-primary hover:bg-muted-green/90 w-[50%] cursor-pointer px-2 py-3 text-center text-[10px] text-white"
+              className="bg-muted-green font-primary h-9 hover:bg-muted-green/90 w-[50%] cursor-pointer px-2 py-3 text-center text-[10px] text-white"
             >
               ADD TO WISHLIST
             </button>
