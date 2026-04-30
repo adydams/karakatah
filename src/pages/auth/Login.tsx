@@ -28,7 +28,7 @@ export default function Login() {
       const success = await userLogin(email, password);
 
       if (success) {
-        navigate("/home");
+        navigate("/");
     
       }
     } catch (err: unknown) {

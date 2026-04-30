@@ -101,10 +101,10 @@ export default function Checkout() {
                 Customer Address
               </label>
               <Link
-                className="text-orange font-primary flex items-center justify-center gap-0 text-xs font-medium underline-offset-2 transition-all duration-1000 hover:gap-1 hover:underline"
+                className="text-orange font-primary flex w-30 items-center justify-end gap-0 text-xs font-medium underline-offset-2 transition-all duration-1000 hover:gap-1 hover:underline"
                 to="/checkout/address"
               >
-                Change <IoMdArrowDropright size={18} />
+                Add address <IoMdArrowDropright size={18} />
               </Link>
             </div>
 
