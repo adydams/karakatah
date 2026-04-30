@@ -10,6 +10,7 @@ type ProtectedRouteProp = {
 
 export default function ProtectedRoute({ children }: ProtectedRouteProp) {
   const { user } = useUser();
+  console.log("ProtectedRoute user:", user);
   const navigate = useNavigate();
 
   useEffect(() => {
