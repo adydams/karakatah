@@ -81,11 +81,11 @@ export default function App() {
       ],
     },
     {
-      path: "payment-success",
+      path: "/payment-success",
       element: <PaymentSuccess />,
     },
     {
-      path: "payment-failed",
+      path: "/payment-failed",
       element: <PaymentFailed />,
     },
     {
