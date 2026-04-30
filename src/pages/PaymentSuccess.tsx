@@ -5,6 +5,7 @@ import { formatPrice } from "../utils/utils";
 import { getOrder } from "../services/apiCheckout";
 import { useQuery } from "@tanstack/react-query";
 import InvoicePulseSkeleton from "../components/InvoicePulseSkeleton";
+import { useEffect } from "react";
 
 type OrderItem = {
   id: string;
@@ -22,16 +23,36 @@ export default function PaymentSuccess() {
 
   const navigate = useNavigate();
 
-  const { data: order, isLoading } = useQuery({
+  const {
+    data: order,
+    isLoading,
+    isError,
+  } = useQuery({
     queryKey: ["order", orderId],
     queryFn: () => getOrder(orderId!),
     enabled: !!orderId,
   });
 
-  console.log(order);
+  // ✅ Redirect safely AFTER render
+  useEffect(() => {
+    if (!orderId) {
+      navigate("/");
+    }
+  }, [orderId, navigate]);
 
-  if (!order) {
-    navigate("/");
+  // ❌ If error fetching order
+  if (isError) {
+    return (
+      <>
+        <Navbar />
+        <div className="flex h-[60vh] items-center justify-center">
+          <p className="font-semibold text-red-500">
+            Failed to load order. Please try again.
+          </p>
+        </div>
+        <Footer />
+      </>
+    );
   }
 
   const date = order?.data.order?.createdAt;
