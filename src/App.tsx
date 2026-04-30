@@ -14,7 +14,6 @@ import { CartProvider } from "./contexts/CartProvider";
 import Checkout from "./pages/Checkout";
 import ProtectedRoute from "./components/ProtectedRoute";
 import CheckoutAddress from "./pages/CheckoutAddress";
-import PaymentVerify from "./pages/PaymentVerify";
 import Overview from "./pages/adminDashboard/Overview";
 import AdminHomeLayout from "./pages/adminDashboard/AdminHomeLayout";
 import Orders from "./pages/adminDashboard/Orders";
@@ -30,6 +29,8 @@ import Auth from "./pages/adminDashboard/Auth";
 import { LoginProvider } from "./contexts/LoginProvider";
 import { ModalProvider } from "./contexts/ModalProvider";
 import ProtectedRouteAdmin from "./components/adminDashboard/ProtectedRouteAdmin";
+import PaymentSuccess from "./pages/PaymentSuccess";
+import PaymentFailed from "./pages/PaymentFailed";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -80,8 +81,12 @@ export default function App() {
       ],
     },
     {
-      path: "/api/payments/verify",
-      element: <PaymentVerify />,
+      path: "payments-success",
+      element: <PaymentSuccess />,
+    },
+    {
+      path: "payments-failed",
+      element: <PaymentFailed />,
     },
     {
       path: "/register",
