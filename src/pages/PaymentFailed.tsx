@@ -1,24 +1,25 @@
+import { useEffect } from "react";
 import { useNavigate } from "react-router";
 
 export default function PaymentFailed() {
   const navigate = useNavigate();
 
   function handleTryAgain() {
-    navigate("-1");
+    navigate(-1);
   }
 
-  //   useEffect(() => {
-  //     setTimeout(() => {
-  //       navigate(-1);
-  //     }, 5000);
-  //   }, [navigate]);
+  useEffect(() => {
+    setTimeout(() => {
+      navigate(-1);
+    }, 5000);
+  }, [navigate]);
 
   return (
     <main className="flex h-[90vh] w-full items-center justify-center tracking-wide">
       <div className="flex flex-col items-center justify-center">
         <img
           className="w-[250px] md:w-[350px]"
-          src="failed.png"
+          src="/failed.png"
           alt="Payment Failed"
         />
         <h1 className="mt-5 text-center text-xl font-medium md:text-3xl">

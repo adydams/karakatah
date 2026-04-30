@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router";
+import PaymentFailed from "./PaymentFailed";
+import PaymentSuccess from "./PaymentSuccess";
 
 export default function PaymentVerify() {
   const [searchParams] = useSearchParams();
@@ -39,20 +41,8 @@ export default function PaymentVerify() {
   }
 
   if (status === "success") {
-    return (
-      <div className="mt-20 text-center">
-        <h1 className="text-2xl font-bold text-green-600">
-          Payment Successful 🎉
-        </h1>
-        <p>Your order has been confirmed.</p>
-      </div>
-    );
+    return <PaymentSuccess />;
   }
 
-  return (
-    <div className="mt-20 text-center">
-      <h1 className="text-2xl font-bold text-red-600">Payment Failed ❌</h1>
-      <p>Please try again.</p>
-    </div>
-  );
+  return <PaymentFailed />;
 }

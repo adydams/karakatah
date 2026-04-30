@@ -83,7 +83,7 @@ export default function Checkout() {
 
   return (
     <>
-      <Link to="/payment/verify" className="text-sm text-blue-500 underline">
+      <Link to="/api/payments/verify" className="text-sm text-blue-500 underline">
         Verify Payment
       </Link>
       <form
