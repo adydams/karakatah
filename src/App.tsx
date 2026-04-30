@@ -78,7 +78,7 @@ export default function App() {
           ),
         },
         {
-          path: "api/payment/verify",
+          path: "api/payments/verify",
           element: (
             <ProtectedRoute>
               <PaymentVerify />
