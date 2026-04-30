@@ -92,8 +92,8 @@ export default function Navbar() {
             onMouseLeave={handleMouseOut}
             onClick={handleMouseOut}
           >
-            <div
-              // to="/cart"
+            <Link
+              to="/cart"
               className="hover:text-dark-gray relative flex items-center justify-start gap-1 font-medium transition-all duration-1000"
             >
               <BsCart3 className="text-lg lg:text-xl" />
@@ -107,7 +107,7 @@ export default function Navbar() {
                 ""
               )}
               {showCart && <CartItemCardNav />}
-            </div>
+            </Link>
           </li>
           {user ? (
             <ProfileBar />

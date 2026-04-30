@@ -164,6 +164,7 @@ export default function App() {
       element: <Auth />,
     },
   ]);
+  
   return (
     <QueryClientProvider client={queryClient}>
       <ReactQueryDevtools initialIsOpen={true} />
