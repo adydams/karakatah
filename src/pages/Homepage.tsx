@@ -2,10 +2,9 @@ import { MdDensitySmall } from "react-icons/md";
 import ProductCard from "../components/ProductCard";
 import Pagination from "../components/Pagination";
 import Filter from "../components/Filter";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import SliderHero from "../components/SliderHero";
-import { useUser } from "../contexts/hooks/useUser";
-import toast from "react-hot-toast";
+
 import { useQuery } from "@tanstack/react-query";
 import { getCategories, getProducts } from "../services/apiProducts";
 import Spinner from "../components/Spinner";
@@ -14,7 +13,7 @@ import { formatPrice, shortenText } from "../utils/utils";
 
 export default function Homepage() {
   const [showFilter, setShowFilter] = useState(false);
-  const { getCurrentUser, user } = useUser();
+  // const { getCurrentUser, user } = useUser();
   // const { cartCreation } = useCart();
   // console.log(user);
 
@@ -39,19 +38,19 @@ export default function Homepage() {
     setShowFilter((filter) => !filter);
   }
 
-  // ✅ Effect 1: Fetch current user
-  useEffect(() => {
-    async function fetchCurrentUser() {
-      if (!user) {
-        const success = await getCurrentUser();
+  // // ✅ Effect 1: Fetch current user
+  // useEffect(() => {
+  //   async function fetchCurrentUser() {
+  //     if (!user) {
+  //       const success = await getCurrentUser();
 
-        if (success) {
-          toast.success(`Welcome back, ${success.user.name}`);
-        }
-      }
-    }
-    fetchCurrentUser();
-  }, [getCurrentUser, user]);
+  //       if (success) {
+  //         toast.success(`Welcome back, ${success.user.name}`);
+  //       }
+  //     }
+  //   }
+  //   fetchCurrentUser();
+  // }, [getCurrentUser, user]);
 
   // ✅ Effect 2: Ensure cart exists when user logs in
   // useEffect(() => {
@@ -100,7 +99,7 @@ export default function Homepage() {
             ) : (
               categories?.map((category, index) => (
                 <p
-                  className="hover:bg-deep-blue/50 h-full cursor-pointer px-4 py-2 text-center transition-all duration-700 hover:font-medium text-[10px]"
+                  className="hover:bg-deep-blue/50 h-full cursor-pointer px-4 py-2 text-center text-[10px] transition-all duration-700 hover:font-medium"
                   key={index}
                 >
                   {shortenText(category?.name)}

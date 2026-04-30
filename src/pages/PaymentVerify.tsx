@@ -3,6 +3,8 @@ import { useSearchParams } from "react-router";
 import PaymentFailed from "./PaymentFailed";
 import PaymentSuccess from "./PaymentSuccess";
 
+// https://karakatang.vercel.app/api/payments/verify?gateway=paystack&orderId=24f88ba2-c956-4cdb-850b-dadcb042fc96&trxref=order_24f88ba2-c956-4cdb-850b-dadcb042fc96_1777545554878&reference=order_24f88ba2-c956-4cdb-850b-dadcb042fc96_1777545554878
+
 export default function PaymentVerify() {
   const [searchParams] = useSearchParams();
   const [status, setStatus] = useState<"loading" | "success" | "failed">(

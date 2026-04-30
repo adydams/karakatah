@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import {
   createUser,
   currentUser,
@@ -14,6 +14,13 @@ type UserProviderProp = {
 
 export function UserProvider({ children }: UserProviderProp) {
   const [user, setUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      getCurrentUser();
+    }
+  }, []);
 
   async function userLogin(email: string, password: string) {
     try {
