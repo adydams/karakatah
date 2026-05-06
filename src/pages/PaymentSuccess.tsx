@@ -23,6 +23,8 @@ export default function PaymentSuccess() {
 
   const navigate = useNavigate();
 
+  console.log(orderId);
+
   const {
     data: order,
     isLoading,
