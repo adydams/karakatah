@@ -33,6 +33,8 @@ export default function PaymentSuccess() {
     enabled: !!orderId,
   });
 
+  console.log(order);
+
   // ✅ Redirect safely AFTER render
   useEffect(() => {
     if (!orderId) {

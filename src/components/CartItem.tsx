@@ -4,7 +4,7 @@ import { formatPrice } from "../utils/utils";
 // import { FaArrowAltCircleLeft, FaArrowAltCircleRight } from "react-icons/fa";
 import { IoMdAdd } from "react-icons/io";
 import { FiMinus } from "react-icons/fi";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { deleteItemCart, updateItemQuantity } from "../services/apiCarts";
 import toast from "react-hot-toast";
@@ -29,6 +29,7 @@ export default function CartItem({
   image,
 }: CartItemProps) {
   const [quantityItem, setQuantityItem] = useState(quantity);
+  const lastSyncedQty = useRef(quantity); // add this to track last synced quantity
 
   const queryClient = useQueryClient();
 
@@ -38,10 +39,10 @@ export default function CartItem({
   const { mutate, isPending } = useMutation({
     mutationFn: ({ id, quantity }: AddItemVariables) =>
       updateItemQuantity(id, quantity),
-    onSuccess: () => {
+    onSuccess: (data) => {
       // Invalidate and refetch
       queryClient.invalidateQueries({ queryKey: ["cart"] });
-      toast.success("Product's quantity successfully updated!!!");
+      toast.success(data.message || "Item quantity updated successfully");
     },
 
     onError: (err) => toast.error(err.message),
@@ -61,8 +62,11 @@ export default function CartItem({
     deleteItem(id);
   }
 
-  function handleUpdate() {
-    mutate({ id, quantity });
+  // Pass the new value directly to handleUpdate
+  function handleUpdate(newQuantity: number) {
+    if (newQuantity === lastSyncedQty.current) return; // skip if unchanged
+    lastSyncedQty.current = newQuantity;
+    mutate({ id, quantity: newQuantity }); // ✅ uses the new value
   }
 
   useEffect(() => {
@@ -104,8 +108,10 @@ export default function CartItem({
         <div className="mt-auto flex w-full items-center justify-between gap-2">
           <FiMinus
             onClick={() => {
-              setQuantityItem((prev) => prev - 1);
-              handleUpdate();
+              if (quantityItem <= 1) return; // prevent going below 1
+              const newQty = quantityItem - 1;
+              setQuantityItem(newQty);
+              handleUpdate(newQty); // ✅ pass new value directly
             }}
             // size={20}
             className="text-secondary bg-dark-gray/50 cursor-pointer rounded-sm p-0.5 text-white"
@@ -115,13 +121,18 @@ export default function CartItem({
             placeholder="0"
             value={quantityItem}
             onChange={(e) => setQuantityItem(+e.target.value)}
+            onBlur={() => handleUpdate(quantityItem)} // fires when you click away
+            onKeyDown={(e) => {
+              if (e.key === "Enter") handleUpdate(quantityItem); // fires on Enter
+            }}
             disabled={isPending}
             className={`${isPending ? "opacity-20" : ""} font-primary bg-light-gray/70 w-[50px] text-center focus:outline-none`}
           />
           <IoMdAdd
             onClick={() => {
-              setQuantityItem((prev) => prev + 1);
-              handleUpdate();
+              const newQty = quantityItem + 1;
+              setQuantityItem(newQty);
+              handleUpdate(newQty); // ✅ pass new value directly
             }}
             // size={20}
             className="text-secondary bg-orange/70 cursor-pointer rounded-sm p-0.5 text-white"

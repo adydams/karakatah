@@ -105,11 +105,7 @@ export async function updateItemQuantity(
     },
     body: JSON.stringify({
       cartId: cartId,
-      items: [
-        {
-          quantity: quantity,
-        },
-      ],
+      quantity: quantity,
     }),
   });
 
@@ -119,6 +115,7 @@ export async function updateItemQuantity(
   }
 
   const data = await response.json();
+  console.log(data);
 
   return data;
 }
@@ -127,6 +124,7 @@ export async function updateItemQuantity(
 export async function deleteItemCart(id: string) {
   const cartId = getCartIdFromToken();
   if (!cartId) throw new Error("No cartId in token");
+  console.log(id, cartId);
 
   const response = await fetch(`${ROOT_URL}/api/cart-items/${id}`, {
     method: "DELETE",

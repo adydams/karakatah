@@ -20,6 +20,8 @@ export default function CartPage() {
   });
   const navigate = useNavigate();
 
+  console.log(cart);
+
   function handleMovetoCheckout() {
     navigate("/checkout");
   }
@@ -46,9 +48,9 @@ export default function CartPage() {
                 </span>{" "}
                 Cart ({items.length})
               </h1>
-              {items.map((item, index) => (
+              {items.map((item) => (
                 <CartItem
-                  key={index}
+                  key={item.id}
                   name={item.product.name}
                   price={item.product.price}
                   image={item.product.images[0].url}
