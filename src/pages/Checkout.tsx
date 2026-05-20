@@ -83,7 +83,10 @@ export default function Checkout() {
 
   return (
     <>
-      <Link to="/api/payments/verify" className="text-sm text-blue-500 underline">
+      <Link
+        to="/api/payments/verify"
+        className="text-sm text-blue-500 underline"
+      >
         Verify Payment
       </Link>
       <form
@@ -95,11 +98,12 @@ export default function Checkout() {
             {/* Shipping Address */}
             <div className="flex w-full items-center justify-between">
               <label
-                htmlFor="address"
+                htmlFor="shippingAddressId"
                 className="font-primary w-full text-lg font-semibold"
               >
                 Customer Address
               </label>
+
               <Link
                 className="text-orange font-primary flex w-30 items-center justify-end gap-0 text-xs font-medium underline-offset-2 transition-all duration-1000 hover:gap-1 hover:underline"
                 to="/checkout/address"
@@ -110,12 +114,12 @@ export default function Checkout() {
 
             {IsFetchingAddress ? (
               <Spinner size="small" />
-            ) : shippingAddress.addresses.length === 0 ? (
+            ) : !shippingAddress?.addresses?.length ? (
               <Link
                 to="/checkout/address"
-                className="border-orange/40 mt-7 w-full border-2 border-dashed bg-gray-100 px-10 py-5 text-center text-xs font-medium tracking-widest text-gray-500"
+                className="border-orange/40 mt-7 block w-full border-2 border-dashed bg-gray-100 px-10 py-5 text-center text-xs font-medium tracking-widest text-gray-500"
               >
-                <p className="">Add an address</p>
+                Add an address
               </Link>
             ) : (
               <select
@@ -123,22 +127,37 @@ export default function Checkout() {
                 {...register("shippingAddressId")}
                 className="border-dark-gray/20 text-dark-gray/70 focus:bg-light-gray/20 focus:text-dark-gray/90 w-full rounded-lg border-b px-5 py-2.5 text-xs transition-all duration-700 focus:outline-0"
               >
+                <option value="">-- Select Delivery Address --</option>
+
                 {shippingAddress.addresses.map(
                   (address: {
                     id: string;
-                    line1: string;
-                    line2: string;
-                    city: string;
-                    state: string;
-                    country: string;
+                    line1?: string;
+                    line2?: string;
+                    city?: string;
+                    state?: string;
+                    country?: string;
                   }) => (
                     <option key={address.id} value={address.id}>
-                      {address.line1} {address.line2}, {address.city},{" "}
-                      {address.state}, {address.country}
+                      {[
+                        address.line1,
+                        address.line2,
+                        address.city,
+                        address.state,
+                        address.country,
+                      ]
+                        .filter(Boolean)
+                        .join(", ")}
                     </option>
                   ),
                 )}
               </select>
+            )}
+
+            {errors.shippingAddressId && (
+              <p className="text-xs text-red-500">
+                {errors.shippingAddressId.message}
+              </p>
             )}
 
             {errors.shippingAddressId && (
