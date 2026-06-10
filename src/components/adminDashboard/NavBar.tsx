@@ -28,7 +28,7 @@ export default function NavBar({ title }: NavBarProp) {
   const name = adminInfo?.user.name;
 
   return (
-    <nav className="font-primary flex w-full items-center justify-between pr-10 lg:pr-0">
+    <nav id="top" className="font-primary flex w-full items-center justify-between pr-10 lg:pr-0">
       <h1 className="text-sm font-bold sm:text-base md:text-lg lg:text-2xl">
         {title}
       </h1>

@@ -20,7 +20,6 @@ import Orders from "./pages/adminDashboard/Orders";
 import Categories from "./pages/adminDashboard/Categories";
 import Products from "./pages/adminDashboard/Products";
 import Customer from "./pages/adminDashboard/Customer";
-import Report from "./pages/adminDashboard/Report";
 import Transactions from "./pages/adminDashboard/Transactions";
 import Shipment from "./pages/adminDashboard/Shipment";
 import Help from "./pages/adminDashboard/Help";
@@ -31,6 +30,12 @@ import { ModalProvider } from "./contexts/ModalProvider";
 import ProtectedRouteAdmin from "./components/adminDashboard/ProtectedRouteAdmin";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import PaymentFailed from "./pages/PaymentFailed";
+import StoreLayout from "./pages/adminDashboard/StoreLayout";
+// import Store from "./pages/adminDashboard/Store";
+import StoreDetails from "./pages/adminDashboard/StoreDetails";
+import StoreHome from "./pages/adminDashboard/StoreHome";
+import StoreAdd from "./pages/adminDashboard/StoreAdd";
+import StoreEdit from "./pages/adminDashboard/StoreEdit";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -138,8 +143,26 @@ export default function App() {
           element: <Customer />,
         },
         {
-          path: "reports",
-          element: <Report />,
+          path: "stores",
+          element: <StoreLayout />,
+          children: [
+            {
+              index: true,
+              element: <StoreHome />,
+            },
+            {
+              path: "add",
+              element: <StoreAdd />,
+            },
+            {
+              path: "edit/:storeId",
+              element: <StoreEdit />,
+            },
+            {
+              path: ":storeId",
+              element: <StoreDetails />,
+            },
+          ],
         },
         {
           path: "transactions",
@@ -164,7 +187,7 @@ export default function App() {
       element: <Auth />,
     },
   ]);
-  
+
   return (
     <QueryClientProvider client={queryClient}>
       <ReactQueryDevtools initialIsOpen={true} />

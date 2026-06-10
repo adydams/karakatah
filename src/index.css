@@ -22,6 +22,10 @@
   --color-main: url(/bg.png);
 }
 
+button:hover {
+  opacity: 0.9;
+}
+
 /* SPINNER STYLE */
 .bigloader {
   width: 48px;

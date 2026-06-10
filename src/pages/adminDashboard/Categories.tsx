@@ -13,7 +13,12 @@ const tableHeaders = ["Categories", "ID", "Product Stock", "Action"];
 export default function Categories() {
   const [showAddCat, setShowAddCat] = useState(false);
 
-  const { data: categories, isLoading: isFetchingCategories } = useQuery({
+  const {
+    data: categories,
+    isLoading: isFetchingCategories,
+    isError,
+    error,
+  } = useQuery({
     queryKey: ["categories"],
     queryFn: getCategories,
   });
@@ -22,7 +27,19 @@ export default function Categories() {
     setShowAddCat((cat) => !cat);
   }
 
-  // console.log(categories);
+  console.log(categories);
+
+  if (isError) {
+    return (
+      <div className="flex h-[300px] items-center justify-center">
+        <p>
+          {error instanceof Error
+            ? error.message
+            : "Failed to fetch categories"}
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="font-primary w-full">
@@ -35,25 +52,23 @@ export default function Categories() {
       ) : (
         <div className="my-2 grid w-full grid-cols-2 gap-5 md:grid-cols-4 lg:mt-10 lg:mb-5">
           {/* {categoriesList.map((item) => ( */}
-          {categories.data
-            .slice(0, 4)
-            .map(
-              (item: { id: string; name: string; categoryImage: string }) => (
-                <div
-                  className="flex w-full flex-col items-center gap-3 rounded-lg bg-white p-3 shadow-sm/5"
-                  key={item.id}
-                >
-                  <div className="h-[160px] w-full overflow-hidden rounded-md">
-                    <img
-                      className="h-full w-full object-cover"
-                      src={item.categoryImage}
-                      alt=""
-                    />
-                  </div>
-                  <h2 className="text-sm font-semibold">{item.name}</h2>
+          {(categories?.data?.slice(0, 4) ?? [])(0, 4).map(
+            (item: { id: string; name: string; categoryImage: string }) => (
+              <div
+                className="flex w-full flex-col items-center gap-3 rounded-lg bg-white p-3 shadow-sm/5"
+                key={item.id}
+              >
+                <div className="h-[160px] w-full overflow-hidden rounded-md">
+                  <img
+                    className="h-full w-full object-cover"
+                    src={item.categoryImage}
+                    alt=""
+                  />
                 </div>
-              ),
-            )}
+                <h2 className="text-sm font-semibold">{item.name}</h2>
+              </div>
+            ),
+          )}
         </div>
       )}
 
@@ -95,8 +110,8 @@ export default function Categories() {
           <div className="flex h-[300px] w-full items-center justify-center">
             <Spinner type="big" />
           </div>
-        ) : categories.data.length > 0 ? (
-          categories.data.map(
+        ) : categories?.data?.length > 0 ? (
+          categories?.data?.map(
             (item: {
               id: string;
               name: string;

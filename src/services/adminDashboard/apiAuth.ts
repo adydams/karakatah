@@ -23,7 +23,7 @@ export async function AdminLogin({
       data?.message ||
         data?.detail ||
         data?.error ||
-        "Failed to create product",
+        "The email or password you entered is incorrect. Please try again.",
     );
   }
 

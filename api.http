@@ -45,6 +45,40 @@ Content-Type: application/json
     "password": "string123"
 }
 
+### Admin Login
+
+POST https://karakatanodebe.onrender.com/api/admin/login
+Content-Type: application/json
+
+{
+    "email": "superadmin@karakata.com",
+    "password": "Super@123"
+}
+
+### 
+GET https://karakatanodebe.onrender.com/api/categories
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY2MmM3YTQxLWZkZDctNGZjOC04Yjg3LTg0YTAxNWVlMzc2OCIsInJvbGUiOiJTdXBlckFkbWluIiwiY2FydElkIjoiMDMyOWQ4OTEtMWExZS00ZTQ2LTk3NjUtYzUwYWEwYTNkYzUxIiwiaWF0IjoxNzgwOTA2Mjc3LCJleHAiOjE3ODE1OTc0Nzd9.G2HMFmR0M6_IJHl46MBbyKHc5vUZSwDdl76XxGcDmxA
+
+
+### Get all stores
+GET https://karakatanodebe.onrender.com/api/stores
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY2MmM3YTQxLWZkZDctNGZjOC04Yjg3LTg0YTAxNWVlMzc2OCIsInJvbGUiOiJTdXBlckFkbWluIiwiY2FydElkIjoiMDMyOWQ4OTEtMWExZS00ZTQ2LTk3NjUtYzUwYWEwYTNkYzUxIiwiaWF0IjoxNzgwOTM0NTYwLCJleHAiOjE3ODE2MjU3NjB9.-wgA5HNYUDaDUVxb3J7u3pXtP94eqHyC2QtuZFA5w78
+
+### Add a new store
+POST https://karakatanodebe.onrender.com/api/stores
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY2MmM3YTQxLWZkZDctNGZjOC04Yjg3LTg0YTAxNWVlMzc2OCIsInJvbGUiOiJTdXBlckFkbWluIiwiY2FydElkIjoiMDMyOWQ4OTEtMWExZS00ZTQ2LTk3NjUtYzUwYWEwYTNkYzUxIiwiaWF0IjoxNzgwOTM0NTYwLCJleHAiOjE3ODE2MjU3NjB9.-wgA5HNYUDaDUVxb3J7u3pXtP94eqHyC2QtuZFA5w78
+
+{
+  "name": "Hadax",
+  "address": "123 Main Street",
+  "phone": "2348012345678",
+  "email": "hadax@gmail.com",
+  "description": "Best electronics shop"
+}
+
 ### 
 GET https://karakatanodebe.onrender.com/api/auth/me
 Content-Type: application/json

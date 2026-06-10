@@ -2,7 +2,7 @@ import { TbLayoutDashboardFilled } from "react-icons/tb";
 import { FaCartShopping } from "react-icons/fa6";
 import { FaWindowRestore } from "react-icons/fa";
 import { FaUsers } from "react-icons/fa6";
-import { TbReport } from "react-icons/tb";
+import { RiStoreFill } from "react-icons/ri";
 import { GrMoney } from "react-icons/gr";
 import { MdLocalShipping } from "react-icons/md";
 import { IoIosHelpCircle } from "react-icons/io";
@@ -15,6 +15,7 @@ import { NavLink } from "react-router";
 
 type SidebarProps = {
   showSidebar: boolean;
+  handleSidebar: () => void;
 };
 const otherlinks = [
   {
@@ -60,9 +61,9 @@ const links = [
     link: "customers",
   },
   {
-    title: "Reports",
-    icon: <TbReport size={20} />,
-    link: "reports",
+    title: "Stores",
+    icon: <RiStoreFill size={20} />,
+    link: "stores",
   },
   {
     title: "Transactions",
@@ -76,7 +77,7 @@ const links = [
   },
 ];
 
-export default function Sidebar({ showSidebar }: SidebarProps) {
+export default function Sidebar({ showSidebar, handleSidebar }: SidebarProps) {
   return (
     <div className="relative">
       <div
@@ -93,6 +94,7 @@ export default function Sidebar({ showSidebar }: SidebarProps) {
           {links.map((link, index) => (
             <li key={index} className="w-full">
               <NavLink
+                onClick={handleSidebar}
                 to={link.link}
                 className={({ isActive }) =>
                   isActive

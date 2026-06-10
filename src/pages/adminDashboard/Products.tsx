@@ -29,6 +29,8 @@ export default function Products() {
     setShowAddProduct((cat) => !cat);
   }
 
+  console.log(products);
+
   return (
     <div className="font-primary w-full">
       <NavBar title="Products" />
@@ -74,12 +76,12 @@ export default function Products() {
           <div className="flex h-[300px] w-full items-center justify-center">
             <Spinner type="big" />
           </div>
-        ) : products.data.length > 0 ? (
-          products.data.map(
+        ) : products?.data?.length > 0 ? (
+          products?.data?.map(
             (items: {
               id: string;
               name: string;
-              categoryId: string;
+              category: { name: string };
               price: number;
               stockQuantity: string;
               images: { url: string }[];
@@ -91,7 +93,7 @@ export default function Products() {
                 stock={items.stockQuantity}
                 rating={3.5}
                 noReview={55}
-                category={items.categoryId}
+                category={items.category?.name}
                 price={items.price}
               />
             ),
@@ -109,7 +111,7 @@ export default function Products() {
         )}
 
         {/* Pagination */}
-        {products && products.data.length > 10 && (
+        {products && products?.data?.length > 10 && (
           <div className="border-dark-gray/20 text-dark-gray/80 mt-3 flex items-center justify-center self-end overflow-hidden rounded-full border text-xs font-semibold">
             <button className="hover:bg-dark-gray/5 cursor-pointer px-3 py-2">
               Previous

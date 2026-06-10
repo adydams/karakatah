@@ -47,11 +47,11 @@ export default function Auth() {
 
       if (success) {
         navigate("/dashboard");
-        // toast.success("Category Added Successfully");
       }
     } catch (err: unknown) {
       if (err instanceof Error) {
         toast.error(err.message);
+        // toast.error("Login failed");
       } else {
         toast("An unexpected error occurred");
       }
