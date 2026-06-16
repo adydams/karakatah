@@ -1,4 +1,4 @@
-import { NavLink } from "react-router";
+import { Link, NavLink } from "react-router";
 import { IoLogoInstagram } from "react-icons/io5";
 import { FaFacebook } from "react-icons/fa6";
 import { FaXTwitter } from "react-icons/fa6";
@@ -15,12 +15,15 @@ function Footer() {
         }}
       >
         <div className="flex h-full w-[92%] flex-col items-center justify-center space-y-4 font-medium text-white lg:w-4/5 lg:flex-row lg:justify-between">
-          <h3 className="font-primary text-center text-xl leading-tight lg:max-w-[40%] lg:text-left lg:text-2xl">
-            From casual fits to sharp essentials, we’ve got you covered.
+          <h3 className="font-primary animate-pulse text-center text-xl leading-tight lg:max-w-[40%] lg:text-left lg:text-2xl">
+            Your products, our audience: A perfect match for profit.
           </h3>
-          <button className="text-primary font-primary text-deep-blue rounded-full bg-white px-4 py-2 text-xs drop-shadow-md lg:text-sm">
-            Get yours today
-          </button>
+          <Link
+            to="/become-a-partner"
+            className="text-primary font-primary animate-bounce text-deep-blue rounded-full bg-white px-4 py-2 text-xs drop-shadow-md lg:text-sm"
+          >
+            Start Selling Today
+          </Link>
         </div>
       </div>
       <footer className="bg-deep-blue flex h-auto w-full items-center justify-center py-20 text-white lg:h-[500px]">

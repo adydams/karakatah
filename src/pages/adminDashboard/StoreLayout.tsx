@@ -12,7 +12,7 @@ export default function StoreLayout() {
 
         <div
           id="store-details"
-          className="bg-dark-gray/5 relative h-screen shadow-sm md:h-auto"
+          className="bg-white rounded-2xl relative h-screen shadow-sm md:h-auto"
         >
           <Outlet />
 

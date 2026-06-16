@@ -36,6 +36,7 @@ import StoreDetails from "./pages/adminDashboard/StoreDetails";
 import StoreHome from "./pages/adminDashboard/StoreHome";
 import StoreAdd from "./pages/adminDashboard/StoreAdd";
 import StoreEdit from "./pages/adminDashboard/StoreEdit";
+import BecomeSeller from "./pages/BecomeSeller";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -82,6 +83,10 @@ export default function App() {
               <CheckoutAddress />
             </ProtectedRoute>
           ),
+        },
+        {
+          path: "become-a-partner",
+          element: <BecomeSeller />,
         },
       ],
     },

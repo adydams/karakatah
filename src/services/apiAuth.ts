@@ -6,6 +6,13 @@ export interface CreateUserParams {
   password: string;
 }
 
+export interface BecomeSellerParams {
+  name: string;
+  email: string;
+  phone: string;
+  // password: string;
+}
+
 // SIGN UP
 export async function createUser(params: CreateUserParams) {
   try {
@@ -86,6 +93,35 @@ export async function currentUser() {
   } catch (err) {
     console.error("Fetch current user failed:", err);
     throw err;
+  }
+}
+
+// SIGN UP AS A SELLER
+export async function createSeller(params: BecomeSellerParams) {
+  try {
+    const response = await fetch(`${ROOT_URL}/api/admin/onboard-admin`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(params),
+    });
+
+    // Check if the response is OK (2xx)
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || `Error: ${response.status}`);
+    }
+
+    // Parse JSON
+    const data = await response.json();
+
+    return data;
+
+    // return data; // e.g. { success: true, user: {...}, token: "..." }
+  } catch (err) {
+    console.error("Create user failed:", err);
+    throw err; // rethrow so the caller can handle
   }
 }
 

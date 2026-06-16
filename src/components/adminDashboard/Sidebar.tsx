@@ -15,7 +15,7 @@ import { NavLink } from "react-router";
 
 type SidebarProps = {
   showSidebar: boolean;
-  handleSidebar: () => void;
+  // handleSidebar: () => void;
 };
 const otherlinks = [
   {
@@ -77,7 +77,7 @@ const links = [
   },
 ];
 
-export default function Sidebar({ showSidebar, handleSidebar }: SidebarProps) {
+export default function Sidebar({ showSidebar }: SidebarProps) {
   return (
     <div className="relative">
       <div
@@ -94,7 +94,7 @@ export default function Sidebar({ showSidebar, handleSidebar }: SidebarProps) {
           {links.map((link, index) => (
             <li key={index} className="w-full">
               <NavLink
-                onClick={handleSidebar}
+                // onClick={handleSidebar}
                 to={link.link}
                 className={({ isActive }) =>
                   isActive

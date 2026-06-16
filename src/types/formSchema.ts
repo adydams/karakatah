@@ -1,5 +1,14 @@
 import { z } from "zod";
 
+export const sellarSchema = z.object({
+  name: z.string().min(2, "Name must be at least 2 characters"),
+  email: z.string().trim().email("Enter a valid email"),
+  phone: z.string().regex(/^\+?[0-9]{7,15}$/, "Enter a valid phone number"), // supports intl format
+  // password: z.string().min(8, "Password must be at least 8 characters"),
+});
+
+export type TsellarSchema = z.infer<typeof sellarSchema>;
+
 export const signUpSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
   email: z.string().trim().email("Enter a valid email"),

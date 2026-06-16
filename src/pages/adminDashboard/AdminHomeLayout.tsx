@@ -20,7 +20,7 @@ export default function AdminHomeLayout() {
         className={`text-dark-gray absolute top-8 right-5 z-[999] block cursor-pointer lg:hidden`}
       />
 
-      <Sidebar showSidebar={showSidebar} handleSidebar={handleSidebar} />
+      <Sidebar showSidebar={showSidebar} />
       <div className="dash text-dark-gray/90 h-full w-full overflow-scroll px-4 py-7 lg:px-10">
         <Outlet />
       </div>
