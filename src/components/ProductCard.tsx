@@ -10,93 +10,129 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 type AddItemVariables = {
   productId: string;
-  // quantity: number;
   name: string;
 };
 
-export default function ProductCard({ id, image, name, price }: ProductProp) {
+export default function ProductCard({
+  id,
+  image,
+  name,
+  price,
+}: ProductProp) {
   const [addWish, setAddWish] = useState(false);
   const [showAddtoCart, setShowAddtoCart] = useState(false);
-
-  // const cartId: string | null = localStorage.getItem("cartId");
+  const [imageLoaded, setImageLoaded] = useState(false);
 
   const queryClient = useQueryClient();
-
-  // Add item to cart
 
   const { mutate, isPending: isAddingToCart } = useMutation({
     mutationFn: ({ name, productId }: AddItemVariables) =>
       addItemToCart(name, productId),
+
     onSuccess: () => {
       toast.success("Product added to cart");
-      queryClient.invalidateQueries({ queryKey: ["cart"] });
+      queryClient.invalidateQueries({
+        queryKey: ["cart"],
+      });
     },
-    onError: (err) => toast.error(err.message),
+
+    onError: (err: Error) => toast.error(err.message),
   });
 
   function handleAddToCart() {
-    mutate({  name, productId: id });
+    mutate({ name, productId: id });
   }
 
   function handleWish() {
-    setAddWish((wish) => !wish);
-  }
-
-  function handleMouseOver() {
-    setShowAddtoCart((cart) => !cart);
-  }
-  function handleMouseOut() {
-    setShowAddtoCart((cart) => !cart);
+    setAddWish((prev) => !prev);
   }
 
   return (
     <div
-      onMouseEnter={handleMouseOver}
-      onMouseLeave={handleMouseOut}
-      className="relative h-[400px] w-full overflow-hidden"
+      onMouseEnter={() => setShowAddtoCart(true)}
+      onMouseLeave={() => setShowAddtoCart(false)}
+      className="relative h-[460px] w-full overflow-hidden"
     >
-      <div
-        style={{
-          backgroundImage: `url('${image}')`,
-          backgroundSize: showAddtoCart ? "contain" : "cover",
-          backgroundPosition: "center",
-        }}
-        className="h-[75%] w-full"
-      ></div>
-      <div className="flex w-full items-center justify-between">
-        <div className="h-[20%] w-[80%] cursor-pointer">
-          <h2 className="font-primary mt-1.5 font-light">{name}</h2>
-          <h2 className="font-primary f text-xl">₦{price}</h2>
-        </div>
-        {addWish ? (
-          <GoHeartFill className="text-muted-green" size={25} />
-        ) : (
-          <CiHeart size={25} />
+      {/* IMAGE CONTAINER */}
+      <div className="relative h-[70%] w-full overflow-hidden">
+        {/* Skeleton */}
+        {!imageLoaded && (
+          <div className="absolute inset-0 animate-pulse bg-gray-200" />
         )}
+
+        {/* Actual image */}
+        <img
+          src={image}
+          alt={name}
+          loading="lazy"
+          onLoad={() => setImageLoaded(true)}
+          className={`h-full w-full transition-all duration-500
+            ${
+              showAddtoCart
+                ? "object-contain"
+                : "object-cover"
+            }
+            ${
+              imageLoaded
+                ? "opacity-100"
+                : "opacity-0"
+            }
+          `}
+        />
       </div>
 
+      {/* DETAILS */}
+      <div className="flex w-full items-center justify-between">
+        <div className="h-[20%] w-[80%] cursor-pointer">
+          <h2 className="font-primary mt-1.5 font-light">
+            {name}
+          </h2>
+
+          <h2 className="font-primary text-xl">
+            ₦{price}
+          </h2>
+        </div>
+
+        <button onClick={handleWish}>
+          {addWish ? (
+            <GoHeartFill
+              className="text-muted-green"
+              size={25}
+            />
+          ) : (
+            <CiHeart size={25} />
+          )}
+        </button>
+      </div>
+
+      {/* HOVER OVERLAY */}
       {showAddtoCart && (
-        <div className="bg-light-gray/40 absolute top-0 flex h-full w-full shadow-sm/10">
-          <div className="relative flex h-full w-full items-end justify-between gap-2">
+        <div className="bg-light-gray/40 absolute inset-0 shadow-sm/10">
+          <div className="relative flex h-full items-end justify-between gap-2">
             <button
-              className="bg-orange font-primary h-9 hover:bg-orange/90 w-[50%] cursor-pointer px-5 py-3 text-center text-[10px] text-white"
+              className="bg-orange hover:bg-orange/90 h-9 w-1/2 text-[10px] text-white"
               disabled={isAddingToCart}
               onClick={handleAddToCart}
             >
-              {isAddingToCart ? <Spinner size="small" /> : "ADD TO CART"}
+              {isAddingToCart ? (
+                <Spinner size="small" />
+              ) : (
+                "ADD TO CART"
+              )}
             </button>
+
             <button
               onClick={handleWish}
-              className="bg-muted-green font-primary h-9 hover:bg-muted-green/90 w-[50%] cursor-pointer px-2 py-3 text-center text-[10px] text-white"
+              className="bg-muted-green hover:bg-muted-green/90 h-9 w-1/2 text-[10px] text-white"
             >
               ADD TO WISHLIST
             </button>
 
             <Link
-              className="text-dark-gray border-dark-gray hover:bg-beige/80 hover:text-dark-gray/90 absolute top-0 right-0 bottom-0 left-0 m-auto flex h-[30px] w-[50%] cursor-pointer items-center justify-center rounded-xs border-3 py-3 text-xs shadow-md transition-all duration-500 hover:border-0"
               to={`products/${name.replaceAll(" ", "-")}/${id}`}
+              className="border-dark-gray absolute inset-0 m-auto flex h-[30px] w-1/2 items-center justify-center border-2 bg-white/80 text-xs"
             >
-              <button>VIEW MORE</button>
+              VIEW MORE
             </Link>
           </div>
         </div>
