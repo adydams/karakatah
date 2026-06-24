@@ -15,8 +15,12 @@ type LoginProviderProp = {
 export function LoginProvider({ children }: LoginProviderProp) {
   const [token, setToken] = useState<string | null>(null);
   const [user, setUser] = useState<UserType | null>(null);
+  // const [adminId, setAdminId] = useState<string | undefined>();
+  // const [role, setRole] = useState<string | undefined>();
 
-  // Decode token and get the user's id
+  // const navigate = useNavigate();
+
+  // // Decode token and get the user's id
   const tokenObj = decodeToken(token);
 
   let adminId: string | undefined;
@@ -27,9 +31,50 @@ export function LoginProvider({ children }: LoginProviderProp) {
     role = tokenObj?.role;
   }
 
+  // useEffect(() => {
+  //   if (!token) {
+  //     setAdminId(undefined);
+  //     setRole(undefined);
+  //     navigate("/sign-in");
+  //     return;
+  //   }
+
+  //   const tokenObj = decodeToken(token);
+
+  //   setAdminId(tokenObj?.id);
+  //   setRole(tokenObj?.role);
+  // }, [token, navigate]);
+
+  // useEffect(() => {
+  //   async function fetchAdmin() {
+  //     if (!token) return;
+
+  //     const tokenObj = decodeToken(token);
+
+  //     if (!tokenObj?.id) return;
+
+  //     try {
+  //       const data = await getAdminById(tokenObj.id, token);
+
+  //       if (data) {
+  //         setUser(data.user);
+  //       }
+  //     } catch (error) {
+  //       if (error instanceof Error) {
+  //         // toast.error(error.message);
+  //         setToken(null);
+  //       }
+  //       throw Error("Login failed");
+  //     }
+  //   }
+
+  //   fetchAdmin();
+  // }, [token]);
+
   async function login({ email, password }: ApiLoginType) {
     try {
       const data = await AdminLogin({ email, password });
+      console.log(data);
 
       if (data.success) {
         setToken(data.token);

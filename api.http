@@ -51,9 +51,14 @@ POST https://karakatanodebe.onrender.com/api/admin/login
 Content-Type: application/json
 
 {
-    "email": "superadmin@karakata.com",
-    "password": "Super@123"
+    "email": "tolu@mail.com",
+    "password": "string123"
 }
+
+# {
+#     "email": "superadmin@karakata.com",
+#     "password": "Super@123"
+# }
 
 ### 
 GET https://karakatanodebe.onrender.com/api/categories

@@ -44,8 +44,9 @@ export default function Auth() {
     // }
     try {
       const success = await login(data);
+      console.log(success);
 
-      if (success) {
+      if (success.success) {
         navigate("/dashboard");
       }
     } catch (err: unknown) {

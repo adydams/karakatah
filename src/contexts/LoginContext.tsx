@@ -4,6 +4,7 @@ import type { ApiLoginType } from "../libs/types";
 export type LoginResponse = {
   success: boolean;
   token: string;
+  
 };
 
 export type UserType = {

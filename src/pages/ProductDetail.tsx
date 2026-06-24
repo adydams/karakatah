@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { FaArrowAltCircleLeft, FaArrowAltCircleRight } from "react-icons/fa";
-import { useParams } from "react-router";
+import { useNavigate, useParams } from "react-router";
 import ImageSlider from "../components/ImageSlider";
 import { getProduct } from "../services/apiProducts";
 import { formatPrice } from "../utils/utils";
@@ -18,6 +18,8 @@ import Spinner from "../components/Spinner";
 export default function ProductDetail() {
   const [quantity, setQuantity] = useState(1);
   const queryClient = useQueryClient();
+
+  const navigate = useNavigate();
 
   if (quantity < 0) {
     setQuantity(0);
@@ -51,7 +53,12 @@ export default function ProductDetail() {
       toast.success("Product added to cart");
     },
 
-    onError: (err) => toast.error(err.message),
+    onError: (err: Error) => {
+      if (err.message.toLocaleLowerCase().includes("no cartid")) {
+        navigate("/login");
+        toast.error("Create an account or Log In to start your shopping cart.");
+      }
+    },
   });
 
   function handleAddToCart() {
