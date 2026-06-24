@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { IoMdArrowDropdown } from "react-icons/io";
-
 import { useQuery } from "@tanstack/react-query";
+
 import { getProducts } from "../../services/adminDashboard/apiProducts";
+
 import NavBar from "../../components/adminDashboard/NavBar";
 import AddProduct from "../../components/adminDashboard/AddProduct";
 import Spinner from "../../components/adminDashboard/Spinner";
 import TableProductItem from "../../components/adminDashboard/TableProductItem";
+import DashboardPagination from "../../components/adminDashboard/DashboardPagination";
 
 const tableHeaders = [
   "Product Name & Size",
@@ -17,8 +19,25 @@ const tableHeaders = [
   "Action",
 ];
 
+const PRODUCTS_PER_PAGE = 10;
+
+type Product = {
+  id: string;
+  name: string;
+  category: {
+    name: string;
+  };
+  price: number;
+  stockQuantity: string;
+  images: {
+    url: string;
+  }[];
+};
+
 export default function Products() {
   const [showAddProduct, setShowAddProduct] = useState(false);
+
+  const [currentPage, setCurrentPage] = useState(1);
 
   const { data: products, isLoading: isFetchingProducts } = useQuery({
     queryKey: ["products"],
@@ -26,17 +45,21 @@ export default function Products() {
   });
 
   function handleShowProduct() {
-    setShowAddProduct((cat) => !cat);
+    setShowAddProduct((prev) => !prev);
   }
 
-  console.log(products);
+  const allProducts: Product[] = products?.data ?? [];
+
+  const totalPages = Math.ceil(allProducts.length / PRODUCTS_PER_PAGE);
+
+  const start = (currentPage - 1) * PRODUCTS_PER_PAGE;
+
+  const paginatedProducts = allProducts.slice(start, start + PRODUCTS_PER_PAGE);
 
   return (
     <div className="font-primary w-full">
       <NavBar title="Products" />
 
-      {/* Add Category */}
-      {/* Add Category */}
       {showAddProduct && (
         <AddProduct
           showProduct={showAddProduct}
@@ -44,13 +67,12 @@ export default function Products() {
         />
       )}
 
-      {/* list */}
-      {/* list */}
-      <div className="my-10 flex w-full flex-col items-start justify-start rounded-xl bg-white px-3 py-3 shadow-sm/5 transition-all duration-1000">
+      <div className="my-10 flex w-full flex-col rounded-xl bg-white px-3 py-3 shadow-sm/5">
+        {/* Header */}
         <div className="flex w-full items-center justify-between py-2 text-sm">
           <h2 className="font-medium">All Product List</h2>
 
-          <div className="flex items-center justify-end gap-4 text-xs">
+          <div className="flex items-center gap-4 text-xs">
             {!showAddProduct && (
               <button
                 onClick={handleShowProduct}
@@ -59,76 +81,59 @@ export default function Products() {
                 Add Product
               </button>
             )}
-            <div className="border-dark-gray/40 flex cursor-pointer items-center justify-end gap-2 rounded-md border px-3 py-2">
+
+            <div className="border-dark-gray/40 flex items-center gap-2 rounded-md border px-3 py-2">
               This Month <IoMdArrowDropdown size={18} />
             </div>
           </div>
         </div>
 
-        {/* Table */}
-        {/* Header */}
-        <div className="bg-light-gray/40 border-dark-gray/10 mt-3 grid w-full grid-cols-[2fr_1fr_1fr_1fr_1fr_1fr] rounded-md border-t border-b px-2 py-3 text-sm font-medium">
+        {/* Table header */}
+        <div className="bg-light-gray/40 border-dark-gray/10 mt-3 grid w-full grid-cols-[2fr_1fr_1fr_1fr_1fr_1fr] rounded-md border px-2 py-3 text-sm font-medium">
           {tableHeaders.map((item) => (
             <h3 key={item}>{item}</h3>
           ))}
         </div>
+
+        {/* Loading */}
         {isFetchingProducts ? (
-          <div className="flex h-[300px] w-full items-center justify-center">
+          <div className="flex h-[300px] items-center justify-center">
             <Spinner type="big" />
           </div>
-        ) : products?.data?.length > 0 ? (
-          products?.data?.map(
-            (items: {
-              id: string;
-              name: string;
-              category: { name: string };
-              price: number;
-              stockQuantity: string;
-              images: { url: string }[];
-            }) => (
-              <TableProductItem
-                key={items.id}
-                name={items.name}
-                image={items.images[0].url}
-                stock={items.stockQuantity}
-                rating={3.5}
-                noReview={55}
-                category={items.category?.name}
-                price={items.price}
-              />
-            ),
-          )
-        ) : (
-          <div className="flex h-[600px] w-full flex-col items-center justify-center">
-            <p>No products </p>
+        ) : !products || allProducts.length === 0 ? (
+          <div className="flex h-[500px] flex-col items-center justify-center">
+            <p>No products available</p>
+
             <button
               onClick={handleShowProduct}
-              className="bg-orange mt-3 cursor-pointer rounded-lg px-10 py-4 font-bold text-white"
+              className="bg-orange mt-3 rounded-lg px-10 py-4 font-bold text-white"
             >
               Add Product
             </button>
           </div>
-        )}
+        ) : (
+          <>
+            {paginatedProducts.map((item) => (
+              <TableProductItem
+                key={item.id}
+                name={item.name}
+                image={item.images?.[0]?.url}
+                stock={item.stockQuantity}
+                rating={3.5}
+                noReview={55}
+                category={item.category?.name}
+                price={item.price}
+              />
+            ))}
 
-        {/* Pagination */}
-        {products && products?.data?.length > 10 && (
-          <div className="border-dark-gray/20 text-dark-gray/80 mt-3 flex items-center justify-center self-end overflow-hidden rounded-full border text-xs font-semibold">
-            <button className="hover:bg-dark-gray/5 cursor-pointer px-3 py-2">
-              Previous
-            </button>
-            <button className="hover:bg-dark-gray/5 cursor-pointer px-3 py-2">
-              1
-            </button>
-            <button className="hover:bg-dark-gray/5 cursor-pointer px-3 py-2">
-              2
-            </button>
-            <button className="hover:bg-dark-gray/5 cursor-pointer px-3 py-2">
-              3
-            </button>
-            <button className="hover:bg-dark-gray/5 cursor-pointer px-3 py-2">
-              Next
-            </button>
-          </div>
+            {totalPages > 1 && (
+              <DashboardPagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                setCurrentPage={setCurrentPage}
+              />
+            )}
+          </>
         )}
       </div>
     </div>
