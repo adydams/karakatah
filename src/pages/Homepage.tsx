@@ -37,6 +37,8 @@ export default function Homepage() {
     setShowFilter((prev) => !prev);
   }
 
+  console.log(products);
+
   // Pagination Logic
   const totalPages = Math.ceil(products.length / PRODUCTS_PER_PAGE);
 
