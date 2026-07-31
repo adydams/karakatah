@@ -79,19 +79,19 @@ export default function CartItemCardNav() {
             >
               <div className="h-full w-[65px] overflow-hidden rounded-lg">
                 <img
-                  src={product.product.images[0].url}
+                  src={product.product?.images?.[0]?.url}
                   className="h-full w-full object-cover"
                   alt=""
                 />
               </div>
               <div className="flex h-full flex-col items-start justify-center text-xs">
                 <h2 className="font-primary text-xs font-medium lg:text-sm">
-                  {product.product.name}
+                  {product.product?.name}
                 </h2>
                 <p className="font-light">
                   Price:{" "}
                   <span className="font-primary text-muted-green font-bold">
-                    ₦{formatPrice(product.product.price)}
+                    ₦{formatPrice(product.product?.price || 0)}
                   </span>
                 </p>
                 <p className="font-light">

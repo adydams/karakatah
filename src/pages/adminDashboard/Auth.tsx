@@ -43,9 +43,9 @@ export default function Auth() {
 
     // }
     try {
-      const success = await login(data);
-
-      if (success) {
+      const response = await login(data);
+      console.log("********Login response:", response);
+      if (response.success) {
         navigate("/dashboard");
       }
     } catch (err: unknown) {

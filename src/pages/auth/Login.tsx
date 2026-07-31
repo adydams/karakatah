@@ -25,9 +25,9 @@ export default function Login() {
     // console.log(data);
 
     try {
-      const success = await userLogin(email, password);
+      const response = await userLogin(email, password);
 
-      if (success) {
+      if (response.success) {
         navigate("/");
     
       }

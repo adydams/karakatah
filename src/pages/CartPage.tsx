@@ -51,9 +51,9 @@ export default function CartPage() {
               {items.map((item) => (
                 <CartItem
                   key={item.id}
-                  name={item.product.name}
-                  price={item.product.price}
-                  image={item.product.images[0].url}
+                  name={item.product?.name}
+                  price={item.product?.price || 0}
+                  image={item.product?.images?.[0]?.url}
                   quantity={item.quantity}
                   id={item.id}
                 />
