@@ -4,7 +4,7 @@ import { FaWindowRestore } from "react-icons/fa";
 import { FaUsers } from "react-icons/fa6";
 import { RiStoreFill } from "react-icons/ri";
 import { GrMoney } from "react-icons/gr";
-import { MdLocalShipping } from "react-icons/md";
+import { MdLocalShipping, MdGroup } from "react-icons/md";
 import { IoIosHelpCircle } from "react-icons/io";
 import { IoSettings } from "react-icons/io5";
 import { IoLogOut } from "react-icons/io5";
@@ -66,6 +66,11 @@ const links = [
     link: "stores",
   },
   {
+    title: "Pickup Stations",
+    icon: <MdLocalShipping size={20} />,
+    link: "pickup-stations",
+  },
+  {
     title: "Transactions",
     icon: <GrMoney size={20} />,
     link: "transactions",
@@ -74,6 +79,11 @@ const links = [
     title: "Shipment",
     icon: <MdLocalShipping size={20} />,
     link: "shipment",
+  },
+  {
+    title: "Admin Management",
+    icon: <MdGroup size={20} />,
+    link: "admin-management",
   },
 ];
 

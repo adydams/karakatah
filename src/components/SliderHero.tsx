@@ -3,7 +3,11 @@ import "slick-carousel/slick/slick-theme.css";
 import "../App.css";
 import Slider from "react-slick";
 
-const data = ["slide1.jpg", "bg.png", "snake.png"];
+const data = [
+  "/images/landing-carousel-1.png",
+  "/images/landing-carousel-2.png",
+  "/images/landing-carousel-3.png",
+];
 
 export default function SliderHero() {
   const settings = {
@@ -22,7 +26,7 @@ export default function SliderHero() {
         {data.map((pic, index) => (
           <div className="h-full w-full" key={index}>
             <img
-              className="h-full w-full bg-cover bg-center"
+              className="h-full w-full object-cover"
               src={pic}
               alt=""
             />

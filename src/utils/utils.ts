@@ -90,3 +90,15 @@ export function shortenText(text: string, maxLength = 12): string {
 
   return `${text.slice(0, maxLength)}...`;
 }
+
+export function normalizeListData<T = unknown>(value: unknown): T[] {
+  if (Array.isArray(value)) return value as T[];
+
+  if (value && typeof value === "object") {
+    const candidate = value as { data?: unknown; items?: unknown };
+    if (Array.isArray(candidate.data)) return candidate.data as T[];
+    if (Array.isArray(candidate.items)) return candidate.items as T[];
+  }
+
+  return [];
+}

@@ -30,5 +30,9 @@ export type ProductPayload = {
   categoryId: string;
   subCategoryId: string;
   brandId: string;
+  weightKg?: string;
+  lengthCm?: string;
+  widthCm?: string;
+  heightCm?: string;
   images: File[]; // 👈 This is important
 };

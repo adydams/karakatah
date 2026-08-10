@@ -11,7 +11,7 @@ import toast from "react-hot-toast";
 
 interface CartItemProps {
   name: string;
-  price: string;
+  price: string | number;
   quantity: number;
   id: string;
   image: string;

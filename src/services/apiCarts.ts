@@ -1,56 +1,22 @@
-import { getCartIdFromToken } from "../utils/utils";
-import { ROOT_URL } from "./apiAuth";
+﻿import { getCartIdFromToken } from "../utils/utils";
+import axiosInstance from "./apiClient";
 
 export async function createCart() {
-  const response = await fetch(`${ROOT_URL}/api/carts`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${localStorage.getItem("token")}`,
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error("Failed to create a cart");
-  }
-
-  const data = await response.json();
-
-  return data;
+  const response = await axiosInstance.post(`/api/carts`);
+  return response.data;
 }
 
 export async function deleteCart(id: string) {
-  const response = await fetch(`${ROOT_URL}/api/carts/${id}`, {
-    method: "DELETE",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${localStorage.getItem("token")}`,
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error("Failed to create a cart");
-  }
-
-  const data = await response.json();
-
-  return data;
+  const response = await axiosInstance.delete(`/api/carts/${id}`);
+  return response.data;
 }
 
 export async function getCart() {
   const cartId = getCartIdFromToken();
   if (!cartId) throw new Error("No cartId in token");
 
-  const response = await fetch(`${ROOT_URL}/api/carts/${cartId}`, {
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${localStorage.getItem("token")}`,
-    },
-  });
-
-  if (!response.ok) throw new Error("Failed to fetch cart");
-
-  return response.json();
+  const response = await axiosInstance.get(`/api/carts/${cartId}`);
+  return response.data;
 }
 
 export async function addItemToCart(
@@ -58,88 +24,39 @@ export async function addItemToCart(
   productId: string | undefined,
   quantity: number = 1,
 ) {
-  // Get the cartId
   const cartId = getCartIdFromToken();
   if (!cartId) throw new Error("No cartId in token");
 
-  const response = await fetch(`${ROOT_URL}/api/cart-items`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${localStorage.getItem("token")}`,
-    },
-    body: JSON.stringify({
-      cartId: cartId,
-      items: [
-        {
-          productId: productId,
-          quantity: quantity,
-          name: name,
-        },
-      ],
-    }),
+  const response = await axiosInstance.post(`/api/cart-items`, {
+    cartId,
+    items: [
+      {
+        productId,
+        quantity,
+        name,
+      },
+    ],
   });
 
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(errorText || "Failed to add items to cart");
-  }
-
-  const data = await response.json();
-
-  return data;
+  return response.data;
 }
 
-export async function updateItemQuantity(
-  id: string,
-  quantity: string | number,
-) {
+export async function updateItemQuantity(id: string, quantity: string | number) {
   const cartId = getCartIdFromToken();
   if (!cartId) throw new Error("No cartId in token");
 
-  const response = await fetch(`${ROOT_URL}/api/cart-items/${id}`, {
-    method: "PATCH",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${localStorage.getItem("token")}`,
-    },
-    body: JSON.stringify({
-      cartId: cartId,
-      quantity: quantity,
-    }),
+  const response = await axiosInstance.patch(`/api/cart-items/${id}`, {
+    cartId,
+    quantity,
   });
 
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(errorText || "Failed to update the item's quantity");
-  }
-
-  const data = await response.json();
-  console.log(data);
-
-  return data;
+  return response.data;
 }
 
-// Delete item in the cart
 export async function deleteItemCart(id: string) {
   const cartId = getCartIdFromToken();
   if (!cartId) throw new Error("No cartId in token");
-  console.log(id, cartId);
 
-  const response = await fetch(`${ROOT_URL}/api/cart-items/${id}`, {
-    method: "DELETE",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${localStorage.getItem("token")}`,
-    },
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(errorText || "Failed to delete the items in the cart");
-  }
-
-  const data = await response.json();
-
-  return data;
+  const response = await axiosInstance.delete(`/api/cart-items/${id}`);
+  return response.data;
 }

@@ -1,4 +1,4 @@
-import { ROOT_URL } from "./apiAuth";
+﻿import axiosInstance from "./apiClient";
 
 type AddressProp = {
   line1: string;
@@ -10,42 +10,11 @@ type AddressProp = {
 };
 
 export async function createShippingAddress(address: AddressProp) {
-  const response = await fetch(`${ROOT_URL}/api/addresses`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${localStorage.getItem("token")}`,
-    },
-    body: JSON.stringify(address),
-  });
-
-  const data = await response.json();
-
-  if (!response.ok) {
-    throw new Error(
-      data?.message || data?.detail || data?.error || "Failed to create order",
-    );
-  }
-
-  return data;
+  const response = await axiosInstance.post(`/api/addresses`, address);
+  return response.data;
 }
 
 export async function getShippingAddress() {
-  const response = await fetch(`${ROOT_URL}/api/addresses`, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${localStorage.getItem("token")}`,
-    },
-  });
-
-  const data = await response.json();
-
-  if (!response.ok) {
-    throw new Error(
-      data?.message || data?.detail || data?.error || "Failed to create order",
-    );
-  }
-
-  return data;
+  const response = await axiosInstance.get(`/api/addresses`);
+  return response.data;
 }

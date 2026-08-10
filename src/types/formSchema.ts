@@ -25,19 +25,40 @@ export const loginSchema = z.object({
 
 export type TLoginSchema = z.infer<typeof loginSchema>;
 
-export const checkoutSchema = z.object({
-  shippingAddressId: z.string().min(1, "Shipping address is required"),
+export const checkoutSchema = z
+  .object({
+    shippingAddressId: z.string().optional().or(z.literal("")),
+    shippingMethod: z
+      .string()
+      .refine((value) => ["pickup", "shipping"].includes(value), {
+        message: "Select a delivery method",
+      }),
+    chosenStationId: z.string().optional().or(z.literal("")),
+    phone: z.string().regex(/^\+?[0-9]{7,15}$/, "Enter a valid phone number"), // supports intl format
+    notes: z.string().optional().or(z.literal("")),
+    gateway: z
+      .string()
+      .refine((value) => ["paystack", "flutterwave", "paypal"].includes(value), {
+        message: "Invalid payment gateway",
+      }),
+  })
+  .superRefine((values, ctx) => {
+    if (values.shippingMethod === "shipping" && !values.shippingAddressId) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["shippingAddressId"],
+        message: "Shipping address is required",
+      });
+    }
 
-  phone: z.string().regex(/^\+?[0-9]{7,15}$/, "Enter a valid phone number"), // supports intl format
-
-  notes: z.string().optional(),
-
-  gateway: z
-    .string()
-    .refine((value) => ["paystack", "flutterwave", "paypal"].includes(value), {
-      message: "Invalid payment gateway",
-    }),
-});
+    if (values.shippingMethod === "pickup" && !values.chosenStationId) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["chosenStationId"],
+        message: "Pickup station is required",
+      });
+    }
+  });
 
 export type TCheckoutSchema = z.infer<typeof checkoutSchema>;
 

@@ -5,6 +5,7 @@ import { FaStar } from "react-icons/fa";
 import { formatPrice } from "../../utils/utils";
 
 type ProductItemProp = {
+  id?: string;
   name: string;
   price: number;
   category: string;
@@ -12,9 +13,13 @@ type ProductItemProp = {
   noReview: number;
   image: string;
   stock: string;
+  onView?: (id?: string) => void;
+  onEdit?: (id?: string) => void;
+  onDelete?: (id?: string) => void;
 };
 
 export default function TableProductItem({
+  id,
   name,
   price,
   category,
@@ -22,6 +27,9 @@ export default function TableProductItem({
   rating,
   noReview,
   image,
+  onView,
+  onEdit,
+  onDelete,
 }: ProductItemProp) {
   return (
     <div className="hover:bg-light-gray/30 border-dark-gray/10 grid w-full grid-cols-[2fr_1fr_1fr_1fr_1fr_1fr] gap-3 border-b px-1 py-3 text-sm font-medium">
@@ -39,12 +47,6 @@ export default function TableProductItem({
         <p>₦{formatPrice(price)}</p>
       </div>
       <div className="flex h-full w-full flex-col items-start justify-center">
-        {/* <p className="font-medium">
-          {itemLeft} <span className="text-xs font-light">Items left</span>
-        </p>
-        <p className="font-medium">
-          {itemSold} <span className="text-xs font-light">Sold</span>
-        </p> */}
         <p>{stock}</p>
       </div>
       <div className="flex h-full w-full items-center justify-start">
@@ -61,13 +63,13 @@ export default function TableProductItem({
 
       {/* Action */}
       <div className="flex w-4/5 items-center justify-between gap-1">
-        <div className="bg-deep-blue/10 flex h-9 w-10 cursor-pointer items-center justify-center rounded-lg">
+        <div onClick={() => onView && onView(id)} className="bg-deep-blue/10 flex h-9 w-10 cursor-pointer items-center justify-center rounded-lg">
           <FaEye className="text-deep-blue" />
         </div>
-        <div className="flex h-9 w-10 cursor-pointer items-center justify-center rounded-lg bg-[#10b98120]">
+        <div onClick={() => onEdit && onEdit(id)} className="flex h-9 w-10 cursor-pointer items-center justify-center rounded-lg bg-[#10b98120]">
           <BiSolidEditAlt className="text-muted-green" />
         </div>
-        <div className="flex h-9 w-10 cursor-pointer items-center justify-center rounded-lg bg-[#10b98120]">
+        <div onClick={() => onDelete && onDelete(id)} className="flex h-9 w-10 cursor-pointer items-center justify-center rounded-lg bg-[#10b98120]">
           <MdDelete className="text-muted-green" />
         </div>
       </div>

@@ -19,15 +19,14 @@ export default function Store() {
     );
   }
 
-  if (!stores) {
+  if (!stores || !stores.data) {
     return (
-      <div className="w-full">
-        <p>Something occurred</p>
+      <div className="flex h-full w-full flex-col items-center justify-center p-10 text-center">
+        <h3 className="text-lg font-semibold text-dark-gray">Something occurred</h3>
+        <p className="text-sm text-dark-gray/60">We couldn't load the stores. Please try again later.</p>
       </div>
     );
   }
-
-  console.log(stores);
 
   return (
     <div className="relative">
@@ -39,23 +38,13 @@ export default function Store() {
           to={`/dashboard/stores/add`}
           className="bg-orange flex h-10 w-10 cursor-pointer items-center justify-center rounded-full font-bold text-white"
         >
-          <TiPlus />{" "}
+          <TiPlus />
         </Link>
       </div>
       <div className="relative grid w-full grid-cols-3 gap-7 md:grid-cols-5">
-        {stores?.data?.map((store: { name: string; id: string }) => (
+        {stores.data.map((store: { name: string; id: string }) => (
           <StoreCard name={store.name} id={store.id} key={store.id} />
         ))}
-        <StoreCard name={"store.name"} id={"12344"} />
-        <StoreCard name={"store.name"} id={"1233444"} />
-        <StoreCard name={"store.name"} id={"1234424"} />
-        <StoreCard name={"store.name"} id={"1213444"} />
-        <StoreCard name={"store.name"} id={"1223444"} />
-        <StoreCard name={"store.name"} id={"1213444"} />
-        <StoreCard name={"store.name"} id={"1233444"} />
-        <StoreCard name={"store.name"} id={"123e444"} />
-        <StoreCard name={"store.name"} id={"123s444"} />
-        <StoreCard name={"store.name"} id={"123w444"} />
       </div>
     </div>
   );

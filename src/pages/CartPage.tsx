@@ -23,11 +23,12 @@ export default function CartPage() {
   console.log(cart);
 
   function handleMovetoCheckout() {
-    navigate("/checkout");
+    // go to the shipping-method step which matches the design
+    navigate("/checkout/shipping-method");
   }
 
   const items = cart?.data?.items ?? [];
-  const totalAmount = cart?.data?.totalAmount;
+  const totalAmount = cart?.data?.totalAmount ?? 0;
 
   if (isLoading)
     return (
@@ -41,37 +42,50 @@ export default function CartPage() {
       <section className="flex w-full items-center justify-center pt-14 pb-5 lg:py-7">
         {items.length >= 1 ? (
           <div className="grid h-full w-[92%] grid-cols-1 gap-5 lg:w-[85%] lg:grid-cols-[2fr_1fr]">
-            <div className="flex h-full w-full flex-col items-start justify-start space-y-3 rounded-lg bg-white px-3">
-              <h1 className="font-primary border-dark-gray/10 flex w-full items-center justify-start gap-2 border-b py-3 text-lg font-semibold">
-                <span onClick={() => navigate(-1)} className="cursor-pointer">
-                  <FaArrowLeftLong size={16} />{" "}
-                </span>{" "}
-                Cart ({items.length})
-              </h1>
-              {items.map((item) => (
-                <CartItem
-                  key={item.id}
-                  name={item.product?.name}
-                  price={item.product?.price || 0}
-                  image={item.product?.images?.[0]?.url}
-                  quantity={item.quantity}
-                  id={item.id}
-                />
-              ))}
+            <div className="flex h-full w-full flex-col items-start justify-start rounded-lg bg-white px-3 py-3 shadow-sm">
+              <div className="font-primary border-dark-gray/10 flex w-full items-center justify-between gap-2 border-b py-3 text-lg font-semibold">
+                <div className="flex items-center gap-2">
+                  <span onClick={() => navigate(-1)} className="cursor-pointer">
+                    <FaArrowLeftLong size={16} />
+                  </span>
+                  <span>Cart ({items.length})</span>
+                </div>
+                <span className="text-sm font-medium text-gray-500">
+                  Ready for checkout
+                </span>
+              </div>
+              <div className="mt-3 flex w-full flex-col gap-3">
+                {items.map((item) => (
+                  <CartItem
+                    key={item.id}
+                    name={item.product?.name}
+                    price={item.product?.price || 0}
+                    image={item.product?.images?.[0]?.url}
+                    quantity={item.quantity}
+                    id={item.id}
+                  />
+                ))}
+              </div>
             </div>
-            <div className="h-[180px] w-full space-y-2 rounded-lg bg-white px-3 pb-3">
-              <h1 className="border-dark-gray/10 w-full border-b py-3 text-base font-medium">
-                CART SUMMARY
+            <div className="h-fit w-full rounded-lg bg-white px-3 py-3 shadow-sm">
+              <h1 className="border-dark-gray/10 w-full border-b py-3 text-base font-medium uppercase tracking-wide">
+                Order Summary
               </h1>
               <div className="border-dark-gray/10 flex items-center justify-between border-b py-3">
-                <p>SubTotal</p>
+                <p className="text-sm text-gray-600">Sub total</p>
                 <p className="font-primary text-lg font-semibold">
                   ₦{formatPrice(totalAmount)}
                 </p>
               </div>
+              <div className="border-dark-gray/10 flex items-center justify-between border-b py-3">
+                <p className="text-sm text-gray-600">Pickup / delivery</p>
+                <p className="font-primary text-sm font-semibold text-gray-700">
+                  Flexible logistics
+                </p>
+              </div>
               <button
                 onClick={handleMovetoCheckout}
-                className="bg-orange/90 hover:bg-orange font-primary w-full cursor-pointer rounded-lg py-3 font-semibold text-white"
+                className="bg-orange/90 hover:bg-orange font-primary mt-3 w-full cursor-pointer rounded-lg py-3 font-semibold text-white transition-colors"
               >
                 Proceed to Checkout
               </button>

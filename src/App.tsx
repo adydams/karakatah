@@ -25,12 +25,14 @@ import Shipment from "./pages/adminDashboard/Shipment";
 import Help from "./pages/adminDashboard/Help";
 import Settings from "./pages/adminDashboard/Settings";
 import Auth from "./pages/adminDashboard/Auth";
+import AdminManagement from "./pages/AdminManagement";
 import { LoginProvider } from "./contexts/LoginProvider";
 import { ModalProvider } from "./contexts/ModalProvider";
 import ProtectedRouteAdmin from "./components/adminDashboard/ProtectedRouteAdmin";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import PaymentFailed from "./pages/PaymentFailed";
 import StoreLayout from "./pages/adminDashboard/StoreLayout";
+import PickupStations from "./pages/adminDashboard/PickupStations";
 // import Store from "./pages/adminDashboard/Store";
 import StoreDetails from "./pages/adminDashboard/StoreDetails";
 import StoreHome from "./pages/adminDashboard/StoreHome";
@@ -178,12 +180,20 @@ export default function App() {
           element: <Shipment />,
         },
         {
+          path: "pickup-stations",
+          element: <PickupStations />,
+        },
+        {
           path: "help",
           element: <Help />,
         },
         {
           path: "settings",
           element: <Settings />,
+        },
+        {
+          path: "admin-management",
+          element: <AdminManagement />,
         },
       ],
     },

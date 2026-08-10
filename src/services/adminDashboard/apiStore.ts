@@ -1,42 +1,27 @@
-import { ROOT_URL } from "../apiAuth";
+﻿import axiosInstance from "../apiClient";
 
 export async function getStores() {
-  const response = await fetch(`${ROOT_URL}/api/stores`, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
-
-  const data = await response.json();
-
-  if (!response.ok) {
-    // Extract backend-designed error message
-    throw new Error(
-      data?.message || data?.detail || data?.error || "Something went wrong",
-    );
-  }
-
-  return data;
+  const response = await axiosInstance.get(`/api/stores`);
+  return response.data;
 }
+
 export async function getStoreDetail(storeId: string | undefined) {
-  if (storeId) {
-    const response = await fetch(`${ROOT_URL}/api/stores/${storeId}`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
+  if (!storeId) return;
+  const response = await axiosInstance.get(`/api/stores/${storeId}`);
+  return response.data;
+}
 
-    const data = await response.json();
+export async function createStore(storeData: any) {
+  const response = await axiosInstance.post(`/api/stores`, storeData);
+  return response.data;
+}
 
-    if (!response.ok) {
-      // Extract backend-designed error message
-      throw new Error(
-        data?.message || data?.detail || data?.error || "Something went wrong",
-      );
-    }
+export async function updateStore(storeId: string, storeData: any) {
+  const response = await axiosInstance.put(`/api/stores/${storeId}`, storeData);
+  return response.data;
+}
 
-    return data;
-  }
+export async function deleteStore(storeId: string) {
+  const response = await axiosInstance.delete(`/api/stores/${storeId}`);
+  return response.data;
 }

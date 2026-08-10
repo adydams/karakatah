@@ -2,12 +2,14 @@ import { useState } from "react";
 import { IoMdArrowDropdown } from "react-icons/io";
 import { useQuery } from "@tanstack/react-query";
 
-import { getProducts } from "../../services/adminDashboard/apiProducts";
+import { getProducts, deleteProduct } from "../../services/adminDashboard/apiProducts";
 
 import NavBar from "../../components/adminDashboard/NavBar";
 import AddProduct from "../../components/adminDashboard/AddProduct";
 import Spinner from "../../components/adminDashboard/Spinner";
 import TableProductItem from "../../components/adminDashboard/TableProductItem";
+import ProductViewModal from "../../components/adminDashboard/ProductViewModal";
+import EditProductModal from "../../components/adminDashboard/EditProductModal";
 import DashboardPagination from "../../components/adminDashboard/DashboardPagination";
 
 const tableHeaders = [
@@ -36,10 +38,12 @@ type Product = {
 
 export default function Products() {
   const [showAddProduct, setShowAddProduct] = useState(false);
+  const [viewProductId, setViewProductId] = useState<string | undefined>(undefined);
+  const [editProductId, setEditProductId] = useState<string | undefined>(undefined);
 
   const [currentPage, setCurrentPage] = useState(1);
 
-  const { data: products, isLoading: isFetchingProducts } = useQuery({
+  const { data: products, isLoading: isFetchingProducts, refetch } = useQuery({
     queryKey: ["products"],
     queryFn: getProducts,
   });
@@ -64,6 +68,23 @@ export default function Products() {
         <AddProduct
           showProduct={showAddProduct}
           handleShowProduct={handleShowProduct}
+        />
+      )}
+
+      {viewProductId && (
+        <ProductViewModal
+          open={!!viewProductId}
+          onClose={() => setViewProductId(undefined)}
+          product={allProducts.find(p => p.id === viewProductId)}
+        />
+      )}
+
+      {editProductId && (
+        <EditProductModal
+          open={!!editProductId}
+          onClose={() => { setEditProductId(undefined); refetch(); }}
+          productId={editProductId}
+          onUpdated={() => { refetch(); }}
         />
       )}
 
@@ -116,6 +137,7 @@ export default function Products() {
             {paginatedProducts.map((item) => (
               <TableProductItem
                 key={item.id}
+                id={item.id}
                 name={item.name}
                 image={item.images?.[0]?.url}
                 stock={item.stockQuantity}
@@ -123,6 +145,19 @@ export default function Products() {
                 noReview={55}
                 category={item.category?.name}
                 price={item.price}
+                onView={(id) => setViewProductId(id)}
+                onEdit={(id) => setEditProductId(id)}
+                onDelete={async (id) => {
+                  if (!id) return;
+                  if (!confirm('Delete this product?')) return;
+                  try {
+                                    await deleteProduct(id);
+                    await refetch();
+                  } catch (err) {
+                    console.error(err);
+                    alert('Failed to delete product');
+                  }
+                }}
               />
             ))}
 

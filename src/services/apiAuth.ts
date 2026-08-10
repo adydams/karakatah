@@ -1,4 +1,4 @@
-export const ROOT_URL = "https://karakatanodebe.onrender.com";
+﻿export const ROOT_URL = "http://localhost:5000";//"https://karakatanodebe.onrender.com";
 export interface CreateUserParams {
   name: string;
   email: string;
@@ -73,23 +73,11 @@ export function googleAuth() {
 }
 
 // GET CURRENT USER
+import axiosInstance from "./apiClient";
 export async function currentUser() {
   try {
-    const response = await fetch(`${ROOT_URL}/api/auth/me`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("token")}`, // 🔑 include token
-      },
-    });
-
-    const data = await response.json().catch(() => ({}));
-
-    if (!response.ok) {
-      throw new Error(data.message || `Error: ${response.status}`);
-    }
-
-    return data;
+    const response = await axiosInstance.get(`/api/auth/me`);
+    return response.data;
   } catch (err) {
     console.error("Fetch current user failed:", err);
     throw err;
@@ -124,25 +112,3 @@ export async function createSeller(params: BecomeSellerParams) {
     throw err; // rethrow so the caller can handle
   }
 }
-
-//  if (data.token) {
-//       localStorage.setItem("token", data.token);
-
-//       // Fetch user details as the response only contains a success boolean and a token variable
-
-//       const userResponse = await fetch(`${ROOT_URL}/api/auth/me`, {
-//         method: "GET",
-//         headers: {
-//           "Content-Type": "application/json",
-//           Authorization: `Bearer ${localStorage.getItem("token")}`,
-//         },
-//       });
-
-//       if (userResponse.ok) {
-//         throw new Error("Failed to fetch user details");
-//       }
-
-//       const userData = await userResponse.json();
-
-//       return userData;
-//     }

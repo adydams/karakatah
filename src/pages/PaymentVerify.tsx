@@ -1,15 +1,14 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router";
 import PaymentFailed from "./PaymentFailed";
 import PaymentSuccess from "./PaymentSuccess";
+import axiosInstance from "../services/apiClient";
 
 // https://karakatang.vercel.app/api/payments/verify?gateway=paystack&orderId=24f88ba2-c956-4cdb-850b-dadcb042fc96&trxref=order_24f88ba2-c956-4cdb-850b-dadcb042fc96_1777545554878&reference=order_24f88ba2-c956-4cdb-850b-dadcb042fc96_1777545554878
 
 export default function PaymentVerify() {
   const [searchParams] = useSearchParams();
-  const [status, setStatus] = useState<"loading" | "success" | "failed">(
-    "loading",
-  );
+  const [status, setStatus] = useState<"loading" | "success" | "failed">("loading");
 
   useEffect(() => {
     async function verifyPayment() {
@@ -18,11 +17,11 @@ export default function PaymentVerify() {
         const orderId = searchParams.get("orderId");
         const gateway = searchParams.get("gateway");
 
-        const res = await fetch(
+        const res = await axiosInstance.get(
           `/api/payments/verify?gateway=${gateway}&orderId=${orderId}&reference=${reference}`,
         );
 
-        const data = await res.json();
+        const data = res.data;
 
         if (data.success) {
           setStatus("success");

@@ -35,7 +35,7 @@ export default function StoreCard({
 }: StoreCardProps) {
   return (
     <NavLink
-      to={`${id}`}
+      to={`/dashboard/stores/${id}`}
       onClick={() => {
         if (window.innerWidth < 768) {
           setTimeout(() => {

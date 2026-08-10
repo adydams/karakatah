@@ -49,12 +49,40 @@ export const productSchema = z.object({
 
   brandId: z.string().uuid("Invalid brand ID"),
 
+  storeId: z.string().uuid("Invalid store ID").optional(),
+
   images: z
     .array(z.instanceof(File))
     .min(1, "At least one product image is required"),
 });
 
+export const productEditSchema = z.object({
+  name: z
+    .string()
+    .min(2, "Product name must be at least 2 characters")
+    .max(100, "Product name must not exceed 100 characters"),
+
+  description: z.string().min(10, "Description must be at least 10 characters"),
+
+  price: z.string().regex(/^\d+(\.\d{1,2})?$/, "Price must be a valid number"),
+
+  stockQuantity: z
+    .string()
+    .regex(/^\d+$/, "Stock quantity must be a valid integer"),
+
+  categoryId: z.string().uuid("Invalid category ID"),
+
+  subCategoryId: z.string().uuid("Invalid sub-category ID"),
+
+  brandId: z.string().uuid("Invalid brand ID"),
+
+  storeId: z.string().uuid("Invalid store ID").optional(),
+
+  images: z.array(z.instanceof(File)).default([]),
+});
+
 export type TProductSchema = z.infer<typeof productSchema>;
+export type TProductEditSchema = z.infer<typeof productEditSchema>;
 
 // export const productSchema = z.object({
 //   name: z

@@ -1,49 +1,23 @@
-import { ROOT_URL } from "./apiAuth";
+﻿import axiosInstance from "./apiClient";
 
 type OrderProp = {
-  shippingAddressId: string;
+  shippingAddressId?: string;
   phone: string;
-  notes: string | undefined;
+  notes?: string;
   gateway: string;
+  shippingMethod: "pickup" | "shipping";
+  chosenStationId?: string;
+  requestToken?: string;
+  serviceCode?: string;
+  courierId?: string;
 };
 
 export async function createOrder(order: OrderProp) {
-  const response = await fetch(`${ROOT_URL}/api/orders/checkout`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${localStorage.getItem("token")}`,
-    },
-    body: JSON.stringify(order),
-  });
-
-  const data = await response.json();
-
-  if (!response.ok) {
-    throw new Error(
-      data?.message || data?.detail || data?.error || "Failed to create order",
-    );
-  }
-
-  return data;
+  const response = await axiosInstance.post(`/api/orders/checkout`, order);
+  return response.data;
 }
 
 export async function getOrder(orderId: string) {
-  const response = await fetch(`${ROOT_URL}/api/orders/${orderId}/invoice`, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${localStorage.getItem("token")}`,
-    },
-  });
-
-  const data = await response.json();
-
-  if (!response.ok) {
-    throw new Error(
-      data?.message || data?.detail || data?.error || "Failed to create order",
-    );
-  }
-
-  return data;
+  const response = await axiosInstance.get(`/api/orders/${orderId}/invoice`);
+  return response.data;
 }
