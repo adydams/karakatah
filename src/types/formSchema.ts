@@ -93,6 +93,10 @@ export const shippingAddressSchema = z.object({
     .min(3, "Postal code is required")
     .max(12, "Postal code is too long")
     .regex(/^[a-zA-Z0-9\- ]+$/, "Invalid postal code format"),
+
+  // Optional coordinates captured by a map picker or device geolocation
+  latitude: z.union([z.number(), z.string()]).optional(),
+  longitude: z.union([z.number(), z.string()]).optional(),
 });
 
 export type ShippingAddressFormValues = z.infer<typeof shippingAddressSchema>;

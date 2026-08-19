@@ -1,4 +1,4 @@
-﻿import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Spinner from "./Spinner";
 import { useEffect, useState, type ChangeEvent, type MouseEvent } from "react";
 import { normalizeListData } from "../../utils/utils";
@@ -12,14 +12,23 @@ import {
   createProduct,
   getBrands,
   getCategories,
+  getLogisticsCategories,
   getSubCategories,
 } from "../../services/adminDashboard/apiProducts";
+import { getBoxSizes } from "../../services/apiLogistics";
 import {
   getPickupStations,
   assignProductToStation,
+
 } from "../../services/adminDashboard/apiPickupStation";
 import PickupStationForm from "./PickupStationForm";
 import ImagePreviewList from "./ImagePreviewList";
+
+type PickupStationOption = {
+  id: string;
+  name?: string;
+  address?: string;
+};
 
 type AddProductProp = {
   handleShowProduct: () => void;
@@ -74,6 +83,7 @@ export default function AddProduct({
     handleSubmit,
     formState: { errors, isSubmitting },
     setValue,
+    watch,
   } = useForm<TProductSchema>({
     resolver: zodResolver(productSchema),
   });
@@ -91,11 +101,34 @@ export default function AddProduct({
     queryFn: getBrands,
   });
 
+  const { data: logisticsCategories, isLoading: isFetchingLogisticsCategories } = useQuery({
+    queryKey: ["logisticsCategories"],
+    queryFn: getLogisticsCategories,
+  });
+  const { data: boxSizes, isLoading: isFetchingBoxSizes } = useQuery({
+    queryKey: ["boxSizes"],
+    queryFn: getBoxSizes,
+  });
+
   const { data: pickupStationResponse, isLoading: isFetchingStations } = useQuery({
     queryKey: ["pickupStations"],
     queryFn: getPickupStations,
   });
-  const pickupStations = normalizeListData<any>(pickupStationResponse);
+  const pickupStations = normalizeListData<PickupStationOption>(pickupStationResponse);
+  const logisticsCategoryList = normalizeListData(logisticsCategories).map((cat: any) => ({
+    id: String(cat.category_id),
+    name: cat.category,
+  }));
+  const boxSizesList = normalizeListData(boxSizes).map((box: any, index: number) => ({
+    id: String(box.box_size_id ?? box.id ?? index),
+    name: box.box_size_name || box.name || `Box ${index + 1}`,
+    weight: box.max_weight ?? box.weight,
+    length: box.length,
+    width: box.width,
+    height: box.height,
+    maxWeight: box.max_weight,
+    description_image_url: box.description_image_url,
+  }));
   const categoriesList = normalizeListData<{ id: string; name: string }>(categories);
   const subcategoriesList = normalizeListData<{ id: string; name: string }>(subcategories);
   const brandsList = normalizeListData<{ id: string; name: string }>(brands);
@@ -107,7 +140,9 @@ export default function AddProduct({
     setTagInput("");
   };
 
-  const removeImage = (index: number, _kind: "file" | "url") => {
+  const removeImage = (index: number, kind: "file" | "url") => {
+    if (kind !== "file") return;
+
     setFiles((current) => {
       const nextFiles = current.filter((_, itemIndex) => itemIndex !== index);
       setValue("images", nextFiles, {
@@ -120,6 +155,19 @@ export default function AddProduct({
 
   const removeTag = (tag: string) => {
     setTags((current) => current.filter((item) => item !== tag));
+  };
+
+  const handleBoxSizeChange = (boxSizeId: string) => {
+    setValue("boxSizeId", boxSizeId);
+    const selectedBox = boxSizesList.find((box: any) => box.id === boxSizeId);
+    if (selectedBox) {
+      setDimensions({
+        weight: selectedBox.weight?.toString() || "",
+        length: selectedBox.length?.toString() || "",
+        width: selectedBox.width?.toString() || "",
+        height: selectedBox.height?.toString() || "",
+      });
+    }
   };
 
   const updateDimension = (field: keyof typeof dimensions, value: string) => {
@@ -142,6 +190,7 @@ export default function AddProduct({
       // ensure stockQuantity reflects station totals for validation and backend expectations
       setValue("stockQuantity", String(totalStock));
 
+      const shouldPublish = !draftMode && isPublished;
       const createdProduct = await createProduct({
         name,
         description,
@@ -150,13 +199,15 @@ export default function AddProduct({
         categoryId,
         subCategoryId,
         brandId,
+        logisticsCategoryId: data.logisticsCategoryId,
         weightKg: dimensions.weight || undefined,
         lengthCm: dimensions.length || undefined,
         widthCm: dimensions.width || undefined,
         heightCm: dimensions.height || undefined,
+        boxSizeId: data.boxSizeId || undefined,
         images,
-        isPublished: !draftMode,
-        draft: draftMode,
+        isPublished: shouldPublish,
+        draft: !shouldPublish,
       });
 
       const productId = createdProduct?.data?.id || createdProduct?.id || createdProduct?._id;
@@ -174,12 +225,12 @@ export default function AddProduct({
         }
 
         if (assignErrors === 0) {
-          toast.success(draftMode ? "Draft saved and pickup stations updated" : "Product and pickup stations saved successfully");
+          toast.success(draftMode || !isPublished ? "Draft saved and pickup stations updated" : "Product and pickup stations saved successfully");
         } else {
-          toast.success(draftMode ? "Draft saved; some stations failed to assign" : "Product saved; some stations failed to assign");
+          toast.success(draftMode || !isPublished ? "Draft saved; some stations failed to assign" : "Product saved; some stations failed to assign");
         }
       } else {
-        toast.success(draftMode ? "Draft saved successfully" : "Product added successfully");
+        toast.success(draftMode || !isPublished ? "Draft saved successfully" : "Product added successfully");
       }
 
       await queryClient.invalidateQueries({ queryKey: ["products"] });
@@ -212,7 +263,7 @@ export default function AddProduct({
 
   return (
     <div
-      className="fixed inset-0 z-50 overflow-y-auto bg-black/40 px-4 py-16 sm:py-20"
+      className="fixed inset-0 z-50 overflow-y-auto bg-black/40 px-4 pt-24 pb-16 sm:pt-28 sm:pb-20"
       onClick={handleBackdropClick}
     >
       <div
@@ -226,89 +277,6 @@ export default function AddProduct({
           className="text-orange/70 hover:text-orange absolute top-6 right-6 cursor-pointer transition-all duration-300"
         /> 
         </div>
-        {/* <buttonadydamsGIG
-        commented
-        1 hour ago
-        Added Ingress.yaml file to fix
-        image
-        
-        adydams added 7 commits 2 weeks ago
-        @adydams
-        cleaned the time for the cron job
-        201a42b
-        @adydams
-        just commit
-        be163e0
-        @adydams
-        Merge branch 'develop' of https://github.com/giglogistics/GIGL.Blackbook 
-        eb8e112
-        @adydams
-        fixed duplicate cron job entries
-        6092f25
-        @adydams
-        added yaml files
-        0fd0490
-        @adydams
-        Merge branch 'develop' of https://github.com/giglogistics/GIGL.Blackbook 
-        67eea33
-        @adydams
-        added ingress.yaml file
-        343bd86
-        @adydamsGIG
-        adydamsGIG requested a review from gigl-devops as a code owner 1 hour ago
-        sundayoladejo
-        sundayoladejo reviewed 1 hour ago
-        GIGL.Blackbook.Api/k8s/prod/ingress.yaml
-            #cert-manager.io/cluster-issuer: "letsencrypt-prod"  
-            #kubernetes.io/tls-acme: "true"
-        
-        spec:
-        @sundayoladejo
-        sundayoladejo
-        1 hour ago
-        adding this on develop. are you sure?
-        
-        @adydamsGIG
-        adydamsGIG
-        1 hour ago
-        Author
-        That was the recommended solution by devops, then the devlop branch will be deployed to production
-        
-        @adydamsGIG	Reply...
-        sundayoladejo
-        sundayoladejo approved these changes 1 hour ago
-        @adydamsGIG
-        Merge branch 'develop' into Damilola/add-prod-k8-ingress
-        1472736
-        This branch has not been deployed
-        No deployments
-        Merge info
-        Changes approved
-        1 approving review by reviewers with write access.
-        
-        
-        Some checks haven't completed yet
-        1 expected, 1 successful checks
-        
-        
-        pending checks
-        protected-paths
-        protected-pathsExpected — Waiting for status to be reported
-        Required
-        successful checks
-        PR Checks (Sonar · Build · Security) / sonarqube-scan (pull_request)
-        PR Checks (Sonar · Build · Security) / sonarqube-scan (pull_request)Successful in 54s
-        Merging is blocked
-        All comments must be resolved.
-        You can also merge this with the command line. 
-        
-            type="button"
-            onClick={handleShowProduct}
-            aria-label="Close"
-            className="absolute right-4 top-4 z-50 rounded-full p-3 text-orange/70 transition-all duration-300 hover:bg-orange/10 hover:text-orange"
-          >
-            <MdOutlineCancel size={28} />
-        </button> */}
 
       <form onSubmit={onSubmitSaveProduct} className="space-y-6" onClick={(event) => event.stopPropagation()}>
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
@@ -500,6 +468,62 @@ export default function AddProduct({
                   <p className="mt-1 text-sm text-slate-500">Capture the product's size and shipping dimensions.</p>
                 </div>
 
+                <div className="mb-6">
+                  <label className="text-xs font-semibold text-slate-600" htmlFor="boxSizeId">
+                    Standard Box Size
+                  </label>
+                  <select
+                    id="boxSizeId"
+                    value={watch("boxSizeId") || ""}
+                    className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-orange/70 focus:ring-2 focus:ring-orange/10"
+                    {...register("boxSizeId")}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setValue("boxSizeId", val);
+                      handleBoxSizeChange(val);
+                    }}
+                  >
+                    <option value="">Custom Dimensions</option>
+                    {isFetchingBoxSizes ? (
+                      <option disabled>Loading box sizes...</option>
+                    ) : (
+                      boxSizesList.map((box) => (
+                        <option key={box.id} value={box.id}>
+                          {box.name} {box.maxWeight ? `(Max ${box.maxWeight}kg)` : ""}
+                        </option>
+                      ))
+                    )}
+                  </select>
+                </div>
+
+                <div className="mb-6">
+                  <p className="mb-3 text-xs font-semibold text-slate-600">Box Reference Guide</p>
+                  <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
+                    {boxSizesList.map((box) => (
+                      <div
+                        key={box.id}
+                        onClick={() => {
+                          setValue("boxSizeId", box.id);
+                          handleBoxSizeChange(box.id);
+                        }}
+                        className={`flex-shrink-0 cursor-pointer rounded-2xl border-2 p-3 transition-all ${
+                          watch("boxSizeId") === box.id
+                            ? "border-orange bg-orange/5 ring-2 ring-orange/20"
+                            : "border-slate-200 bg-white hover:border-orange/50"
+                        }`}
+                      >
+                        <img
+                          src={box.description_image_url || "https://via.placeholder.com/60?text=Box"}
+                          alt={box.name}
+                          className="h-12 w-12 object-contain"
+                        />
+                        <p className="mt-2 text-center text-[10px] font-medium text-slate-900">{box.name}</p>
+                        <p className="text-center text-[9px] text-slate-500">Max {box.maxWeight}kg</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="flex flex-col gap-2">
                     <label className="text-xs font-semibold text-slate-600" htmlFor="weight">
@@ -557,6 +581,31 @@ export default function AddProduct({
                     />
                   </div>
                 </div>
+                <div className="mt-4">
+                  <label className="text-xs font-semibold text-slate-600" htmlFor="logisticsCategoryId">
+                    Shipping fee profile (internal)
+                  </label>
+                  <p className="text-xs text-slate-500">Used for logistics and shipping-fee calculations only. Your main product category remains for display.</p>
+                  <select
+                    id="logisticsCategoryId"
+                    className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-orange/70 focus:ring-2 focus:ring-orange/10"
+                    {...register("logisticsCategoryId")}
+                  >
+                    <option value="">Select a shipping category</option>
+                    {isFetchingLogisticsCategories ? (
+                      <option disabled>Loading categories...</option>
+                    ) : (
+                      logisticsCategoryList.map((category) => (
+                        <option key={category.id} value={category.id}>
+                          {category.name}
+                        </option>
+                      ))
+                    )}
+                  </select>
+                  {errors.logisticsCategoryId && (
+                    <p className="text-xs text-red-500">{errors.logisticsCategoryId.message}</p>
+                  )}
+                </div>
               </section>
             </div>
 
@@ -607,9 +656,9 @@ export default function AddProduct({
                           {isFetchingStations ? (
                             <option disabled>Loading stations...</option>
                           ) : (
-                            pickupStations.map((station: any) => (
+                            pickupStations.map((station) => (
                               <option key={station.id} value={station.id}>
-                                {station.name} — {station.address}
+                                {station.name} � {station.address}
                               </option>
                             ))
                           )}
@@ -775,7 +824,7 @@ export default function AddProduct({
                       <span key={tag} className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-2 text-xs text-slate-700">
                         {tag}
                         <button type="button" onClick={() => removeTag(tag)} className="text-slate-400 hover:text-slate-600">
-                          ×
+                          �
                         </button>
                       </span>
                     ))}

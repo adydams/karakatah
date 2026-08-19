@@ -50,7 +50,7 @@ export default function Navbar() {
   // }, [cart, isGettingCart, SetCart]);
   // console.log(cart);
 
-  const itemsNum = cart?.data.items.length;
+  const itemsNum = cart?.data?.items?.length ?? 0;
   // console.log("Number of items in the cart", itemsNum);
   // console.log("Testing testing", cart);
 
@@ -106,8 +106,8 @@ export default function Navbar() {
               ) : (
                 ""
               )}
-              {showCart && <CartItemCardNav />}
             </Link>
+            {showCart && <CartItemCardNav />}
           </li>
           {user ? (
             <ProfileBar />

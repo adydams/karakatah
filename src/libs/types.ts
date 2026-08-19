@@ -34,5 +34,6 @@ export type ProductPayload = {
   lengthCm?: string;
   widthCm?: string;
   heightCm?: string;
+  logisticsCategoryId?: string;
   images: File[]; // 👈 This is important
 };

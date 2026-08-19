@@ -22,12 +22,9 @@ export default function CartItemCardNav() {
   const items = cart?.data?.items ?? [];
   const totalAmount = cart?.data?.totalAmount;
 
-  // console.log(cart);
-  // console.log("This are the products in the cart", items);
-
   if (isLoading) return <Spinner size="small" />;
 
-  if (!cart)
+  if (!cart) {
     return (
       <>
         <div className="fixed top-0 left-0 hidden h-screen w-full bg-gray-900/40"></div>
@@ -36,7 +33,7 @@ export default function CartItemCardNav() {
             <img src="images/cart_toon.svg" alt="" />
           </div>
           <Link
-            to={""}
+            to={"/"}
             className="bg-muted-green/90 hover:bg-muted-green font-primary flex w-full items-center justify-center py-3 text-sm font-bold text-white"
           >
             Start shopping
@@ -44,25 +41,25 @@ export default function CartItemCardNav() {
         </div>
       </>
     );
+  }
 
-  if (items) {
-    if (items?.length <= 0)
-      return (
-        <>
-          <div className="fixed top-0 left-0 h-screen w-full bg-gray-900/40 md:hidden"></div>
-          <div className="absolute top-full left-[-130%] mt-8 hidden w-[300px] flex-col items-center justify-center bg-white px-3 py-2 shadow-md/10 md:flex">
-            <div className="w-full">
-              <img src="images/cart_toon.svg" alt="" />
-            </div>
-            <Link
-              to={"/"}
-              className="bg-muted-green/90 hover:bg-muted-green font-primary flex w-full items-center justify-center py-3 text-sm font-bold text-white"
-            >
-              Empty Cart
-            </Link>
+  if (items.length === 0) {
+    return (
+      <>
+        <div className="fixed top-0 left-0 h-screen w-full bg-gray-900/40 md:hidden"></div>
+        <div className="absolute top-full left-[-130%] mt-8 hidden w-[300px] flex-col items-center justify-center bg-white px-3 py-2 shadow-md/10 md:flex">
+          <div className="w-full">
+            <img src="images/cart_toon.svg" alt="" />
           </div>
-        </>
-      );
+          <Link
+            to={"/"}
+            className="bg-muted-green/90 hover:bg-muted-green font-primary flex w-full items-center justify-center py-3 text-sm font-bold text-white"
+          >
+            Empty Cart
+          </Link>
+        </div>
+      </>
+    );
   }
 
   return (

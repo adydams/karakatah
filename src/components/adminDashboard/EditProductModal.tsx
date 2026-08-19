@@ -5,8 +5,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { FaCloudUploadAlt } from "react-icons/fa";
 import { MdOutlineCancel } from "react-icons/md";
 import toast from "react-hot-toast";
+import type { ProductPayload } from "../../libs/types";
 import { productEditSchema, type TProductEditSchema } from "../../libs/formSchema";
-import { getProductById, getBrands, getCategories, getSubCategories, updateProduct } from "../../services/adminDashboard/apiProducts";
+import { getProductById, getBrands, getCategories, getLogisticsCategories, getSubCategories, updateProduct } from "../../services/adminDashboard/apiProducts";
+import { getBoxSizes } from "../../services/apiLogistics";
 import { assignProductToStation, getPickupStations, updateStationStock } from "../../services/adminDashboard/apiPickupStation";
 import PickupStationForm from "./PickupStationForm";
 import Spinner from "./Spinner";
@@ -32,6 +34,55 @@ type ExistingImage = {
   name?: string;
 };
 
+type ApiProductInventory = {
+  productPickupStation?: { id?: string; station?: { id?: string } };
+  pickupStation?: { id?: string };
+  quantityOnHand?: number;
+  productPickupStationId?: string;
+};
+
+type EditProductFormValues = {
+  name: string;
+  description: string;
+  price: string;
+  stockQuantity: string;
+  categoryId: string;
+  subCategoryId: string;
+  brandId: string;
+  storeId?: string;
+  logisticsCategoryId?: string;
+  boxSizeId?: string;
+  images?: File[];
+};
+
+type ApiProduct = {
+  name?: string;
+  description?: string;
+  price?: string | number;
+  stockQuantity?: string | number;
+  categoryId?: string;
+  subCategoryId?: string;
+  brandId?: string;
+  logisticsCategoryId?: string;
+  weightKg?: string | number;
+  lengthCm?: string | number;
+  widthCm?: string | number;
+  heightCm?: string | number;
+  images?: Array<{ id?: string; url: string; name?: string; filename?: string }>;
+  inventories?: ApiProductInventory[];
+};
+
+type SelectOption = {
+  id: string;
+  name: string;
+};
+
+type PickupStationOption = {
+  id: string;
+  name?: string;
+  address?: string;
+};
+
 export default function EditProductModal({ open, onClose, productId, onUpdated }: Props) {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
@@ -48,7 +99,8 @@ export default function EditProductModal({ open, onClose, productId, onUpdated }
     reset,
     formState: { errors, isSubmitting },
     setValue,
-  } = useForm<TProductEditSchema>({ resolver: zodResolver(productEditSchema) as any });
+    watch,
+  } = useForm<EditProductFormValues>({ resolver: zodResolver(productEditSchema) });
 
   useEffect(() => {
     const urls = selectedFiles.map((file) => URL.createObjectURL(file));
@@ -84,14 +136,36 @@ export default function EditProductModal({ open, onClose, productId, onUpdated }
     queryKey: ["brands"],
     queryFn: getBrands,
   });
+  const { data: logisticsCategories, isLoading: isFetchingLogisticsCategories } = useQuery({
+    queryKey: ["logisticsCategories"],
+    queryFn: getLogisticsCategories,
+  });
+  const { data: boxSizes, isLoading: isFetchingBoxSizes } = useQuery({
+    queryKey: ["boxSizes"],
+    queryFn: getBoxSizes,
+  });
   const { data: pickupStationResponse, isLoading: isFetchingStations } = useQuery({
     queryKey: ["pickupStations"],
     queryFn: getPickupStations,
   });
-  const pickupStations = normalizeListData<any>(pickupStationResponse);
-  const categoriesList = normalizeListData<{ id: string; name: string }>(categories);
-  const subcategoriesList = normalizeListData<{ id: string; name: string }>(subcategories);
-  const brandsList = normalizeListData<{ id: string; name: string }>(brands);
+  const pickupStations = normalizeListData<PickupStationOption>(pickupStationResponse);
+  const categoriesList = normalizeListData<SelectOption>(categories);
+  const subcategoriesList = normalizeListData<SelectOption>(subcategories);
+  const brandsList = normalizeListData<SelectOption>(brands);
+  const logisticsCategoryList = normalizeListData(logisticsCategories).map((cat: any) => ({
+    id: String(cat.category_id),
+    name: cat.category,
+  }));
+  const boxSizesList = normalizeListData(boxSizes).map((box: any, index: number) => ({
+    id: String(box.box_size_id ?? box.id ?? index),
+    name: box.box_size_name || box.name || `Box ${index + 1}`,
+    weight: box.max_weight ?? box.weight,
+    length: box.length,
+    width: box.width,
+    height: box.height,
+    maxWeight: box.max_weight,
+    description_image_url: box.description_image_url,
+  }));
 
   const totalStock = stations.reduce((acc, station) => acc + (Number(station.stock) || 0), 0);
 
@@ -101,35 +175,37 @@ export default function EditProductModal({ open, onClose, productId, onUpdated }
     const fetchProduct = async () => {
       try {
         const res = await getProductById(productId);
-        const product = res.data;
-
+        const productData = res.data?.data || res.data;
+ 
         reset({
-          name: product.name,
-          description: product.description,
-          price: product.price,
-          stockQuantity: product.stockQuantity ?? "0",
-          categoryId: product.categoryId || "",
-          subCategoryId: product.subCategoryId || "",
-          brandId: product.brandId || "",
-          images: [],
+         name: productData.name ?? "",
+         description: productData.description ?? "",
+         price: String(productData.price ?? ""),
+         stockQuantity: String(productData.stockQuantity ?? "0"),
+         categoryId: productData.categoryId || "",
+         subCategoryId: productData.subCategoryId || "",
+         brandId: productData.brandId || "",
+         logisticsCategoryId: String(productData.logisticsCategoryId ?? ""),
+         boxSizeId: String(productData.boxSizeId ?? ""),
+         images: [],
         });
-
+ 
         setSelectedFiles([]);
         setPreviewUrls([]);
         setRemovedImageIds([]);
-        setExistingImages((product.images || []).map((image: any) => ({
-          id: image.id,
-          url: image.url,
-          name: image.name || image.filename || "Product image",
+        setExistingImages((productData.images ?? []).map((image: any) => ({
+         id: image.id,
+         url: image.url,
+         name: image.name || image.filename || "Product image",
         })));
         setDimensions({
-          weight: product.weightKg ?? "",
-          length: product.lengthCm ?? "",
-          width: product.widthCm ?? "",
-          height: product.heightCm ?? "",
+          weight: String(productData.weightKg ?? ""),
+          length: String(productData.lengthCm ?? ""),
+          width: String(productData.widthCm ?? ""),
+          height: String(productData.heightCm ?? ""),
         });
 
-        const initialStations = (product.inventories || []).map((inventory: any) => ({
+        const initialStations = (productData.inventories ?? []).map((inventory: any) => ({
           stationId: inventory?.productPickupStation?.station?.id || inventory?.pickupStation?.id || "",
           stock: String(inventory?.quantityOnHand ?? 0),
           productPickupStationId: inventory?.productPickupStationId || inventory?.productPickupStation?.id || "",
@@ -208,6 +284,19 @@ export default function EditProductModal({ open, onClose, productId, onUpdated }
     }
   };
 
+  const handleBoxSizeChange = (boxSizeId: string) => {
+    setValue("boxSizeId", boxSizeId);
+    const selectedBox = boxSizesList.find((box) => box.id === boxSizeId);
+    if (selectedBox) {
+      setDimensions({
+        weight: selectedBox.weight?.toString() || "",
+        length: selectedBox.length?.toString() || "",
+        width: selectedBox.width?.toString() || "",
+        height: selectedBox.height?.toString() || "",
+      });
+    }
+  };
+
   const updateDimension = (field: keyof typeof dimensions, value: string) => {
     setDimensions((current) => ({ ...current, [field]: value }));
   };
@@ -231,7 +320,7 @@ export default function EditProductModal({ open, onClose, productId, onUpdated }
 
   if (!open) return null;
 
-  async function onSubmit(data: TProductEditSchema) {
+  async function onSubmit(data: EditProductFormValues) {
     if (!productId) return;
 
     if (existingImages.length + selectedFiles.length < 1) {
@@ -243,17 +332,21 @@ export default function EditProductModal({ open, onClose, productId, onUpdated }
       const nextStock = String(totalStock);
       setValue("stockQuantity", nextStock);
 
-      await updateProduct(productId, {
+      const payload: Partial<ProductPayload> & { images: File[]; removedImageIds: string[] } = {
         ...data,
         price: data.price,
         stockQuantity: nextStock,
+        logisticsCategoryId: data.logisticsCategoryId,
+        boxSizeId: data.boxSizeId,
         weightKg: dimensions.weight || undefined,
         lengthCm: dimensions.length || undefined,
         widthCm: dimensions.width || undefined,
         heightCm: dimensions.height || undefined,
         images: selectedFiles,
         removedImageIds,
-      } as any);
+      };
+
+      await updateProduct(productId, payload);
 
       for (const station of stations) {
         if (!station.stationId) continue;
@@ -278,7 +371,7 @@ export default function EditProductModal({ open, onClose, productId, onUpdated }
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/40 px-4 py-4 sm:py-6" onClick={(event) => event.target === event.currentTarget && onClose()}>
+    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/40 px-4 pt-10 pb-6 sm:pt-14 sm:pb-8" onClick={(event) => event.target === event.currentTarget && onClose()}>
       <div className="relative my-4 w-full max-w-5xl rounded-[32px] bg-white p-6 shadow-xl" onClick={(event) => event.stopPropagation()}>
         <button type="button" onClick={onClose} className="absolute right-4 top-4 rounded-full border border-slate-300 bg-white p-2 text-slate-700 transition hover:bg-slate-100" aria-label="Close modal">
           <MdOutlineCancel size={22} />
@@ -290,7 +383,7 @@ export default function EditProductModal({ open, onClose, productId, onUpdated }
           </div>
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit as any)} className="space-y-6">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <section className="rounded-[28px] bg-slate-50 p-6 shadow-sm ring-1 ring-slate-200">
             <div className="mb-6">
               <h3 className="text-lg font-semibold text-slate-900">General Information</h3>
@@ -354,6 +447,62 @@ export default function EditProductModal({ open, onClose, productId, onUpdated }
               <div className="mb-5">
                 <h3 className="text-lg font-semibold text-slate-900">Logistics & Dimensions</h3>
               </div>
+              <div className="mb-6">
+                <label className="text-xs font-semibold text-slate-600" htmlFor="edit-boxSizeId">
+                  Standard Box Size
+                </label>
+                <select
+                  id="edit-boxSizeId"
+                  value={watch("boxSizeId") || ""}
+                  className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-orange/70 focus:ring-2 focus:ring-orange/10"
+                  {...register("boxSizeId")}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setValue("boxSizeId", val);
+                    handleBoxSizeChange(val);
+                  }}
+                >
+                  <option value="">Custom Dimensions</option>
+                  {isFetchingBoxSizes ? (
+                    <option disabled>Loading box sizes...</option>
+                  ) : (
+                    boxSizesList.map((box) => (
+                      <option key={box.id} value={box.id}>
+                        {box.name} {box.maxWeight ? `(Max ${box.maxWeight}kg)` : ""}
+                      </option>
+                    ))
+                  )}
+                </select>
+              </div>
+
+              <div className="mb-6">
+                <p className="mb-3 text-xs font-semibold text-slate-600">Box Reference Guide</p>
+                <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
+                  {boxSizesList.map((box) => (
+                    <div
+                      key={box.id}
+                      onClick={() => {
+                        setValue("boxSizeId", box.id);
+                        handleBoxSizeChange(box.id);
+                      }}
+                      className={`flex-shrink-0 cursor-pointer rounded-2xl border-2 p-3 transition-all ${
+                        watch("boxSizeId") === box.id
+                          ? "border-orange bg-orange/5 ring-2 ring-orange/20"
+                          : "border-slate-200 bg-white hover:border-orange/50"
+                      }`}
+                    >
+                      <img
+                        src={box.description_image_url || "https://via.placeholder.com/60?text=Box"}
+                        alt={box.name}
+                        className="h-12 w-12 object-contain"
+                      />
+                      <p className="mt-2 text-center text-[10px] font-medium text-slate-900">{box.name}</p>
+                      <p className="text-center text-[9px] text-slate-500">Max {box.maxWeight}kg</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="flex flex-col gap-2">
                   <label className="text-xs font-semibold text-slate-600" htmlFor="edit-weight">Weight</label>
@@ -371,6 +520,19 @@ export default function EditProductModal({ open, onClose, productId, onUpdated }
                   <label className="text-xs font-semibold text-slate-600" htmlFor="edit-height">Height</label>
                   <input id="edit-height" type="text" value={dimensions.height} onChange={(e) => updateDimension("height", e.target.value)} className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-orange/70 focus:ring-2 focus:ring-orange/10" placeholder="0.0 cm" />
                 </div>
+                <div className="mt-4 w-full">
+                  <label className="text-xs font-semibold text-slate-600" htmlFor="logisticsCategoryId">Shipping fee profile (internal)</label>
+                  <p className="mt-1 text-xs text-slate-500">Used for logistics and shipping-fee calculations only. Your main product category remains for display.</p>
+                  <select id="logisticsCategoryId" {...register("logisticsCategoryId")} className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-orange/70 focus:ring-2 focus:ring-orange/10">
+                    <option value="">Select a shipping category</option>
+                    {isFetchingLogisticsCategories ? (
+                      <option disabled>Loading categories...</option>
+                    ) : (
+                      logisticsCategoryList.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)
+                    )}
+                  </select>
+                  {errors.logisticsCategoryId && <p className="text-xs text-red-500">{errors.logisticsCategoryId.message}</p>}
+                </div>
               </div>
             </section>
           </div>
@@ -384,7 +546,7 @@ export default function EditProductModal({ open, onClose, productId, onUpdated }
                 <label className="text-xs font-semibold text-slate-600" htmlFor="edit-category">Category</label>
                 <select id="edit-category" {...register("categoryId")} className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-orange/70 focus:ring-2 focus:ring-orange/10">
                   <option value="">Select category</option>
-                {isFetchingCategories ? <option disabled>Loading categories...</option> : categoriesList.map((item: any) => <option key={item.id} value={item.id}>{item.name}</option>)}
+                {isFetchingCategories ? <option disabled>Loading categories...</option> : categoriesList.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
                 </select>
                 {errors.categoryId && <p className="text-xs text-red-500">{errors.categoryId.message}</p>}
               </div>
@@ -392,7 +554,7 @@ export default function EditProductModal({ open, onClose, productId, onUpdated }
                 <label className="text-xs font-semibold text-slate-600" htmlFor="edit-subcategory">Subcategory</label>
                 <select id="edit-subcategory" {...register("subCategoryId")} className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-orange/70 focus:ring-2 focus:ring-orange/10">
                   <option value="">Select subcategory</option>
-                  {isFetchingSubCategories ? <option disabled>Loading subcategories...</option> : subcategoriesList.map((item: any) => <option key={item.id} value={item.id}>{item.name}</option>)}
+                  {isFetchingSubCategories ? <option disabled>Loading subcategories...</option> : subcategoriesList.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
                 </select>
                 {errors.subCategoryId && <p className="text-xs text-red-500">{errors.subCategoryId.message}</p>}
               </div>
@@ -400,7 +562,7 @@ export default function EditProductModal({ open, onClose, productId, onUpdated }
                 <label className="text-xs font-semibold text-slate-600" htmlFor="edit-brand">Brand</label>
                 <select id="edit-brand" {...register("brandId")} className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-orange/70 focus:ring-2 focus:ring-orange/10">
                   <option value="">Select brand</option>
-                  {isFetchingBrand ? <option disabled>Loading brands...</option> : brandsList.map((item: any) => <option key={item.id} value={item.id}>{item.name}</option>)}
+                  {isFetchingBrand ? <option disabled>Loading brands...</option> : brandsList.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
                 </select>
                 {errors.brandId && <p className="text-xs text-red-500">{errors.brandId.message}</p>}
               </div>
@@ -437,7 +599,7 @@ export default function EditProductModal({ open, onClose, productId, onUpdated }
                     <label className="text-xs font-semibold text-slate-600">Pickup Station</label>
                     <select value={station.stationId || ""} onChange={(e) => setStations((current) => current.map((item, itemIndex) => itemIndex === index ? { ...item, stationId: e.target.value } : item))} className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-orange/70 focus:ring-2 focus:ring-orange/10">
                       <option value="">Select a pickup station</option>
-                      {isFetchingStations ? <option disabled>Loading stations...</option> : pickupStations.map((item: any) => <option key={item.id} value={item.id}>{item.name} — {item.address}</option>)}
+                      {isFetchingStations ? <option disabled>Loading stations...</option> : pickupStations.map((item) => <option key={item.id} value={item.id}>{item.name} — {item.address}</option>)}
                     </select>
                   </div>
                   <div className="flex flex-col gap-2">

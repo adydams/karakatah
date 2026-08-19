@@ -1,6 +1,6 @@
 // import EmptyCart from "../components/EmptyCart";
 import { IoMdArrowDropright } from "react-icons/io";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { formatPrice, normalizeListData } from "../utils/utils";
 import type { Cart } from "../contexts/CartContext";
 import { getCart } from "../services/apiCarts";
@@ -10,9 +10,17 @@ import { checkoutSchema, type TCheckoutSchema } from "../types/formSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import toast from "react-hot-toast";
 import { createOrder } from "../services/apiCheckout";
-import { Link } from "react-router";
-import { getShippingAddress } from "../services/apiShipping";
+import { Link, useLocation } from "react-router";
+import { getShippingAddress, createShippingAddress } from "../services/apiShipping";
+import Modal from "../components/Modal";
 import { getPickupStations } from "../services/adminDashboard/apiPickupStation";
+import { shippingAddressSchema, type ShippingAddressFormValues } from "../types/formSchema";
+import { useState, useEffect } from "react";
+import { getCouriers, fetchRates } from "../services/apiLogistics";
+import AddAddressModal from "../components/AddAddressModal";
+import OrderSummarySidebar from "../components/OrderSummarySidebar";
+import CourierSelector, { getCourierKey } from "../components/CourierSelector";
+import PaymentGatewaySelector from "../components/PaymentGatewaySelector";
 
 type PickupStation = {
   id: string;
@@ -29,24 +37,80 @@ type PickupStation = {
 export default function Checkout() {
   // const { cart } = useCart();
 
+  const location = useLocation();
+  type SelectedCourier = {
+    id?: string | number;
+    courierId?: string | number;
+    courier_id?: string | number;
+    fee?: number;
+    price?: number;
+    requestToken?: string;
+    request_token?: string;
+    request_token_value?: string;
+    requestTokenValue?: string;
+    serviceCode?: string;
+    service_code?: string;
+    serviceCodeValue?: string;
+    name?: string;
+    courierName?: string;
+    estimated_days?: string | number;
+    estimatedDays?: string | number;
+  };
+
+  type CheckoutNavState = {
+    courier?: SelectedCourier;
+    shippingMethod?: "pickup" | "shipping";
+    chosenStationId?: string;
+  };
+
+  const navState = (location.state as CheckoutNavState | null) || null;
+  const storedShippingMethod = sessionStorage.getItem("selectedShippingMethod") as "pickup" | "shipping" | null;
+  const storedChosenStationId = sessionStorage.getItem("selectedPickupStationId") || "";
+  const defaultShippingMethod = navState?.shippingMethod ?? storedShippingMethod ?? "pickup";
+  const defaultChosenStationId = navState?.chosenStationId ?? storedChosenStationId ?? "";
+
   const {
     register,
     handleSubmit,
     watch,
+    setValue,
+    getValues,
     formState: { errors, isSubmitting },
   } = useForm<TCheckoutSchema>({
     resolver: zodResolver(checkoutSchema),
     defaultValues: {
-      shippingMethod: "pickup",
+      shippingMethod: defaultShippingMethod,
       gateway: "paystack",
       shippingAddressId: "",
-      chosenStationId: "",
+      chosenStationId: defaultChosenStationId,
       phone: "",
       notes: "",
     },
   });
 
   const shippingMethod = watch("shippingMethod");
+  const shippingAddressId = watch("shippingAddressId");
+
+  // Logistics State
+  const [liveCouriers, setLiveCouriers] = useState<SelectedCourier[]>([]);
+  const [selectedCourier, setSelectedCourier] = useState<SelectedCourier | null>(null);
+  const [isLiveRatesLoading, setIsLiveRatesLoading] = useState(false);
+  const [requestToken, setRequestToken] = useState<string | null>(null);
+
+  // Fetch general couriers on mount to show the list even before address selection
+  useEffect(() => {
+    async function loadInitialCouriers() {
+      try {
+        const res = await getCouriers();
+        if (res && res.success && res.data) {
+          setLiveCouriers(res.data);
+        }
+      } catch (err) {
+        console.error("Failed to load initial couriers:", err);
+      }
+    }
+    loadInitialCouriers();
+  }, []);
 
   // fetch the cart using the cartId
   const { data: cart, isLoading } = useQuery<Cart>({
@@ -60,6 +124,84 @@ export default function Checkout() {
     queryFn: getShippingAddress,
   });
 
+  const [isAddingAddress, setIsAddingAddress] = useState(false);
+  const openAddAddress = () => setIsAddingAddress(true);
+  const closeAddAddress = () => setIsAddingAddress(false);
+
+  const shippingAddresses = normalizeListData<any>(shippingAddress);
+
+  const queryClient = useQueryClient();
+
+  // Logistics Live Rate Fetching
+  useEffect(() => {
+    const fetchLiveRates = async () => {
+      if (shippingMethod !== "shipping") return;
+      if (!shippingAddressId || !cart?.data?.items || cart.data.items.length === 0) return;
+
+      setIsLiveRatesLoading(true);
+      try {
+        const packageItems = cart.data.items.map((it: any) => ({
+          name: it.product?.name || 'Item',
+          description: it.product?.name || 'Item',
+          unit_weight: it.product?.weightKg ? String(it.product.weightKg) : "0",
+          unit_amount: it.product?.price ? String(it.product.price) : "0",
+          quantity: String(it.quantity || 1),
+        }));
+
+        const products = cart.data.items.map((it: any) => it.product).filter(Boolean);
+        if (products.length === 0) return;
+
+        const packageDimension = {
+          length: Math.max(...products.map((p: any) => Number(p.lengthCm || 0))),
+          width: Math.max(...products.map((p: any) => Number(p.widthCm || 0))),
+          height: Math.max(...products.map((p: any) => Number(p.heightCm || 0))),
+        };
+
+        const firstProduct = products[0];
+        const logisticsCategoryId = firstProduct?.logisticsCategoryId;
+
+        const payload = {
+          shippingAddressId,
+          packageItems,
+          packageDimension,
+          categoryId: logisticsCategoryId,
+        };
+
+        const res = await fetchRates(payload);
+        if (res && res.success !== false && res.data) {
+          const data = res.data;
+          setRequestToken(data.request_token || null);
+          setLiveCouriers(Array.isArray(data.couriers) ? data.couriers : []);
+
+          // Auto-select first courier
+          if (data.couriers && data.couriers.length > 0) {
+            setSelectedCourier(data.couriers[0]);
+          }
+        } else {
+          setLiveCouriers([]);
+          const errorMsg = res?.message || 'No couriers available for this address';
+          toast.error(errorMsg);
+        }
+      } catch (err) {
+        console.error('Failed to fetch live rates:', err);
+        toast.error('Unable to fetch shipping rates at the moment');
+      } finally {
+        setIsLiveRatesLoading(false);
+      }
+    };
+
+    fetchLiveRates();
+  }, [shippingAddressId, cart, shippingMethod]);
+
+  const handleCourierSelect = (courier: SelectedCourier, key: string) => {
+    setSelectedCourier(courier);
+    try {
+      sessionStorage.setItem("selectedCourier", JSON.stringify(courier));
+    } catch (err) {
+      console.warn("Failed to persist selectedCourier.", err);
+    }
+  };
+
   const { data: pickupStationResponse, isLoading: isFetchingPickupStations } =
     useQuery({
       queryKey: ["pickupStations"],
@@ -69,7 +211,8 @@ export default function Checkout() {
   const pickupStations = normalizeListData<PickupStation>(pickupStationResponse);
   const items = cart?.data?.items ?? [];
   const subtotal = Number(cart?.data?.totalAmount ?? 0);
-  const shippingFee = shippingMethod === "shipping" ? 2500 : 0;
+
+  const shippingFee = shippingMethod === "shipping" ? Number(selectedCourier?.fee ?? selectedCourier?.price ?? 0) : 0;
   const totalAmount = subtotal + shippingFee;
 
   if (isLoading)
@@ -80,22 +223,52 @@ export default function Checkout() {
     );
 
   async function onSubmit(data: TCheckoutSchema) {
+    let selectedCourierFinal = selectedCourier;
+
     if (data.shippingMethod === "shipping") {
-      toast.error(
-        "Home delivery checkout is not available yet. Please choose pickup and continue.",
-      );
-      return;
+      if (!selectedCourierFinal) {
+        toast.error("Please select a shipping option before proceeding.");
+        return;
+      }
     }
 
     try {
-      const success = await createOrder({
+      const payload = {
         shippingAddressId: data.shippingAddressId || "",
         notes: data.notes || "",
         gateway: data.gateway,
         phone: data.phone,
-        shippingMethod: data.shippingMethod,
+        shippingMethod: data.shippingMethod as "pickup" | "shipping",
         chosenStationId: data.chosenStationId || undefined,
-      });
+        ...(selectedCourierFinal && data.shippingMethod === "shipping"
+          ? {
+              courierId: String(
+                selectedCourierFinal.id || selectedCourierFinal.courierId || selectedCourierFinal.courier_id
+              ),
+              requestToken:
+                selectedCourierFinal.requestToken ||
+                selectedCourierFinal.request_token ||
+                selectedCourierFinal.request_token_value ||
+                selectedCourierFinal.requestTokenValue ||
+                undefined,
+              serviceCode:
+                selectedCourierFinal.serviceCode ||
+                selectedCourierFinal.service_code ||
+                selectedCourierFinal.serviceCodeValue ||
+                undefined,
+              shippingFee: Number(selectedCourierFinal.fee ?? selectedCourierFinal.price ?? 0),
+              courierName: selectedCourierFinal.name || selectedCourierFinal.courierName || "",
+              deliveryEta:
+                typeof selectedCourierFinal.estimated_days === "number" || typeof selectedCourierFinal.estimated_days === "string"
+                  ? String(selectedCourierFinal.estimated_days)
+                  : typeof selectedCourierFinal.estimatedDays === "number" || typeof selectedCourierFinal.estimatedDays === "string"
+                    ? String(selectedCourierFinal.estimatedDays)
+                    : undefined,
+            }
+          : {}),
+      };
+
+      const success = await createOrder(payload);
 
       if (success) {
         toast.success(success.message);
@@ -115,290 +288,197 @@ export default function Checkout() {
   }
 
   return (
-    <>
-      <form
-        onSubmit={handleSubmit(onSubmit)}
-        className="text-deep-blue flex w-full items-center justify-center pt-14 pb-5 lg:py-16"
-      >
-        <div className="grid h-full w-[92%] grid-cols-1 gap-5 lg:w-[85%] lg:grid-cols-[2fr_1fr]">
-          <div className="flex h-full w-full flex-col items-start justify-start rounded-lg bg-white px-3 py-5 shadow-sm">
-            <div className="flex w-full items-center justify-between">
-              <div>
-                <p className="text-sm font-semibold uppercase tracking-[0.2em] text-gray-500">
-                  Step 1 • Logistics
-                </p>
-                <h2 className="font-primary mt-1 text-xl font-semibold">
-                  Choose how you want to receive your order
-                </h2>
-              </div>
-              <Link
-                className="text-orange font-primary flex w-30 items-center justify-end gap-0 text-xs font-medium underline-offset-2 transition-all duration-700 hover:gap-1 hover:underline"
-                to="/checkout/address"
-              >
-                Add address <IoMdArrowDropright size={18} />
-              </Link>
+    <main className="flex min-h-screen w-full items-start justify-center bg-[#fbf8ff] px-4 py-10">
+      <div className="grid w-full max-w-7xl grid-cols-1 gap-8 lg:grid-cols-[2fr_1fr]">
+        {/* Left Column: Checkout Form */}
+        <div className="flex flex-col gap-6 rounded-2xl bg-white p-6 shadow-sm border border-gray-100">
+          {/* Step Indicator */}
+          <div className="flex items-center justify-center gap-4 mb-8">
+            <div className="flex items-center gap-2 text-xs font-medium text-green-600">
+              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-green-600 text-white">✓</span>
+              Shipping Address
             </div>
-
-            <div className="mt-6 grid w-full gap-3 md:grid-cols-2">
-              <label className="rounded-xl border border-gray-200 p-4 transition-all hover:border-orange/40">
-                <input
-                  type="radio"
-                  value="pickup"
-                  className="mr-2"
-                  {...register("shippingMethod")}
-                />
-                <span className="font-primary font-semibold">Pickup station</span>
-                <p className="mt-1 text-sm text-gray-600">
-                  Collect from a nearby picker station at no delivery fee.
-                </p>
-              </label>
-              <label className="rounded-xl border border-gray-200 p-4 transition-all hover:border-orange/40">
-                <input
-                  type="radio"
-                  value="shipping"
-                  className="mr-2"
-                  {...register("shippingMethod")}
-                />
-                <span className="font-primary font-semibold">Home delivery</span>
-                <p className="mt-1 text-sm text-gray-600">
-                  Doorstep delivery is being wired up for live courier quotes.
-                </p>
-              </label>
+            <div className="h-px w-8 bg-gray-300" />
+            <div className="flex items-center gap-2 text-xs font-medium text-orange-600">
+              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-orange-600 text-white">2</span>
+              Shipping & Payment
             </div>
-            {errors.shippingMethod && (
-              <p className="mt-2 text-xs text-red-500">
-                {errors.shippingMethod.message}
-              </p>
-            )}
-
-            {shippingMethod === "pickup" ? (
-              <div className="mt-6 w-full rounded-xl border border-dashed border-gray-200 bg-gray-50 p-4">
-                <label
-                  htmlFor="chosenStationId"
-                  className="font-primary text-base font-semibold"
-                >
-                  Pickup station
-                </label>
-                <p className="mt-1 text-sm text-gray-600">
-                  Select the location you want to collect from.
-                </p>
-                {isFetchingPickupStations ? (
-                  <div className="mt-3">
-                    <Spinner size="small" />
-                  </div>
-                ) : pickupStations.length ? (
-                  <select
-                    id="chosenStationId"
-                    {...register("chosenStationId")}
-                    className="border-dark-gray/20 text-dark-gray/70 focus:bg-light-gray/20 focus:text-dark-gray/90 mt-3 w-full rounded-lg border-b px-5 py-2.5 text-xs transition-all duration-700 focus:outline-0"
-                  >
-                    <option value="">-- Select a pickup station --</option>
-                    {pickupStations.map((station) => (
-                      <option key={station.id} value={station.id}>
-                        {station.name} — {station.address || [station.city, station.state].filter(Boolean).join(", ")}
-                      </option>
-                    ))}
-                  </select>
-                ) : (
-                  <div className="mt-3 rounded-lg border border-orange/20 bg-orange/10 px-4 py-3 text-sm text-orange">
-                    No pickup stations are available right now. Please come back later.
-                  </div>
-                )}
-                {errors.chosenStationId && (
-                  <p className="mt-2 text-xs text-red-500">
-                    {errors.chosenStationId.message}
-                  </p>
-                )}
-              </div>
-            ) : (
-              <div className="mt-6 w-full rounded-xl border border-gray-200 bg-gray-50 p-4">
-                <div className="flex w-full items-center justify-between">
-                  <label
-                    htmlFor="shippingAddressId"
-                    className="font-primary text-base font-semibold"
-                  >
-                    Delivery address
-                  </label>
-                  <Link
-                    className="text-orange font-primary flex items-center gap-0 text-xs font-medium underline-offset-2 transition-all duration-700 hover:gap-1 hover:underline"
-                    to="/checkout/address"
-                  >
-                    Add address <IoMdArrowDropright size={18} />
-                  </Link>
-                </div>
-                {IsFetchingAddress ? (
-                  <div className="mt-3">
-                    <Spinner size="small" />
-                  </div>
-                ) : !shippingAddress?.addresses?.length ? (
-                  <Link
-                    to="/checkout/address"
-                    className="border-orange/40 mt-4 block w-full border-2 border-dashed bg-white px-10 py-5 text-center text-xs font-medium tracking-widest text-gray-500"
-                  >
-                    Add an address
-                  </Link>
-                ) : (
-                  <select
-                    id="shippingAddressId"
-                    {...register("shippingAddressId")}
-                    className="border-dark-gray/20 text-dark-gray/70 focus:bg-light-gray/20 focus:text-dark-gray/90 mt-3 w-full rounded-lg border-b px-5 py-2.5 text-xs transition-all duration-700 focus:outline-0"
-                  >
-                    <option value="">-- Select delivery address --</option>
-                    {shippingAddress.addresses.map(
-                      (address: {
-                        id: string;
-                        line1?: string;
-                        line2?: string;
-                        city?: string;
-                        state?: string;
-                        country?: string;
-                      }) => (
-                        <option key={address.id} value={address.id}>
-                          {[
-                            address.line1,
-                            address.line2,
-                            address.city,
-                            address.state,
-                            address.country,
-                          ]
-                            .filter(Boolean)
-                            .join(", ")}
-                        </option>
-                      ),
-                    )}
-                  </select>
-                )}
-                {errors.shippingAddressId && (
-                  <p className="mt-2 text-xs text-red-500">
-                    {errors.shippingAddressId.message}
-                  </p>
-                )}
-              </div>
-            )}
-
-            <label
-              htmlFor="phone"
-              className="font-primary mt-6 w-full text-lg font-semibold"
-            >
-              Customer phone
-            </label>
-            <input
-              className="border-dark-gray/20 text-dark-gray/70 focus:bg-light-gray/20 focus:text-dark-gray/90 w-full rounded-lg border-b px-5 py-2.5 text-xs transition-all duration-700 focus:outline-0"
-              type="text"
-              placeholder="Enter your phone number"
-              id="phone"
-              {...register("phone")}
-            />
-            {errors.phone && (
-              <p className="mt-2 text-xs text-red-500">{errors.phone.message}</p>
-            )}
-
-            <label
-              htmlFor="notes"
-              className="font-primary mt-5 w-full text-lg font-semibold"
-            >
-              Customer note
-            </label>
-            <input
-              className="border-dark-gray/20 text-dark-gray/70 focus:bg-light-gray/20 focus:text-dark-gray/90 w-full rounded-lg border-b px-5 py-2.5 text-xs transition-all duration-700 focus:outline-0"
-              type="text"
-              placeholder="Any delivery instructions?"
-              id="notes"
-              {...register("notes")}
-            />
-            {errors.notes && (
-              <p className="mt-2 text-xs text-red-500">{errors.notes.message}</p>
-            )}
-
-            <h2 className="font-primary mt-6 w-full text-lg font-semibold">
-              Payment gateway
-            </h2>
-            <div className="mt-4 flex w-full flex-wrap items-center gap-5">
-              <label className="relative">
-                <input
-                  type="radio"
-                  value="paystack"
-                  className="peer hidden"
-                  {...register("gateway")}
-                />
-                <div className="flex h-[80px] w-[130px] cursor-pointer items-center justify-center border border-gray-500/50 transition-all duration-200 peer-checked:border-transparent peer-checked:bg-gray-200">
-                  <img className="w-[100px]" src="paystack-2.svg" alt="Paystack" />
-                </div>
-              </label>
-              <label className="relative">
-                <input
-                  type="radio"
-                  value="flutterwave"
-                  className="peer hidden"
-                  {...register("gateway")}
-                />
-                <div className="flex h-[80px] w-[130px] cursor-pointer items-center justify-center border border-gray-500/50 transition-all duration-200 peer-checked:border-transparent peer-checked:bg-gray-200">
-                  <img className="w-[100px]" src="flutterwave-1.svg" alt="Flutterwave" />
-                </div>
-              </label>
-              <label className="relative">
-                <input
-                  type="radio"
-                  value="paypal"
-                  className="peer hidden"
-                  {...register("gateway")}
-                />
-                <div className="flex h-[80px] w-[130px] cursor-pointer items-center justify-center border border-gray-500/50 transition-all duration-200 peer-checked:border-transparent peer-checked:bg-gray-200">
-                  <img className="w-[100px]" src="paypal-3.svg" alt="PayPal" />
-                </div>
-              </label>
+            <div className="h-px w-8 bg-gray-300" />
+            <div className="flex items-center gap-2 text-xs font-medium text-gray-400">
+              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gray-300 text-white">3</span>
+              Confirmation
             </div>
-            {errors.gateway && (
-              <p className="mt-2 text-xs text-red-500">{errors.gateway.message}</p>
-            )}
           </div>
-          <div className="h-fit w-full rounded-lg bg-white px-3 py-3 shadow-sm">
-            <h1 className="border-dark-gray/10 w-full border-b py-3 text-base font-medium uppercase tracking-wide">
-              Order Summary
-            </h1>
-            <div className="mt-3 flex flex-col gap-3">
-              {items.length ? (
-                items.map((item) => (
-                  <div key={item.id} className="flex items-center justify-between text-sm text-gray-600">
-                    <span>
-                      {item.product?.name} × {item.quantity}
-                    </span>
-                    <span className="font-semibold text-gray-800">
-                      ₦{formatPrice(Number(item.product?.price || 0) * Number(item.quantity || 0))}
-                    </span>
+
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+            {/* Section 1: Shipping Method */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h2 className="font-primary text-lg font-semibold text-gray-800">Shipping Method</h2>
+                <span className="text-xs text-gray-400">Step 2 of 3</span>
+              </div>
+              <p className="text-sm text-gray-600">Choose how you'd like your items to be delivered.</p>
+
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <label className={`flex cursor-pointer items-center gap-3 rounded-xl border p-4 transition ${shippingMethod === "shipping" ? "border-orange bg-orange/5" : "border-gray-200 hover:bg-gray-50"}`}>
+                  <input
+                    type="radio"
+                    value="shipping"
+                    className="h-4 w-4 text-orange focus:ring-orange"
+                    {...register("shippingMethod")}
+                  />
+                  <div>
+                    <span className="block font-semibold text-gray-800">Home Delivery</span>
+                    <span className="block text-xs text-gray-500">Shipping with a courier.</span>
                   </div>
-                ))
+                </label>
+                <label className={`flex cursor-pointer items-center gap-3 rounded-xl border p-4 transition ${shippingMethod === "pickup" ? "border-orange bg-orange/5" : "border-gray-200 hover:bg-gray-50"}`}>
+                  <input
+                    type="radio"
+                    value="pickup"
+                    className="h-4 w-4 text-orange focus:ring-orange"
+                    {...register("shippingMethod")}
+                  />
+                  <div>
+                    <span className="block font-semibold text-gray-800">Pickup Station</span>
+                    <span className="block text-xs text-gray-500">Collect from a nearby station.</span>
+                  </div>
+                </label>
+              </div>
+              {errors.shippingMethod && <p className="text-xs text-red-500">{errors.shippingMethod.message}</p>}
+            </div>
+
+            {/* Section 2: Address/Station Selection */}
+            <div className="space-y-4">
+              {shippingMethod === "shipping" ? (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-sm font-semibold text-gray-700">Delivery Address</h3>
+                    <div className="flex items-center gap-3">
+                      <Link to="/checkout/address" className="text-xs text-gray-500 hover:text-orange hover:underline">Manage Addresses</Link>
+                      <button type="button" onClick={openAddAddress} className="text-xs text-orange hover:underline">+ Add Address</button>
+                    </div>
+                  </div>
+
+                  {IsFetchingAddress ? (
+                    <div className="flex justify-center py-4"><Spinner size="small" /></div>
+                  ) : shippingAddresses.length === 0 ? (
+                    <div className="rounded-xl border-2 border-dashed border-gray-200 p-6 text-center text-xs text-gray-500">
+                      No addresses found. Please add one.
+                    </div>
+                  ) : (
+                    <div className="max-h-[280px] overflow-y-auto pr-2 custom-scrollbar">
+                      <div className="grid gap-3">
+                        {shippingAddresses.map((addr: any) => (
+                          <label key={addr.id} className={`flex cursor-pointer items-start gap-3 rounded-lg border p-3 transition ${shippingAddressId === String(addr.id) ? "border-orange bg-orange/5" : "border-gray-200 hover:bg-gray-50"}`}>
+                            <input
+                              type="radio"
+                              value={addr.id}
+                              {...register("shippingAddressId")}
+                              className="mt-1 text-orange focus:ring-orange"
+                            />
+                            <div className="text-sm">
+                              <span className="font-semibold block">{addr.addressLine1 || addr.line1 || addr.name || "Unnamed Address"}</span>
+                              <span className="text-xs text-gray-500 block">{[addr.line1, addr.city, addr.state].filter(Boolean).join(', ')}</span>
+                            </div>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {errors.shippingAddressId && <p className="text-xs text-red-500">{errors.shippingAddressId.message}</p>}
+
+                  {/* Courier Selector - Always visible now */}
+                  <div className="mt-6 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-sm font-semibold text-gray-700">Select Courier</h3>
+                      {!shippingAddressId && (
+                        <span className="text-[10px] text-orange italic">Select address to see actual rates</span>
+                      )}
+                    </div>
+                    <CourierSelector
+                      couriers={liveCouriers}
+                      selectedCourierId={selectedCourier ? getCourierKey(selectedCourier) : null}
+                      onSelect={handleCourierSelect}
+                      isLoading={isLiveRatesLoading}
+                    />
+                  </div>
+                </div>
               ) : (
-                <p className="text-sm text-gray-500">Your cart is empty.</p>
+                <div className="space-y-4">
+                  <h3 className="text-sm font-semibold text-gray-700">Select Pickup Station</h3>
+                  {isFetchingPickupStations ? (
+                    <div className="flex justify-center py-4"><Spinner size="small" /></div>
+                  ) : (
+                    <select
+                      {...register("chosenStationId")}
+                      className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-orange focus:border-orange outline-none"
+                    >
+                      <option value="">-- Choose a station --</option>
+                      {pickupStations.map(s => <option key={s.id} value={s.id}>{s.name} — {s.address}</option>)}
+                    </select>
+                  )}
+                  {errors.chosenStationId && <p className="text-xs text-red-500">{errors.chosenStationId.message}</p>}
+                </div>
               )}
             </div>
-            <div className="border-dark-gray/10 mt-4 flex items-center justify-between border-b py-3 text-sm">
-              <p>Items total</p>
-              <p className="font-primary text-base font-semibold">
-                ₦{formatPrice(subtotal)}
-              </p>
+
+            {/* Section 3: Customer Details */}
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-gray-600">Phone Number</label>
+                <input
+                  {...register("phone")}
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-orange focus:border-orange outline-none"
+                  placeholder="+234 ..."
+                />
+                {errors.phone && <p className="text-xs text-red-500">{errors.phone.message}</p>}
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-gray-600">Notes (Optional)</label>
+                <input
+                  {...register("notes")}
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-orange focus:border-orange outline-none"
+                  placeholder="Delivery instructions..."
+                />
+              </div>
             </div>
-            <div className="border-dark-gray/10 flex items-center justify-between border-b py-3 text-sm">
-              <p>Delivery fees</p>
-              <p className="font-primary text-base font-semibold">
-                ₦{formatPrice(shippingFee)}
-              </p>
+
+            {/* Section 4: Payment Gateway */}
+            <div className="space-y-4">
+              <h3 className="text-sm font-semibold text-gray-700">Payment Gateway</h3>
+              <PaymentGatewaySelector
+                selectedGateway={getValues("gateway")}
+                onSelect={(val) => setValue("gateway", val)}
+              />
+              {errors.gateway && <p className="text-xs text-red-500">{errors.gateway.message}</p>}
             </div>
-            <div className="border-dark-gray/10 flex items-center justify-between border-b py-3 font-medium">
-              <p>Total</p>
-              <p className="font-primary text-orange text-lg font-bold">
-                ₦{formatPrice(totalAmount)}
-              </p>
-            </div>
+
             <button
+              type="submit"
               disabled={isSubmitting}
-              className="bg-muted-green hover:bg-orange font-primary mt-4 w-full cursor-pointer rounded-lg py-3 font-semibold text-white transition-colors"
+              className="w-full rounded-xl bg-orange py-4 font-bold text-white transition hover:bg-orange/90 disabled:opacity-50 shadow-lg shadow-orange/20"
             >
-              {isSubmitting ? <Spinner size="small" /> : "Place order"}
+              {isSubmitting ? <Spinner size="small" /> : "Complete Payment"}
             </button>
-          </div>
+          </form>
         </div>
-      </form>
-    </>
+
+        {/* Order Summary Sidebar */}
+        <OrderSummarySidebar
+          items={items}
+          subtotal={subtotal}
+          shippingFee={shippingFee}
+          isSubmitting={isSubmitting}
+          onSubmit={() => handleSubmit(onSubmit)()}
+        />
+      </div>
+
+      <AddAddressModal
+        isOpen={isAddingAddress}
+        onClose={closeAddAddress}
+        onSuccess={() => {}}
+      />
+    </main>
   );
 }

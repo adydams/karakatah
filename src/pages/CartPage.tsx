@@ -3,11 +3,12 @@ import CartItem from "../components/CartItem";
 import EmptyCart from "../components/EmptyCart";
 // import { useCart } from "../contexts/hooks/useCart";
 import { formatPrice } from "../utils/utils";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { Cart } from "../contexts/CartContext";
-import { getCart } from "../services/apiCarts";
+import { getCart, deleteItemCart } from "../services/apiCarts";
 import Spinner from "../components/Spinner";
 import { FaArrowLeftLong } from "react-icons/fa6";
+import toast from "react-hot-toast";
 
 export default function CartPage() {
   // const { cart } = useCart();
@@ -23,12 +24,29 @@ export default function CartPage() {
   console.log(cart);
 
   function handleMovetoCheckout() {
-    // go to the shipping-method step which matches the design
-    navigate("/checkout/shipping-method");
+    // go to the unified checkout page
+    navigate("/checkout");
   }
 
   const items = cart?.data?.items ?? [];
   const totalAmount = cart?.data?.totalAmount ?? 0;
+
+  const queryClient = useQueryClient();
+  const { mutate: deleteItemMutate } = useMutation({
+    mutationFn: (id: string) => deleteItemCart(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["cart"] });
+      toast.success("Item removed");
+    },
+    onError: (err: any) => {
+      toast.error(err?.message || "Failed to remove item");
+    },
+  });
+
+  function handleDeleteItem(id: string) {
+    if (!confirm("Remove this item from cart?")) return;
+    deleteItemMutate(id);
+  }
 
   if (isLoading)
     return (
@@ -56,14 +74,26 @@ export default function CartPage() {
               </div>
               <div className="mt-3 flex w-full flex-col gap-3">
                 {items.map((item) => (
-                  <CartItem
-                    key={item.id}
-                    name={item.product?.name}
-                    price={item.product?.price || 0}
-                    image={item.product?.images?.[0]?.url}
-                    quantity={item.quantity}
-                    id={item.id}
-                  />
+                  item.product ? (
+                    <CartItem
+                      key={item.id}
+                      name={item.product?.name}
+                      price={item.product?.price || 0}
+                      image={item.product?.images?.[0]?.url}
+                      quantity={item.quantity}
+                      id={item.id}
+                    />
+                  ) : (
+                    <div key={item.id} className="flex items-center justify-between rounded-lg border p-4">
+                      <div>
+                        <div className="font-semibold">Item unavailable</div>
+                        <div className="text-xs text-gray-600">This item was removed from the catalog.</div>
+                      </div>
+                      <div className="flex flex-col items-end gap-2">
+                        <button onClick={() => handleDeleteItem(item.id)} className="text-sm text-orange">Remove</button>
+                      </div>
+                    </div>
+                  )
                 ))}
               </div>
             </div>

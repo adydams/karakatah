@@ -43,7 +43,16 @@ export default function PickupStations() {
       </div>
 
       {showForm && (
-        <PickupStationForm open={showForm} onClose={() => { setShowForm(false); refetch(); }} onSaved={() => refetch()} />
+        <PickupStationForm
+          open={showForm}
+          stationId={editStationId}
+          onClose={() => {
+            setShowForm(false);
+            setEditStationId(undefined);
+            refetch();
+          }}
+          onSaved={() => refetch()}
+        />
       )}
 
       <div className="flex flex-col md:flex-row gap-4 mb-8 items-center">
@@ -87,13 +96,29 @@ export default function PickupStations() {
                 <div className="flex items-center gap-2 text-xs text-gray-600">
                   <span className="font-semibold">Sat:</span> 10:00 AM - 4:00 PM
                 </div >
+                {station.phone && (
+                  <div className="flex items-center gap-2 text-xs text-gray-600">
+                    <span className="font-semibold">Phone:</span> {station.phone}
+                  </div >
+                )}
+                {station.email && (
+                  <div className="flex items-center gap-2 text-xs text-gray-600">
+                    <span className="font-semibold">Email:</span> {station.email}
+                  </div >
+                )}
               </div >
 
               <div className="pt-4 border-t border-gray-100 flex justify-between items-center">
                 <div className="text-xs text-gray-500">
                   <span className="font-semibold">Contact:</span> {station.contactPerson || "Admin"}
                 </div >
-                <button className="text-xs font-semibold text-orange hover:underline flex items-center gap-1">
+                <button
+                  onClick={() => {
+                    setEditStationId(station.id);
+                    setShowForm(true);
+                  }}
+                  className="text-xs font-semibold text-orange hover:underline flex items-center gap-1"
+                >
                   <MdEdit size={14} /> Edit Details
                 </button>
               </div >

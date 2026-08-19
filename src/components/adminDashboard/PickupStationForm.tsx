@@ -1,7 +1,8 @@
 import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
+import MapPicker from "../MapPicker";
 import Spinner from "./Spinner";
-import { createPickupStation, updatePickupStation } from "../../services/adminDashboard/apiPickupStation";
+import { createPickupStation, updatePickupStation, getPickupStationById } from "../../services/adminDashboard/apiPickupStation";
 
 type Props = {
   open: boolean;
@@ -11,13 +12,31 @@ type Props = {
 };
 
 export default function PickupStationForm({ open, onClose, stationId, onSaved }: Props) {
-  const { register, handleSubmit, reset, formState: { isSubmitting } } = useForm<any>();
+  const { register, handleSubmit, reset, setValue, getValues, formState: { isSubmitting } } = useForm<any>();
 
   useEffect(() => {
     if (!open) return;
     if (stationId) {
-      // Could fetch station by id if endpoint exists; using placeholder for now
-      // For now, no prefill
+      async function loadStation() {
+        try {
+          const res = await getPickupStationById(stationId);
+          if (res && res.success && res.data) {
+            const data = res.data;
+            reset({
+              name: data.name,
+              address: data.address,
+              contactPerson: data.contactPerson,
+              phone: data.phone,
+              email: data.email,
+              latitude: data.latitude,
+              longitude: data.longitude,
+            });
+          }
+        } catch (err) {
+          console.error("Failed to load station data:", err);
+        }
+      }
+      loadStation();
     } else {
       reset({});
     }
@@ -59,14 +78,56 @@ export default function PickupStationForm({ open, onClose, stationId, onSaved }:
             <input {...register('address')} className="w-full border px-3 py-2" />
           </div>
 
-          <div>
-            <label className="text-xs">Contact Person</label>
-            <input {...register('contactPerson')} className="w-full border px-3 py-2" />
+          <div className="grid grid-cols-2 gap-3 mt-2">
+            <div>
+              <label className="text-xs">Latitude</label>
+              <input
+                readOnly
+                {...register('latitude')}
+                className="w-full border px-3 py-2 bg-gray-50 cursor-not-allowed text-xs"
+              />
+            </div>
+            <div>
+              <label className="text-xs">Longitude</label>
+              <input
+                readOnly
+                {...register('longitude')}
+                className="w-full border px-3 py-2 bg-gray-50 cursor-not-allowed text-xs"
+              />
+            </div>
+          </div>
+
+          <div className="mt-4 w-full">
+            <label className="text-xs font-medium">Select location on map</label>
+            <div className="mt-2 rounded-lg border border-gray-200 overflow-hidden">
+              <MapPicker
+                initialLat={Number(getValues('latitude')) || undefined}
+                initialLng={Number(getValues('longitude')) || undefined}
+                onSelect={(res) => {
+                  setValue('latitude', res.latitude);
+                  setValue('longitude', res.longitude);
+                  if (res.formattedAddress) {
+                    setValue('address', res.formattedAddress);
+                  }
+                }}
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs">Contact Person</label>
+              <input {...register('contactPerson')} className="w-full border px-3 py-2" />
+            </div>
+            <div>
+              <label className="text-xs">Phone Number</label>
+              <input {...register('phone')} className="w-full border px-3 py-2" />
+            </div>
           </div>
 
           <div>
-            <label className="text-xs">Phone</label>
-            <input {...register('phone')} className="w-full border px-3 py-2" />
+            <label className="text-xs">Email Address (Optional)</label>
+            <input {...register('email')} className="w-full border px-3 py-2" />
           </div>
 
           <div className="flex justify-end gap-2">

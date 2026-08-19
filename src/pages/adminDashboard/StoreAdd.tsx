@@ -4,11 +4,12 @@ import { useNavigate } from "react-router";
 import { createStore } from "../../services/adminDashboard/apiStore";
 import { useQueryClient } from "@tanstack/react-query";
 import { FaUser, FaStore } from "react-icons/fa";
+import MapPicker from "../../components/MapPicker";
 
 export default function StoreAdd() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { register, handleSubmit, formState: { errors } } = useForm();
+  const { register, handleSubmit, setValue, getValues, formState: { errors } } = useForm();
 
   const mutation = useMutation({
     mutationFn: createStore,
@@ -103,6 +104,23 @@ export default function StoreAdd() {
                 placeholder="123 Business Ave, Lagos"
                 className="px-3 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-orange/50"
               />
+            </div>
+
+            <div className="flex flex-col gap-1.5 md:col-span-2">
+              <label className="text-xs font-semibold text-gray-600">Store Location on Map</label>
+              <div className="mt-2 rounded-lg border border-gray-200 overflow-hidden">
+                <MapPicker
+                  initialLat={Number(getValues('latitude')) || undefined}
+                  initialLng={Number(getValues('longitude')) || undefined}
+                  onSelect={(res) => {
+                    setValue('latitude', res.latitude);
+                    setValue('longitude', res.longitude);
+                    if (res.formattedAddress) {
+                      setValue('address', res.formattedAddress);
+                    }
+                  }}
+                />
+              </div>
             </div>
 
             <div className="flex flex-col gap-1.5">

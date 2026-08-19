@@ -10,6 +10,9 @@ type OrderProp = {
   requestToken?: string;
   serviceCode?: string;
   courierId?: string;
+  shippingFee?: number;
+  courierName?: string;
+  deliveryEta?: string;
 };
 
 export async function createOrder(order: OrderProp) {

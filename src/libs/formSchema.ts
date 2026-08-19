@@ -47,9 +47,12 @@ export const productSchema = z.object({
 
   subCategoryId: z.string().uuid("Invalid sub-category ID"),
 
-  brandId: z.string().uuid("Invalid brand ID"),
+  brandId: z.string().uuid("Invalid brand ID").optional().or(z.literal("")),
 
   storeId: z.string().uuid("Invalid store ID").optional(),
+
+  logisticsCategoryId: z.string().optional(),
+  boxSizeId: z.string().optional(),
 
   images: z
     .array(z.instanceof(File))
@@ -74,11 +77,14 @@ export const productEditSchema = z.object({
 
   subCategoryId: z.string().uuid("Invalid sub-category ID"),
 
-  brandId: z.string().uuid("Invalid brand ID"),
+  brandId: z.string().uuid("Invalid brand ID").optional().or(z.literal("")),
 
   storeId: z.string().uuid("Invalid store ID").optional(),
 
-  images: z.array(z.instanceof(File)).default([]),
+  logisticsCategoryId: z.string().optional(),
+  boxSizeId: z.string().optional(),
+
+  images: z.array(z.instanceof(File)).optional().default([]),
 });
 
 export type TProductSchema = z.infer<typeof productSchema>;

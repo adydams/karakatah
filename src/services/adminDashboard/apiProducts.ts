@@ -46,6 +46,11 @@ export async function getBrands() {
   return response.data;
 }
 
+export async function getLogisticsCategories() {
+  const response = await axiosInstance.get(`/api/logistics/categories`);
+  return response.data;
+}
+
 export async function getProducts() {
   const response = await axiosInstance.get(`/api/products`);
   return response.data;
@@ -69,6 +74,7 @@ export async function createProduct(
     lengthCm,
     widthCm,
     heightCm,
+    logisticsCategoryId,
     images,
     isPublished,
     draft,
@@ -86,6 +92,7 @@ export async function createProduct(
   if (lengthCm !== undefined) formData.append("lengthCm", String(lengthCm));
   if (widthCm !== undefined) formData.append("widthCm", String(widthCm));
   if (heightCm !== undefined) formData.append("heightCm", String(heightCm));
+  if (logisticsCategoryId) formData.append("logisticsCategoryId", logisticsCategoryId);
   if (isPublished !== undefined) formData.append("isPublished", String(isPublished));
   if (draft !== undefined) formData.append("draft", String(draft));
   images.forEach((file: File) => formData.append("images", file));
@@ -110,6 +117,7 @@ export async function updateProduct(
   if (payload.lengthCm !== undefined) formData.append("lengthCm", String(payload.lengthCm));
   if (payload.widthCm !== undefined) formData.append("widthCm", String(payload.widthCm));
   if (payload.heightCm !== undefined) formData.append("heightCm", String(payload.heightCm));
+  if (payload.logisticsCategoryId) formData.append("logisticsCategoryId", payload.logisticsCategoryId);
   if (payload.removedImageIds && payload.removedImageIds.length > 0) {
     for (const idToRemove of payload.removedImageIds) {
       formData.append("removedImageIds[]", idToRemove);
