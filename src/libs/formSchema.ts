@@ -27,6 +27,8 @@ export const categorySchema = z.object({
     .refine((file) => file.size <= 2 * 1024 * 1024, {
       message: "Image size must be less than 2MB",
     }),
+
+  subCategories: z.array(z.string()).optional(),
 });
 
 export const productSchema = z.object({
@@ -53,7 +55,15 @@ export const productSchema = z.object({
 
   logisticsCategoryId: z.string().optional(),
   boxSizeId: z.string().optional(),
-
+  discounts: z.array(z.object({
+    discountType: z.enum(["PERCENTAGE", "FIXED"]),
+    value: z.string().optional(),
+    minQuantity: z.string().optional(),
+    maxQuantity: z.string().optional(),
+    startDate: z.string().optional(),
+    endDate: z.string().optional(),
+    isActive: z.boolean().optional(),
+  })).default([]),
   images: z
     .array(z.instanceof(File))
     .min(1, "At least one product image is required"),
@@ -83,7 +93,15 @@ export const productEditSchema = z.object({
 
   logisticsCategoryId: z.string().optional(),
   boxSizeId: z.string().optional(),
-
+  discounts: z.array(z.object({
+    discountType: z.enum(["PERCENTAGE", "FIXED"]),
+    value: z.string().optional(),
+    minQuantity: z.string().optional(),
+    maxQuantity: z.string().optional(),
+    startDate: z.string().optional(),
+    endDate: z.string().optional(),
+    isActive: z.boolean().optional(),
+  })).default([]),
   images: z.array(z.instanceof(File)).optional().default([]),
 });
 

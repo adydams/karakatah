@@ -21,6 +21,6 @@ export async function createOrder(order: OrderProp) {
 }
 
 export async function getOrder(orderId: string) {
-  const response = await axiosInstance.get(`/api/orders/${orderId}/invoice`);
+  const response = await axiosInstance.get(`/api/orders/invoice/${orderId}`);
   return response.data;
 }

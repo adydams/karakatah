@@ -1,13 +1,13 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import Spinner from "./Spinner";
+import Spinner from "../Spinner";
 import { useEffect, useState, type ChangeEvent, type MouseEvent } from "react";
 import { normalizeListData } from "../../utils/utils";
-import { FaCloudUploadAlt } from "react-icons/fa";
+import { FaCloudUploadAlt, FaTrash, FaPlus } from "react-icons/fa";
 import { MdOutlineCancel } from "react-icons/md";
-import { useForm } from "react-hook-form";
+import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import toast from "react-hot-toast";
-import { productSchema, type TProductSchema } from "../../libs/formSchema";
+import { productSchema } from "../../libs/formSchema";
 import {
   createProduct,
   getBrands,
@@ -18,8 +18,6 @@ import {
 import { getBoxSizes } from "../../services/apiLogistics";
 import {
   getPickupStations,
-  assignProductToStation,
-
 } from "../../services/adminDashboard/apiPickupStation";
 import PickupStationForm from "./PickupStationForm";
 import ImagePreviewList from "./ImagePreviewList";
@@ -84,8 +82,12 @@ export default function AddProduct({
     formState: { errors, isSubmitting },
     setValue,
     watch,
-  } = useForm<TProductSchema>({
-    resolver: zodResolver(productSchema),
+    control,
+  } = useForm<any>({ resolver: zodResolver(productSchema) });
+
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: "discounts",
   });
 
   const { data: categories, isLoading: isFetchingCategories } = useQuery({
@@ -174,7 +176,7 @@ export default function AddProduct({
     setDimensions((current) => ({ ...current, [field]: value }));
   };
 
-  async function onSubmit(data: TProductSchema, draftMode = false) {
+  async function onSubmit(data: any, draftMode = false) {
     console.log("AddProduct form submit", data);
     const {
       name,
@@ -198,7 +200,7 @@ export default function AddProduct({
         stockQuantity: String(totalStock),
         categoryId,
         subCategoryId,
-        brandId,
+        brandId: brandId || "",
         logisticsCategoryId: data.logisticsCategoryId,
         weightKg: dimensions.weight || undefined,
         lengthCm: dimensions.length || undefined,
@@ -208,30 +210,23 @@ export default function AddProduct({
         images,
         isPublished: shouldPublish,
         draft: !shouldPublish,
+        discounts: data.discounts,
+        pickupStations: stations
+          .filter((station) => station.stationId)
+          .map((station) => ({
+            stationId: station.stationId,
+            initialStock: Number(station.stock) || 0,
+          })),
       });
+
 
       const productId = createdProduct?.data?.id || createdProduct?.id || createdProduct?._id;
 
-      if (productId && stations.length > 0) {
-        let assignErrors = 0;
-        for (const s of stations) {
-          if (!s.stationId) continue; // skip empty rows
-          try {
-            await assignProductToStation(productId, s.stationId, Number(s.stock) || 0);
-          } catch (assignError: unknown) {
-            console.error('Failed to assign station', s, assignError);
-            assignErrors++;
-          }
-        }
-
-        if (assignErrors === 0) {
-          toast.success(draftMode || !isPublished ? "Draft saved and pickup stations updated" : "Product and pickup stations saved successfully");
-        } else {
-          toast.success(draftMode || !isPublished ? "Draft saved; some stations failed to assign" : "Product saved; some stations failed to assign");
-        }
-      } else {
-        toast.success(draftMode || !isPublished ? "Draft saved successfully" : "Product added successfully");
+      if (!productId) {
+        throw new Error("Product was created without an identifier.");
       }
+
+      toast.success(draftMode || !isPublished ? "Draft saved successfully" : "Product added successfully");
 
       await queryClient.invalidateQueries({ queryKey: ["products"] });
       await queryClient.invalidateQueries({ queryKey: ["pickupStations"] });
@@ -333,7 +328,7 @@ export default function AddProduct({
                     className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-orange/70 focus:ring-2 focus:ring-orange/10"
                     {...register("name")}
                   />
-                  {errors.name && <p className="text-xs text-red-500">{errors.name.message}</p>}
+                  {errors.name && <p className="text-xs text-red-500">{String(errors.name?.message || "")}</p>}
                 </div>
               </div>
 
@@ -347,7 +342,7 @@ export default function AddProduct({
                   className="mt-2 h-32 w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-orange/70 focus:ring-2 focus:ring-orange/10"
                   {...register("description")}
                 />
-                {errors.description && <p className="text-xs text-red-500">{errors.description.message}</p>}
+                {errors.description && <p className="text-xs text-red-500">{String(errors.description?.message || "")}</p>}
               </div>
             </section>
 
@@ -414,14 +409,16 @@ export default function AddProduct({
                 <ImagePreviewList
                   items={files.map((file, index) => ({
                     id: `${file.name}-${index}`,
-                    kind: "file",
+                    kind: "file" as const,
                     name: file.name,
+                    url: "",
                     previewUrl: previewUrls[index],
+                    sourceIndex: index,
                   }))}
                   onRemoveFile={removeImage}
                 />
               )}
-              {errors.images && <p className="mt-3 text-xs text-red-500">{errors.images.message}</p>}
+              {errors.images && <p className="mt-3 text-xs text-red-500">{String(errors.images.message || "")}</p>}
             </section>
 
             <div className="grid gap-6 lg:grid-cols-2">
@@ -443,7 +440,7 @@ export default function AddProduct({
                       className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-orange/70 focus:ring-2 focus:ring-orange/10"
                       {...register("price")}
                     />
-                    {errors.price && <p className="text-xs text-red-500">{errors.price.message}</p>}
+                    {errors.price && <p className="text-xs text-red-500">{String(errors.price?.message || "")}</p>}
                   </div>
 
                   <div className="flex flex-col gap-2">
@@ -457,7 +454,7 @@ export default function AddProduct({
                       className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-orange/70 focus:ring-2 focus:ring-orange/10"
                       {...register("stockQuantity")}
                     />
-                    {errors.stockQuantity && <p className="text-xs text-red-500">{errors.stockQuantity.message}</p>}
+                    {errors.stockQuantity && <p className="text-xs text-red-500">{String(errors.stockQuantity?.message || "")}</p>}
                   </div>
                 </div>
               </section>
@@ -603,7 +600,7 @@ export default function AddProduct({
                     )}
                   </select>
                   {errors.logisticsCategoryId && (
-                    <p className="text-xs text-red-500">{errors.logisticsCategoryId.message}</p>
+                    <p className="text-xs text-red-500">{String(errors.logisticsCategoryId?.message || "")}</p>
                   )}
                 </div>
               </section>
@@ -718,10 +715,76 @@ export default function AddProduct({
 
           <aside className="space-y-6">
             <section className="rounded-[28px] bg-white p-6 shadow-sm ring-1 ring-slate-200">
-              <div className="mb-5">
-                <h3 className="text-lg font-semibold text-slate-900">Organization</h3>
-                <p className="mt-1 text-sm text-slate-500">Align this product with the right category and brand.</p>
+              <div className="mb-5 flex items-center justify-between">
+                <div className="flex flex-col">
+                  <h3 className="text-lg font-semibold text-slate-900">Tiered Discounts</h3>
+                  <p className="text-sm text-slate-500">Offer discounts based on quantity purchased.</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => append({ discountType: "PERCENTAGE", value: "0", minQuantity: "1", maxQuantity: "", startDate: "", endDate: "", isActive: true })}
+                  className="rounded-full border border-orange/20 bg-orange/10 px-3 py-2 text-sm font-semibold text-orange transition hover:bg-orange/20"
+                >
+                  <FaPlus size={12} className="inline mr-1" /> Add Tier
+                </button>
               </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {fields.map((field, index) => (
+                  <div key={field.id} className="p-4 bg-slate-50 rounded-2xl border border-slate-200 relative group shadow-sm">
+                    <button
+                      type="button"
+                      onClick={() => remove(index)}
+                      className="absolute top-2 right-2 text-slate-300 hover:text-red-500 transition-colors"
+                    >
+                      <FaTrash size={12} />
+                    </button>
+                    <div className="grid grid-cols-2 gap-3 mb-3">
+                      <div className="flex flex-col gap-1">
+                        <label className="text-[10px] font-semibold text-slate-500 uppercase">Min Qty</label>
+                        <input
+                          type="number"
+                          className="p-2 border border-slate-200 rounded-xl text-xs outline-none focus:border-orange/50"
+                          {...register(`discounts.${index}.minQuantity` as any)}
+                        />
+                      </div>
+                      <div className="flex flex-col gap-1">
+                        <label className="text-[10px] font-semibold text-slate-500 uppercase">Max Qty</label>
+                        <input
+                          type="number"
+                          className="p-2 border border-slate-200 rounded-xl text-xs outline-none focus:border-orange/50"
+                          placeholder="Optional"
+                          {...register(`discounts.${index}.maxQuantity` as any)}
+                        />
+                      </div>
+                    </div>
+                    <div className="flex gap-3">
+                      <div className="flex-1 flex flex-col gap-1">
+                        <label className="text-[10px] font-semibold text-slate-500 uppercase">Value</label>
+                        <input
+                          type="text"
+                          className="p-2 border border-slate-200 rounded-xl text-xs outline-none focus:border-orange/50"
+                          {...register(`discounts.${index}.value` as any)}
+                        />
+                      </div>
+                      <div className="w-32 flex flex-col gap-1">
+                        <label className="text-[10px] font-semibold text-slate-500 uppercase">Type</label>
+                        <select
+                          className="p-2 border border-slate-200 rounded-xl text-xs bg-white outline-none focus:border-orange/50"
+                          {...register(`discounts.${index}.discountType` as any)}
+                        >
+                          <option value="PERCENTAGE">Percentage (%)</option>
+                          <option value="FIXED">Fixed Amount (₦)</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            <section className="rounded-[28px] bg-white p-6 shadow-sm ring-1 ring-slate-200">
+
 
               <div className="space-y-4">
                 <div className="flex flex-col gap-2">
@@ -744,7 +807,7 @@ export default function AddProduct({
                       ))
                     )}
                   </select>
-                  {errors.categoryId && <p className="text-xs text-red-500">{errors.categoryId.message}</p>}
+                  {errors.categoryId && <p className="text-xs text-red-500">{String(errors.categoryId?.message || "")}</p>}
                 </div>
 
                 <div className="flex flex-col gap-2">
@@ -767,7 +830,7 @@ export default function AddProduct({
                       ))
                     )}
                   </select>
-                  {errors.brandId && <p className="text-xs text-red-500">{errors.brandId.message}</p>}
+                  {errors.brandId && <p className="text-xs text-red-500">{String(errors.brandId?.message || "")}</p>}
                 </div>
 
                 <div className="flex flex-col gap-2">
@@ -790,7 +853,7 @@ export default function AddProduct({
                       ))
                     )}
                   </select>
-                  {errors.subCategoryId && <p className="text-xs text-red-500">{errors.subCategoryId.message}</p>}
+                  {errors.subCategoryId && <p className="text-xs text-red-500">{String(errors.subCategoryId?.message || "")}</p>}
                 </div>
 
                 <div className="flex flex-col gap-2">

@@ -2,24 +2,83 @@ import { useState } from "react";
 import { CiHeart } from "react-icons/ci";
 import { GoHeartFill } from "react-icons/go";
 import type { ProductProp } from "../types/type";
-import { Link, useNavigate } from "react-router";
+import { useNavigate } from "react-router";
 import { addItemToCart } from "../services/apiCarts";
 import toast from "react-hot-toast";
 import Spinner from "./Spinner";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { optimizeImage } from "../utils/imageUtils";
+import { useModal } from "../contexts/hooks/useModal";
+import ProductDetailModal from "./ProductDetailModal";
+import { useUser } from "../contexts/hooks/useUser";
 
 type AddItemVariables = {
   productId: string;
   name: string;
 };
 
-export default function ProductCard({ id, image, name, price }: ProductProp) {
+export default function ProductCard({ id, image, name, price, isDiscounted, currentPrice, discounts }: ProductProp & { discounts?: any[] }) {
   const [addWish, setAddWish] = useState(false);
   const [showAddtoCart, setShowAddtoCart] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
 
+  // Calculate the absolute best price available across all tiers
+  const getBestPrice = () => {
+    if (!discounts || discounts.length === 0) return null;
+
+    const basePrice = parseFloat(price || 0);
+    let minPrice = basePrice;
+
+    discounts.forEach((rule: any) => {
+      let rulePrice = basePrice;
+      if (rule.discountType === 'PERCENTAGE') {
+        rulePrice = basePrice - (basePrice * (parseFloat(rule.value) / 100));
+      } else if (rule.discountType === 'FIXED') {
+        rulePrice = basePrice - parseFloat(rule.value);
+      }
+      if (rulePrice < minPrice) minPrice = rulePrice;
+    });
+
+    return minPrice < basePrice ? minPrice : null;
+  };
+
+  const getBestRuleTeaser = () => {
+    if (!discounts || discounts.length === 0) return null;
+
+    const basePrice = parseFloat(price || 0);
+    let bestRule = null;
+    let minPrice = basePrice;
+
+    discounts.forEach((rule: any) => {
+      let rulePrice = basePrice;
+      if (rule.discountType === 'PERCENTAGE') {
+        rulePrice = basePrice - (basePrice * (parseFloat(rule.value) / 100));
+      } else if (rule.discountType === 'FIXED') {
+        rulePrice = basePrice - parseFloat(rule.value);
+      }
+      if (rulePrice < minPrice) {
+        minPrice = rulePrice;
+        bestRule = rule;
+      }
+    });
+
+    if (!bestRule) return null;
+
+    const valueStr = bestRule.discountType === 'PERCENTAGE'
+      ? `${bestRule.value}% off`
+      : `₦${bestRule.value} off`;
+
+    return `Buy ${bestRule.minQuantity}+ get ${valueStr}`;
+  };
+
+  const bestPrice = getBestPrice();
+  const discountTeaser = getBestRuleTeaser();
+
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const { openModal } = useModal();
+
+  const { user } = useUser(); // Assuming useUser hook provides the user object
 
   const { mutate, isPending: isAddingToCart } = useMutation({
     mutationFn: ({ name, productId }: AddItemVariables) =>
@@ -41,11 +100,18 @@ export default function ProductCard({ id, image, name, price }: ProductProp) {
   });
 
   function handleAddToCart() {
+    if (user && ["SuperAdmin", "SystemAdmin", "Admin"].includes(user.role)) {
+      return; // Do nothing for admins
+    }
     mutate({ name, productId: id });
   }
 
   function handleWish() {
     setAddWish((prev) => !prev);
+  }
+
+  function handleViewMore() {
+    openModal(<ProductDetailModal productId={id} />);
   }
 
   return (
@@ -56,6 +122,11 @@ export default function ProductCard({ id, image, name, price }: ProductProp) {
     >
       {/* IMAGE CONTAINER */}
       <div className="relative h-[70%] w-full overflow-hidden">
+        {discountTeaser && (
+          <div className="absolute top-2 left-2 z-10 rounded-full bg-orange px-3 py-1.5 text-[12px] font-bold text-white shadow-md">
+            {discountTeaser}
+          </div>
+        )}
         {/* Skeleton */}
         {!imageLoaded && (
           <div className="absolute inset-0 animate-pulse bg-gray-200" />
@@ -63,12 +134,12 @@ export default function ProductCard({ id, image, name, price }: ProductProp) {
 
         {/* Actual image */}
         <img
-          src={image}
+          src={optimizeImage(image || "", 400, 400)}
           alt={name}
           loading="lazy"
           onLoad={() => setImageLoaded(true)}
           className={`h-full w-full transition-all duration-1000 ${
-            showAddtoCart ? "object-contain" : "object-cover"
+            showAddtoCart ? "scale-105 object-cover" : "scale-100 object-cover"
           } ${imageLoaded ? "opacity-100" : "opacity-0"} `}
         />
       </div>
@@ -78,7 +149,22 @@ export default function ProductCard({ id, image, name, price }: ProductProp) {
         <div className="h-[20%] w-[80%] cursor-pointer">
           <h2 className="font-primary mt-1.5 font-light">{name}</h2>
 
-          <h2 className="font-primary text-xl">₦{price}</h2>
+          <div className="flex items-center gap-2">
+            {isDiscounted ? (
+              <>
+                <h2 className="font-primary text-xl text-slate-400 line-through">₦{price}</h2>
+                <h2 className="font-primary text-xl text-orange">₦{currentPrice}</h2>
+              </>
+            ) : (
+              <h2 className="font-primary text-xl">₦{price}</h2>
+            )}
+          </div>
+          {bestPrice && (
+            <div className="flex items-center gap-1 mt-1">
+              <span className="text-[10px] font-bold uppercase text-gray-400">Best Price:</span>
+              <span className="text-xs font-bold text-green-600">₦{bestPrice.toLocaleString()}</span>
+            </div>
+          )}
         </div>
 
         <button onClick={handleWish}>
@@ -109,12 +195,12 @@ export default function ProductCard({ id, image, name, price }: ProductProp) {
               ADD TO WISHLIST
             </button>
 
-            <Link
-              to={`products/${name.replaceAll(" ", "-")}/${id}`}
+            <button
+              onClick={handleViewMore}
               className="border-dark-gray absolute inset-0 m-auto flex h-[30px] w-1/2 items-center justify-center border-2 bg-white/80 text-xs"
             >
               VIEW MORE
-            </Link>
+            </button>
           </div>
         </div>
       )}

@@ -49,7 +49,7 @@ export default function Homepage() {
 
   return (
     <>
-      <main className="flex w-full items-center justify-center py-8 lg:h-[70vh] lg:py-5">
+      <main className="flex w-full items-center justify-center py-8 lg:h-[25vh] lg:py-5">
         <div className="w-[92%] items-center justify-between lg:flex lg:h-full lg:w-[85%]">
           <SliderHero />
 
@@ -98,7 +98,7 @@ export default function Homepage() {
             isGettingProducts
               ? "flex h-[400px] items-center justify-center"
               : "grid"
-          } w-[92%] grid-cols-1 gap-x-7 gap-y-5 md:grid-cols-2 lg:w-[85%] lg:grid-cols-4`}
+          } w-[92%] grid-cols-1 gap-x-7 gap-y-5 md:grid-cols-2 lg:w-[85%] lg:grid-cols-6`}
         >
           <Filter showFilter={showFilter} setShowFilter={setShowFilter} />
 
@@ -118,15 +118,21 @@ export default function Homepage() {
               </button>
             </div>
           ) : (
-            paginatedProducts.map((product) => (
-              <ProductCard
-                key={product.id}
-                name={product.name}
-                id={product.id}
-                image={product.images?.[0]?.url}
-                price={formatPrice(product.price)}
-              />
-            ))
+            paginatedProducts.map((product, index) => {
+              if (!product || !product.id) return null;
+              return (
+                <ProductCard
+                  key={`${product.id}-${index}`}
+                  name={product.name || "Unnamed Product"}
+                  id={product.id}
+                  image={product.images?.[0]?.url}
+                  price={formatPrice(product.price)}
+                  isDiscounted={product.isDiscounted}
+                  currentPrice={formatPrice(product.currentPrice || product.price)}
+                  discounts={product.discounts}
+                />
+              );
+            })
           )}
         </div>
 

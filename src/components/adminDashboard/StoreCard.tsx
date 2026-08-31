@@ -1,68 +1,25 @@
-import { FaStoreAlt } from "react-icons/fa";
-import { NavLink } from "react-router";
+import React from "react";
+import { Link } from "react-router";
+import { RiStoreFill } from "react-icons/ri";
 
 type StoreCardProps = {
   name: string;
-  // address: string;
-  // phone: string;
-  // email: string;
-  // description: string;
   id: string;
 };
 
-// className={({ isActive }) =>
-//                 isActive
-//                   ? "text-orange border-orange border-r-4 font-medium"
-//                   : "text-dark-gray/80"
-//               }
-//               style={{
-//                 width: "100%",
-//                 display: "flex",
-//                 gap: "10px",
-//                 justifyContent: "flex-start",
-//                 alignItems: "center",
-//                 padding: "10px 20px",
-//                 fontSize: "0.8rem",
-//                 margin: "6px 0",
-//               }}
-// className="hover:bg-dark-gray/5 flex flex-col items-center justify-center gap-3 rounded-2xl bg-white p-3"
-export default function StoreCard({
-  name,
-  // address,
-  // email,
-  // description,
-  id,
-}: StoreCardProps) {
+export default function StoreCard({ name, id }: StoreCardProps) {
   return (
-    <NavLink
+    <Link
       to={`/dashboard/stores/${id}`}
-      onClick={() => {
-        if (window.innerWidth < 768) {
-          setTimeout(() => {
-            document.getElementById("store-details")?.scrollIntoView({
-              behavior: "smooth",
-              block: "start",
-            });
-          }, 100);
-        }
-      }}
-      className={({ isActive }) =>
-        isActive
-          ? "bg-muted-green/15 font-bold shadow-lg"
-          : "hover:bg-dark-gray/5 bg-white font-medium"
-      }
-      style={{
-        padding: "12px",
-        borderRadius: "15px",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        gap: "12px",
-      }}
+      className="group flex flex-col items-center justify-center p-5 bg-white rounded-2xl shadow-sm border border-[#dec1af] hover:border-[#f57c00] hover:shadow-md transition-all duration-300 text-center"
     >
-      <FaStoreAlt size={40} />
-      <h2 className="text-sm">{name}</h2>
-    </NavLink>
+      <div className="h-12 w-12 rounded-full bg-orange-50 text-[#f57c00] flex items-center justify-center mb-3 group-hover:bg-orange-100 transition-colors">
+        <RiStoreFill size={24} />
+      </div>
+      <h3 className="text-sm font-bold text-[#574235] truncate w-full group-hover:text-[#f57c00] transition-colors">
+        {name}
+      </h3>
+      <span className="text-[10px] text-gray-400 mt-1">View Store</span>
+    </Link>
   );
 }

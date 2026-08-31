@@ -15,30 +15,39 @@ import Checkout from "./pages/Checkout";
 import ProtectedRoute from "./components/ProtectedRoute";
 import CheckoutAddress from "./pages/CheckoutAddress";
 import Overview from "./pages/adminDashboard/Overview";
+import Finance from "./pages/adminDashboard/Finance";
 import AdminHomeLayout from "./pages/adminDashboard/AdminHomeLayout";
 import Orders from "./pages/adminDashboard/Orders";
 import Categories from "./pages/adminDashboard/Categories";
+import Subcategories from "./pages/adminDashboard/Subcategories";
+import Brands from "./pages/adminDashboard/Brands";
 import Products from "./pages/adminDashboard/Products";
 import Customer from "./pages/adminDashboard/Customer";
 import Transactions from "./pages/adminDashboard/Transactions";
 import Shipment from "./pages/adminDashboard/Shipment";
+import AuditTrail from "./pages/adminDashboard/AuditTrail";
+import Permissions from "./pages/adminDashboard/Permissions";
 import Help from "./pages/adminDashboard/Help";
 import Settings from "./pages/adminDashboard/Settings";
 import Auth from "./pages/adminDashboard/Auth";
 import AdminManagement from "./pages/AdminManagement";
 import { LoginProvider } from "./contexts/LoginProvider";
 import { ModalProvider } from "./contexts/ModalProvider";
+import Modal from "./components/Modal";
 import ProtectedRouteAdmin from "./components/adminDashboard/ProtectedRouteAdmin";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import PaymentFailed from "./pages/PaymentFailed";
 import StoreLayout from "./pages/adminDashboard/StoreLayout";
 import PickupStations from "./pages/adminDashboard/PickupStations";
-// import Store from "./pages/adminDashboard/Store";
 import StoreDetails from "./pages/adminDashboard/StoreDetails";
 import StoreHome from "./pages/adminDashboard/StoreHome";
 import StoreAdd from "./pages/adminDashboard/StoreAdd";
 import StoreEdit from "./pages/adminDashboard/StoreEdit";
 import BecomeSeller from "./pages/BecomeSeller";
+import DriverDashboard from "./pages/DriverDashboard";
+import InvoiceTracking from "./pages/InvoiceTracking";
+import Profile from "./pages/Profile";
+import VendorFinance from "./pages/VendorFinance";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -87,6 +96,14 @@ export default function App() {
           ),
         },
         {
+          path: "finance",
+          element: (
+            <ProtectedRoute>
+              <VendorFinance />
+            </ProtectedRoute>
+          ),
+        },
+        {
           path: "become-a-partner",
           element: <BecomeSeller />,
         },
@@ -99,6 +116,26 @@ export default function App() {
     {
       path: "/payment-failed",
       element: <PaymentFailed />,
+    },
+    {
+      path: "/invoice/:orderId",
+      element: <InvoiceTracking />,
+    },
+    {
+      path: "/driver/dashboard",
+      element: (
+        <ProtectedRoute>
+          <DriverDashboard />
+        </ProtectedRoute>
+      ),
+    },
+    {
+      path: "/profile",
+      element: (
+        <ProtectedRoute>
+          <Profile />
+        </ProtectedRoute>
+      ),
     },
     {
       path: "/register",
@@ -120,81 +157,109 @@ export default function App() {
     {
       path: "/dashboard",
       element: (
-        <ProtectedRouteAdmin>
-          <AdminHomeLayout />
-        </ProtectedRouteAdmin>
+        <ProtectedRouteAdmin />
       ),
       children: [
         {
-          index: true,
-          element: <Overview />,
-        },
-        {
-          path: "overview",
-          element: <Overview />,
-        },
-        {
-          path: "orders",
-          element: <Orders />,
-        },
-        {
-          path: "categories",
-          element: <Categories />,
-        },
-        {
-          path: "products",
-          element: <Products />,
-        },
-        {
-          path: "customers",
-          element: <Customer />,
-        },
-        {
-          path: "stores",
-          element: <StoreLayout />,
+          element: <AdminHomeLayout />,
           children: [
             {
               index: true,
-              element: <StoreHome />,
+              element: <Overview />,
             },
             {
-              path: "add",
-              element: <StoreAdd />,
+              path: "overview",
+              element: <Overview />,
             },
             {
-              path: "edit/:storeId",
-              element: <StoreEdit />,
+              path: "orders",
+              element: <Orders />,
             },
             {
-              path: ":storeId",
-              element: <StoreDetails />,
+              path: "categories",
+              element: <Categories />,
+            },
+            {
+              path: "sub-categories",
+              element: <Subcategories />,
+            },
+            {
+              path: "brands",
+              element: <Brands />,
+            },
+            {
+              path: "products",
+              element: <Products />,
+            },
+            {
+              path: "customers",
+              element: <Customer />,
+            },
+            {
+              path: "stores",
+              element: <StoreLayout />,
+              children: [
+                {
+                  index: true,
+                  element: <StoreHome />,
+                },
+                {
+                  path: "add",
+                  element: <StoreAdd />,
+                },
+                {
+                  path: "edit/:storeId",
+                  element: <StoreEdit />,
+                },
+                {
+                  path: ":storeId",
+                  element: <StoreDetails />,
+                },
+              ],
+            },
+            {
+              path: "transactions",
+              element: <Transactions />,
+            },
+            {
+              path: "finance",
+              element: <Finance />,
+            },
+            {
+              path: "shipment",
+              element: <Shipment />,
+            },
+            {
+              path: "pickup-stations",
+              element: <PickupStations />,
+            },
+            {
+              path: "audit-trail",
+              element: <AuditTrail />,
+            },
+            {
+              path: "permissions",
+              element: <Permissions />,
+            },
+            {
+              path: "help",
+              element: <Help />,
+            },
+            {
+              path: "settings",
+              element: <Settings />,
+            },
+            {
+              path: "admin-management",
+              element: <AdminManagement />,
+            },
+            {
+              path: "profile",
+              element: <Profile />,
             },
           ],
         },
-        {
-          path: "transactions",
-          element: <Transactions />,
-        },
-        {
-          path: "shipment",
-          element: <Shipment />,
-        },
-        {
-          path: "pickup-stations",
-          element: <PickupStations />,
-        },
-        {
-          path: "help",
-          element: <Help />,
-        },
-        {
-          path: "settings",
-          element: <Settings />,
-        },
-        {
-          path: "admin-management",
-          element: <AdminManagement />,
-        },
+
       ],
     },
     {
@@ -211,6 +276,7 @@ export default function App() {
           <ModalProvider>
             <CartProvider>
               <RouterProvider router={router} />
+              <Modal />
               <Toaster
                 position="top-center"
                 gutter={12}

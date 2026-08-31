@@ -1,29 +1,22 @@
-type RangeInfoProp = {
+import React from "react";
+
+type RangeInfoProps = {
   title: string;
   percent: string;
   color: string;
 };
 
-export default function RangeInfo({ title, percent, color }: RangeInfoProp) {
+export default function RangeInfo({ title, percent, color }: RangeInfoProps) {
   return (
-    <div className="my-3">
-      <h1 className="flex w-full items-center justify-between">
-        <span>{title}</span> <span>{percent}%</span>
-      </h1>
-      <div
-        style={{
-          backgroundColor: `${color}50`,
-        }}
-        className="my-1 flex h-1.5 w-full items-center justify-start rounded-full"
-      >
+    <div className="flex flex-col gap-2 mb-4">
+      <div className="flex justify-between items-center text-sm">
+        <span className="font-medium text-gray-700">{title}</span>
+        <span className="font-bold text-gray-900">{percent}%</span>
+      </div>
+      <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
         <div
-          style={{
-            width: `${percent}%`,
-            height: "100%",
-            backgroundColor: color,
-            // borderRadius: "50%",
-          }}
-          className="rounded-full transition-all duration-1000"
+          className="h-full transition-all duration-500"
+          style={{ width: `${percent}%`, backgroundColor: color }}
         ></div>
       </div>
     </div>

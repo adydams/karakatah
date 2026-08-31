@@ -21,8 +21,13 @@ export async function getCategories() {
   return response.data;
 }
 
-export async function deleteCategories({ id }: { id: string }) {
+export async function deleteCategory({ id }: { id: string }) {
   const response = await axiosInstance.delete(`/api/categories/${id}`);
+  return response.data;
+}
+
+export async function updateCategoryStatus(id: string, status: string) {
+  const response = await axiosInstance.patch(`/api/categories/${id}/status`, { status });
   return response.data;
 }
 
@@ -37,7 +42,12 @@ export async function getSubCategories() {
 }
 
 export async function createBrand({ name, description, logo }: BrandItem) {
-  const response = await axiosInstance.post(`/api/brands`, { logo, name, description });
+  const formData = new FormData();
+  formData.append("logo", logo);
+  formData.append("name", name);
+  formData.append("description", description);
+
+  const response = await axiosInstance.post(`/api/brands`, formData);
   return response.data;
 }
 
@@ -51,9 +61,18 @@ export async function getLogisticsCategories() {
   return response.data;
 }
 
-export async function getProducts() {
-  const response = await axiosInstance.get(`/api/products`);
-  return response.data;
+export async function getProducts(params: { limit: number, offset: number, search?: string, categoryId?: string }) {
+  const query = new URLSearchParams({
+    limit: params.limit.toString(),
+    offset: params.offset.toString(),
+    ...(params.search ? { search: params.search } : {}),
+    ...(params.categoryId ? { categoryId: params.categoryId } : {}),
+  }).toString();
+  const response = await axiosInstance.get(`/api/products?${query}`);
+  return {
+    ...response.data,
+    products: response.data.products ?? response.data.data ?? [],
+  };
 }
 
 export async function getProductById(id: string) {
@@ -75,9 +94,11 @@ export async function createProduct(
     widthCm,
     heightCm,
     logisticsCategoryId,
+    discounts,
     images,
     isPublished,
     draft,
+    pickupStations,
   }: ProductPayload & { isPublished?: boolean; draft?: boolean },
 ) {
   const formData = new FormData();
@@ -95,6 +116,15 @@ export async function createProduct(
   if (logisticsCategoryId) formData.append("logisticsCategoryId", logisticsCategoryId);
   if (isPublished !== undefined) formData.append("isPublished", String(isPublished));
   if (draft !== undefined) formData.append("draft", String(draft));
+  if (pickupStations && pickupStations.length > 0) {
+    formData.append(
+      "pickupStations",
+      JSON.stringify(pickupStations),
+    );
+  }
+  if (discounts) {
+    formData.append("discounts", JSON.stringify(discounts));
+  }
   images.forEach((file: File) => formData.append("images", file));
 
   const response = await axiosInstance.post(`/api/products`, formData);
@@ -118,6 +148,9 @@ export async function updateProduct(
   if (payload.widthCm !== undefined) formData.append("widthCm", String(payload.widthCm));
   if (payload.heightCm !== undefined) formData.append("heightCm", String(payload.heightCm));
   if (payload.logisticsCategoryId) formData.append("logisticsCategoryId", payload.logisticsCategoryId);
+  if (payload.discounts) {
+    formData.append("discounts", JSON.stringify(payload.discounts));
+  }
   if (payload.removedImageIds && payload.removedImageIds.length > 0) {
     for (const idToRemove of payload.removedImageIds) {
       formData.append("removedImageIds[]", idToRemove);

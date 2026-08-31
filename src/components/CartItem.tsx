@@ -12,6 +12,8 @@ import toast from "react-hot-toast";
 interface CartItemProps {
   name: string;
   price: string | number;
+  originalPrice?: string | number;
+  isDiscounted?: boolean;
   quantity: number;
   id: string;
   image: string;
@@ -27,6 +29,8 @@ export default function CartItem({
   quantity,
   id,
   image,
+  isDiscounted,
+  originalPrice,
 }: CartItemProps) {
   const [quantityItem, setQuantityItem] = useState(quantity);
   const lastSyncedQty = useRef(quantity); // add this to track last synced quantity
@@ -84,12 +88,25 @@ export default function CartItem({
           <h2 className="font-primary text-sm font-medium lg:text-lg">
             {name}
           </h2>
-          <p className="font-light">
+          <div className="font-light">
             Price:{" "}
-            <span className="font-primary font-medium">
-              ₦{formatPrice(price)}
-            </span>
-          </p>
+            <div className="flex items-center gap-2">
+              {isDiscounted ? (
+                <>
+                  <span className="font-primary font-medium text-slate-400 line-through">
+                    ₦{formatPrice(originalPrice || price)}
+                  </span>
+                  <span className="font-primary font-medium text-orange">
+                    ₦{formatPrice(price)}
+                  </span>
+                </>
+              ) : (
+                <span className="font-primary font-medium">
+                  ₦{formatPrice(price)}
+                </span>
+              )}
+            </div>
+          </div>
           <p className="font-light">
             Qty: <span className="font-primary font-medium">{quantity}</span>
           </p>

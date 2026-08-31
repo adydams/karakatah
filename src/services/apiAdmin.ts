@@ -1,4 +1,4 @@
-﻿import axiosInstance from "./apiClient";
+import axiosInstance from "./apiClient";
 
 const ADMIN_BASE = "/api/admin";
 
@@ -29,5 +29,32 @@ export const updateAdminRole = async (id, role) => {
 
 export const updateAdminStatus = async (id, isActive) => {
   const response = await axiosInstance.patch(`${ADMIN_BASE}/${id}/status`, { isActive });
+  return response.data;
+};
+
+// --- Driver Reports ---
+export const getDriversSummary = async () => {
+  const response = await axiosInstance.get(`${ADMIN_BASE}/drivers/summary`);
+  return response.data;
+};
+
+export const getActiveDeliveries = async () => {
+  const response = await axiosInstance.get(`${ADMIN_BASE}/drivers/active-deliveries`);
+  return response.data;
+};
+
+export const getDriverReport = async (driverId) => {
+  const response = await axiosInstance.get(`${ADMIN_BASE}/drivers/report/${driverId}`);
+  return response.data;
+};
+
+// --- Pricing Settings ---
+export const getShippingSettings = async () => {
+  const response = await axiosInstance.get(`${ADMIN_BASE}/settings`);
+  return response.data;
+};
+
+export const updateShippingSettings = async (settings) => {
+  const response = await axiosInstance.patch(`${ADMIN_BASE}/settings`, settings);
   return response.data;
 };

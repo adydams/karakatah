@@ -1,6 +1,7 @@
 // import { MdKeyboardArrowDown } from "react-icons/md";
 
 import { FaUserCircle } from "react-icons/fa";
+import NotificationBell from "./NotificationBell";
 
 import { Link } from "react-router";
 import { useState } from "react";
@@ -35,7 +36,8 @@ export default function ProfileBar() {
   }
 
   return (
-    <div className="relative flex items-center justify-between gap-3">
+    <div className="relative flex items-center justify-between gap-4">
+      <NotificationBell />
       <div
         onClick={handleMenu}
         className="flex cursor-pointer items-start justify-center gap-3"

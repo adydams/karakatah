@@ -25,8 +25,8 @@ export type BrandItem = {
 export type ProductPayload = {
   name: string;
   description: string;
-  price: string;
-  stockQuantity: string;
+  price: number | string;
+  stockQuantity: number | string;
   categoryId: string;
   subCategoryId: string;
   brandId: string;
@@ -35,5 +35,11 @@ export type ProductPayload = {
   widthCm?: string;
   heightCm?: string;
   logisticsCategoryId?: string;
+  boxSizeId?: string;
+  pickupStations?: Array<{
+    stationId?: string;
+    initialStock: number;
+  }>;
+  discounts?: any[];
   images: File[]; // 👈 This is important
 };

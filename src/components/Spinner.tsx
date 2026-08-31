@@ -1,13 +1,15 @@
 type SpinnerProp = {
-  size: string;
+  size?: string;
+  type?: string;
   color?: string;
 };
 
-export default function Spinner({ size, color }: SpinnerProp) {
+export default function Spinner({ size, type, color }: SpinnerProp) {
+  const actualSize = size || type;
   return (
     <span
       style={{ color }}
-      className={`${size === "big" ? "bigloader" : "smallLoader"}`}
+      className={`${actualSize === "big" ? "bigloader" : "smallLoader"}`}
     ></span>
   );
 }

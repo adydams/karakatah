@@ -3,6 +3,7 @@ import { LoginContext, type UserType } from "./LoginContext";
 import type { ApiLoginType } from "../libs/types";
 import { decodeToken } from "../utils/utils";
 import { AdminLogin, getAdminById } from "../services/adminDashboard/apiAuth";
+import axios from "axios";
 
 type LoginProviderProp = {
   children: ReactNode;
@@ -61,17 +62,36 @@ export function LoginProvider({ children }: LoginProviderProp) {
     [tokenState],
   );
 
+  const logout = useCallback(async () => {
+    try {
+      if (tokenState) {
+        await axios.post(
+          `${process.env.VITE_API_URL}/api/auth/logout`,
+          {},
+          { headers: { Authorization: `Bearer ${tokenState}` } }
+        );
+      }
+    } catch (error) {
+      console.error("Logout API error:", error);
+    } finally {
+      setToken(null);
+      setUser(null);
+      window.location.href = "/login";
+    }
+  }, [tokenState, setToken]);
+
   const value = useMemo(
     () => ({
       token: tokenState,
       setToken,
       login,
       getAdmin,
+      logout,
       user,
       adminId,
       role,
     }),
-    [tokenState, setToken, login, getAdmin, user, adminId, role],
+    [tokenState, setToken, login, getAdmin, logout, user, adminId, role],
   );
 
   return (

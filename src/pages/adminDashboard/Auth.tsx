@@ -9,8 +9,8 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import toast from "react-hot-toast";
-import Spinner from "../../components/adminDashboard/Spinner";
-import SignUpWithGoogle from "../../components/adminDashboard/SignUpWithGoogle";
+import Spinner from "../../components/Spinner";
+import SignUpWithGoogle from "../../components/SignUpWithGoogle";
 import { useLogin } from "../../contexts/hooks/useLogin";
 
 const signUpSchema = z.object({

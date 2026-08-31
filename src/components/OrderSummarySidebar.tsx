@@ -30,9 +30,16 @@ export default function OrderSummarySidebar({
               <span className="truncate mr-2">
                 {item.product?.name} × {item.quantity}
               </span>
-              <span className="font-semibold text-gray-800 whitespace-nowrap">
-                ₦{formatPrice(Number(item.product?.price || 0) * Number(item.quantity || 0))}
-              </span>
+              <div className="flex flex-col items-end">
+                {item.product?.isDiscounted && (
+                  <span className="text-[10px] text-slate-400 line-through">
+                    ₦{formatPrice(Number(item.product?.price || 0) * Number(item.quantity || 0))}
+                  </span>
+                )}
+                <span className="font-semibold text-gray-800 whitespace-nowrap">
+                  ₦{formatPrice(Number(item.product?.currentPrice || item.product?.price || 0) * Number(item.quantity || 0))}
+                </span>
+              </div>
             </div>
           ))
         ) : (

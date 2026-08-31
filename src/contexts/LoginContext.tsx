@@ -13,8 +13,13 @@ export type UserType = {
   email: string;
   phone: string;
   roleId: string;
+  role: string | null;
+  permissions: Array<{ id: string; name: string; description?: string }>;
+  isActive: boolean;
+  department?: string | null;
   provider: string | null;
   providerId: string | null;
+  profilePicture?: string | null;
   createdAt: string; // ISO date string
   updatedAt: string; // ISO date string
 };
@@ -29,6 +34,7 @@ export type GetAdminByIdResponse = {
     roleId: string;
     provider: string | null;
     providerId: string | null;
+    profilePicture?: string | null;
     createdAt: string; // ISO date string
     updatedAt: string; // ISO date string
   };
@@ -42,7 +48,7 @@ type LoginContextType = {
   setToken: React.Dispatch<React.SetStateAction<string | null>>;
   login: ({ email, password }: ApiLoginType) => Promise<LoginResponse>;
   getAdmin: (id: string) => Promise<GetAdminByIdResponse>;
-  // login: (email: string, password: string) => Promise<Response>;
+  logout: () => Promise<void>;
 };
 
 export const LoginContext = createContext<LoginContextType | null>(null);

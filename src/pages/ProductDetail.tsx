@@ -10,6 +10,7 @@ import ProductImagePulse from "../components/ProductImagePulse";
 import { addItemToCart } from "../services/apiCarts";
 import toast from "react-hot-toast";
 import Spinner from "../components/Spinner";
+import { useUser } from "../contexts/hooks/useUser";
 // import { addItemToCart } from "../services/apiCarts";
 // import toast from "react-hot-toast";
 // import Spinner from "../components/Spinner";
@@ -18,13 +19,11 @@ import Spinner from "../components/Spinner";
 export default function ProductDetail() {
   const [quantity, setQuantity] = useState(1);
   const queryClient = useQueryClient();
+  const { user } = useUser();
 
   const navigate = useNavigate();
 
-  if (quantity < 0) {
-    setQuantity(0);
-  }
-
+  // Remove the direct state update from render to prevent "Too many re-renders" error
   const { id } = useParams<{ id: string }>();
   const productId = id;
   // console.log(id);
@@ -62,6 +61,11 @@ export default function ProductDetail() {
   });
 
   function handleAddToCart() {
+    if (!user) {
+      navigate("/login");
+      toast.error("Please log in to add items to your cart");
+      return;
+    }
     mutate({ name, productId, quantity });
   }
 
@@ -89,7 +93,9 @@ export default function ProductDetail() {
               </p>
               <p className="text-darkshade mt-2 text-sm leading-relaxed font-light">
                 Availability:{" "}
-                <span className="text-muted-green font-medium">In stock</span>
+                <span className={`${(product?.stockQuantity ?? 0) > 0 ? "text-muted-green" : "text-red-600"} font-medium`}>
+                  {(product?.stockQuantity ?? 0) > 0 ? "In stock" : "Out of Stock"}
+                </span>
               </p>
               <p className="text-dark-gray mt-2 text-sm leading-relaxed font-light">
                 Color:{" "}
@@ -100,14 +106,27 @@ export default function ProductDetail() {
                 <span className="text-muted-green font-medium">Medium</span>
               </p>
 
-              <h2 className="border-muted-green text-muted-green mt-10 w-auto rounded-lg border-[1px] px-4 py-1 text-center font-bold lg:text-2xl">
-                ₦{formatPrice(product?.price)}
-              </h2>
+              <div className="mt-10 flex flex-col items-center justify-center gap-2">
+                {product?.isDiscounted ? (
+                  <>
+                    <h2 className="text-slate-400 text-xl line-through">
+                      ₦{formatPrice(product?.price)}
+                    </h2>
+                    <h2 className="border-muted-green text-muted-green w-auto rounded-lg border-[1px] px-4 py-1 text-center font-bold lg:text-2xl">
+                      ₦{formatPrice(product?.currentPrice)}
+                    </h2>
+                  </>
+                ) : (
+                  <h2 className="border-muted-green text-muted-green mt-10 w-auto rounded-lg border-[1px] px-4 py-1 text-center font-bold lg:text-2xl">
+                    ₦{formatPrice(product?.price)}
+                  </h2>
+                )}
+              </div>
 
               <div className="mt-5">
                 <div className="flex w-full items-center justify-between gap-2">
                   <FaArrowAltCircleLeft
-                    onClick={() => setQuantity((prev) => prev - 1)}
+                    onClick={() => setQuantity((prev) => (prev > 1 ? prev - 1 : 1))}
                     size={20}
                     className="cursor-pointer"
                   />
@@ -115,7 +134,10 @@ export default function ProductDetail() {
                     type="text"
                     placeholder="0"
                     value={quantity}
-                    onChange={(e) => setQuantity(+e.target.value)}
+                    onChange={(e) => {
+                      const val = +e.target.value;
+                      setQuantity(val > 0 ? val : 1);
+                    }}
                     className="w-[50px] text-center focus:outline-none"
                   />
                   <FaArrowAltCircleRight
@@ -126,9 +148,16 @@ export default function ProductDetail() {
                 </div>
                 <button
                   onClick={handleAddToCart}
-                  className="bg-orange mt-3 w-[150px] cursor-pointer rounded-md px-5 py-2 text-xs font-medium text-white"
+                  disabled={(product?.stockQuantity ?? 0) <= 0}
+                  className={`mt-3 w-[150px] rounded-md px-5 py-2 text-xs font-medium text-white transition ${
+                    (product?.stockQuantity ?? 0) <= 0
+                      ? "bg-gray-400 cursor-not-allowed"
+                      : "bg-orange cursor-pointer hover:bg-orange/90"
+                  }`}
                 >
-                  {isPending ? <Spinner size="small" /> : "ADD TO CART"}
+                  {(product?.stockQuantity ?? 0) <= 0
+                    ? "OUT OF STOCK"
+                    : isPending ? <Spinner size="small" /> : "ADD TO CART"}
                 </button>
               </div>
             </div>

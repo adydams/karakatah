@@ -1,0 +1,170 @@
+import { useQuery } from "@tanstack/react-query";
+import { apiVendorFinance } from "../services/apiVendorFinance";
+import Spinner from "../components/Spinner";
+import { FiCreditCard } from "react-icons/fi";
+
+export default function VendorFinance() {
+  const { data: balanceData, isLoading: loadingBalance, error: errorBalance } = useQuery({
+    queryKey: ["vendorFinanceBalance"],
+    queryFn: apiVendorFinance.getBalance,
+  });
+
+  const { data: transactionsData, isLoading: loadingTrans } = useQuery({
+    queryKey: ["vendorFinanceTransactions"],
+    queryFn: apiVendorFinance.getTransactions,
+  });
+
+  if (loadingBalance || loadingTrans) return <div className="flex justify-center items-center h-full"><Spinner /></div>;
+  if (errorBalance) return <div className="text-red-500 text-center p-10">Error loading financial data: {errorBalance.message}</div>;
+
+  const balance = balanceData?.data || {};
+
+  return (
+    <div className="p-6 space-y-8 max-w-7xl mx-auto">
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-2xl font-bold text-charcoal-gray">Finances</h1>
+          <p className="text-dark-gray/60">Manage your balances, payouts, and account ledger.</p>
+        </div>
+        <div className="flex items-center gap-2 px-4 py-2 bg-green-100 text-green-700 rounded-full text-sm font-medium">
+          <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+          Eligible: Ready for next weekly payout
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <BalanceCard
+          title="Available Balance"
+          value={`₦${parseFloat(balance.availableBalance || 0).toLocaleString()}`}
+          subtitle="Ready for payout"
+          buttonText="Request Payout"
+          primary
+        />
+        <BalanceCard
+          title="Pending Balance"
+          value={`₦${parseFloat(balance.pendingBalance || 0).toLocaleString()}`}
+          subtitle="Settles in 3-7 days"
+          primary={false}
+        />
+        <div className="bg-charcoal-gray text-white p-6 rounded-2xl shadow-lg relative overflow-hidden">
+          <div className="relative z-10">
+            <div className="text-sm text-gray-400 mb-1">Lifetime Earnings</div>
+            <div className="text-3xl font-bold mb-4">₦{parseFloat(balance.lifetimeEarnings || 0).toLocaleString()}</div>
+            <div className="text-xs text-gray-400">All-time gross revenue</div>
+          </div>
+          <div className="absolute -right-4 -bottom-4 text-white/10 text-8xl rotate-12 pointer-events-none">
+            <FiCreditCard size={120} />
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-light-gray">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-lg font-semibold text-charcoal-gray">Account Ledger</h2>
+            <button className="text-sm text-orange font-medium hover:underline">Export CSV</button>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead className="text-dark-gray/60 border-b border-light-gray">
+                <tr className="text-xs uppercase tracking-wider">
+                  <th className="pb-3 font-medium">Date</th>
+                  <th className="pb-3 font-medium">Type & Ref</th>
+                  <th className="pb-3 font-medium">Gross</th>
+                  <th className="pb-3 font-medium">Fee (%)</th>
+                  <th className="pb-3 font-medium">Net</th>
+                  <th className="pb-3 font-medium">Status</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-light-gray">
+                {transactionsData?.data?.map((txn: any) => (
+                  <tr key={txn.id} className="hover:bg-light-gray/50 transition-colors">
+                    <td className="py-4 text-dark-gray/70">
+                      <div className="font-medium">{new Date(txn.createdAt).toLocaleDateString()}</div>
+                      <div className="text-xs text-dark-gray/50">{new Date(txn.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
+                    </td>
+                    <td className="py-4">
+                      <div className="font-medium text-charcoal-gray">
+                        {txn.type === 'SALE_CREDIT' ? 'Sale Credit' : txn.type === 'PAYOUT_DEBIT' ? 'Payout' : 'Adjustment'}
+                      </div>
+                      <div className="text-xs text-dark-gray/50">{txn.reference || txn.id.slice(0, 8)}</div>
+                    </td>
+                    <td className="py-4 text-charcoal-gray font-medium">
+                      {txn.type === 'PAYOUT_DEBIT' ? `-₦${parseFloat(txn.grossAmount).toLocaleString()}` : `₦${parseFloat(txn.grossAmount).toLocaleString()}`}
+                    </td>
+                    <td className="py-4 text-dark-gray/60">
+                      {txn.commissionRate ? `${txn.commissionRate}%` : '-'}
+                    </td>
+                    <td className="py-4 font-bold text-charcoal-gray">
+                      ₦{parseFloat(txn.netAmount).toLocaleString()}
+                    </td>
+                    <td className="py-4">
+                      <span className={`px-2 py-1 text-xs rounded-full ${txn.status === 'SETTLED' || txn.status === 'COMPLETED' ? 'bg-green-100 text-green-600' : 'bg-yellow-100 text-yellow-600'}`}>
+                        {txn.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div className="mt-6 text-center">
+            <button className="text-sm text-dark-gray/60 hover:text-charcoal-gray underline">View All Transactions</button>
+          </div>
+        </div>
+
+        <div className="space-y-6">
+          <div className="bg-white p-6 rounded-2xl shadow-sm border border-light-gray">
+            <h2 className="text-lg font-semibold text-charcoal-gray mb-6">Payment Method</h2>
+            <div className="p-4 border border-light-gray rounded-xl flex items-start justify-between mb-6">
+              <div className="flex gap-4">
+                <div className="w-12 h-12 bg-light-gray rounded-lg flex items-center justify-center text-charcoal-gray">
+                  <FiCreditCard size={24} />
+                </div>
+                <div className="flex flex-col">
+                  <div className="text-sm font-bold text-charcoal-gray">Primary Account</div>
+                  <div className="text-sm text-dark-gray/60">Access Bank</div>
+                  <div className="text-xs text-dark-gray/50">**** 1234</div>
+                  <div className="text-xs text-dark-gray/50">Toluatope Doe</div>
+                </div>
+              </div>
+              <button className="text-xs text-orange font-medium hover:underline">Edit</button>
+            </div>
+            <div className="flex items-center gap-2 text-xs text-muted-green font-medium mb-6">
+              <div className="w-1.5 h-1.5 bg-muted-green rounded-full"></div>
+              Verified for Payouts
+            </div>
+            <div className="space-y-4">
+              <h3 className="text-sm font-semibold text-charcoal-gray">Recent Payouts</h3>
+              {[1, 2].map((i) => (
+                <div key={i} className="flex justify-between items-center text-sm p-2 hover:bg-light-gray rounded-lg transition-colors">
+                  <div className="text-dark-gray/70">Oct {i === 1 ? '20' : '13'}, 2024</div>
+                  <div className="font-bold text-charcoal-gray">₦{i === 1 ? '800.00' : '1,150.20'}</div>
+                </div>
+              ))}
+              <button className="w-full py-2 text-xs text-center text-dark-gray/60 hover:text-charcoal-gray underline">View Payout History</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function BalanceCard({ title, value, subtitle, buttonText, primary = false }: any) {
+  return (
+    <div className={`p-6 rounded-2xl shadow-sm border ${primary ? 'border-orange bg-orange/5' : 'border-light-gray bg-white'}`}>
+      <div className="flex justify-between items-center mb-2">
+        <span className="text-sm text-dark-gray/60">{title}</span>
+        <FiCreditCard className={primary ? 'text-orange' : 'text-dark-gray/40'} />
+      </div>
+      <div className="text-3xl font-bold text-charcoal-gray mb-1">{value}</div>
+      <div className="text-xs text-dark-gray/50 mb-6">{subtitle}</div>
+      {buttonText && (
+        <button className="w-full py-2 bg-orange text-white rounded-lg text-sm font-medium hover:bg-orange-600 transition-colors shadow-sm">
+          {buttonText}
+        </button>
+      )}
+    </div>
+  );
+}

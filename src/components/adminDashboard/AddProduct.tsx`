@@ -1,0 +1,415 @@
+import React, { useState, useEffect } from "react";
+import { useForm, useFieldArray } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import toast from "react-hot-toast";
+import { useLogin } from "../../contexts/hooks/useLogin";
+import {
+  createProduct,
+  getCategories,
+  getBrands,
+  getSubCategories,
+  getLogisticsCategories
+} from "../../services/adminDashboard/apiProducts";
+import Spinner from "../Spinner";
+import { FaCloudUploadAlt, FaTrash, FaPlus, FaMinus } from "react-icons/fa";
+import { useQuery } from "@tanstack/react-query";
+
+const productSchema = z.object({
+  name: z.string().min(1, "Product name is required"),
+  description: z.string().min(1, "Description is required"),
+  price: z.preprocess((val) => Number(val), z.number().positive("Price must be positive")),
+  stockQuantity: z.preprocess((val) => Number(val), z.number().int().nonnegative("Stock cannot be negative")),
+  categoryId: z.string().min(1, "Category is required"),
+  subCategoryId: z.string().optional(),
+  brandId: z.string().optional(),
+  weightKg: z.preprocess((val) => (val === "" || val === undefined ? undefined : Number(val)), z.number().optional()),
+  lengthCm: z.preprocess((val) => (val === "" || val === undefined ? undefined : Number(val)), z.number().optional()),
+  widthCm: z.preprocess((val) => (val === "" || val === undefined ? undefined : Number(val)), z.number().optional()),
+  heightCm: z.preprocess((val) => (val === "" || val === undefined ? undefined : Number(val)), z.number().optional()),
+  logisticsCategoryId: z.string().optional(),
+  discounts: z.array(z.object({
+    minQty: z.number().min(1),
+    maxQty: z.number().optional(),
+    value: z.number().positive(),
+    type: z.enum(["FIXED", "PERCENTAGE"]),
+  })).optional(),
+  isPublished: z.boolean().default(true),
+  draft: z.boolean().default(false),
+  images: z.any().refine((files) => files?.length > 0, "At least one image is required"),
+});
+
+type TProductSchema = z.infer<typeof productSchema>;
+
+type Props = {
+  showProduct: boolean;
+  handleShowProduct: () => void;
+};
+
+export default function AddProduct({ showProduct, handleShowProduct }: Props) {
+  const { token } = useLogin();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+
+  const { data: categoriesData } = useQuery({ queryKey: ["adminCategories"], queryFn: getCategories });
+  const { data: brandsData } = useQuery({ queryKey: ["adminBrands"], queryFn: getBrands });
+  const { data: logisticsData } = useQuery({ queryKey: ["adminLogisticsCats"], queryFn: getLogisticsCategories });
+  const { data: subCatsData } = useQuery({ queryKey: ["adminSubCategories"], queryFn: getSubCategories });
+
+  const categories = categoriesData?.data || [];
+  const brands = brandsData?.data || [];
+  const logisticsCats = logisticsData?.data || [];
+  const subCategories = subCatsData?.data || [];
+
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    watch,
+    control,
+    formState: { errors },
+  } = useForm<TProductSchema>({
+    resolver: zodResolver(productSchema),
+    defaultValues: {
+      isPublished: true,
+      draft: false,
+      discounts: [],
+    }
+  });
+
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: "discounts" as any,
+  });
+
+  const selectedCategoryId = watch("categoryId");
+  const filteredSubCategories = subCategories.filter((sub: any) => sub.categoryId === selectedCategoryId);
+
+  async function onSubmit(data: TProductSchema) {
+    setIsSubmitting(true);
+    try {
+      const success = await createProduct(data, token);
+      if (success) {
+        toast.success("Product added successfully");
+        handleShowProduct();
+      }
+    } catch (err: any) {
+      toast.error(err.message || "Failed to add product");
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files) {
+      const fileArray = Array.from(files);
+      setValue("images", fileArray);
+      const previews = fileArray.map(file => URL.createObjectURL(file));
+      setImagePreviews(previews);
+    }
+  };
+
+  if (!showProduct) return null;
+
+  return (
+    <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+      <div className="bg-white rounded-2xl shadow-2xl border border-gray-200 w-full max-w-5xl overflow-hidden animate-in fade-in zoom-in duration-200 max-h-[90vh] flex flex-col">
+        <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50 sticky top-0 z-10">
+          <h2 className="text-xl font-bold text-gray-800">Add New Product</h2>
+          <button onClick={handleShowProduct} className="text-gray-400 hover:text-gray-600 transition-colors text-2xl">&times;</button>
+        </div>
+
+        <form onSubmit={handleSubmit(onSubmit)} className="p-6 overflow-y-auto flex-1 space-y-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Left Column: Basic Info & Dimensions */}
+            <div className="space-y-6">
+              <div className="flex flex-col gap-1">
+                <label className="text-xs font-semibold text-gray-500 uppercase">Product Name</label>
+                <input
+                  type="text"
+                  className="w-full p-2.5 border border-gray-300 rounded-md outline-none focus:ring-2 focus:ring-orange/50 text-sm"
+                  placeholder="e.g. Nike Air Max"
+                  {...register("name")}
+                />
+                {errors.name && <p className="text-xs text-red-500">{errors.name.message}</p>}
+              </div>
+
+              <div className="flex flex-col gap-1">
+                <label className="text-xs font-semibold text-gray-500 uppercase">Description</label>
+                <textarea
+                  className="w-full p-2.5 border border-gray-300 rounded-md outline-none focus:ring-2 focus:ring-orange/50 text-sm"
+                  placeholder="Describe the product details..."
+                  rows={4}
+                  {...register("description")}
+                ></textarea>
+                {errors.description && <p className="text-xs text-red-500">{errors.description.message}</p>}
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs font-semibold text-gray-500 uppercase">Price (₦)</label>
+                  <input
+                    type="number"
+                    className="w-full p-2.5 border border-gray-300 rounded-md outline-none focus:ring-2 focus:ring-orange/50 text-sm"
+                    placeholder="0.00"
+                    {...register("price")}
+                  />
+                  {errors.price && <p className="text-xs text-red-500">{errors.price.message}</p>}
+                </div>
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs font-semibold text-gray-500 uppercase">Initial Stock</label>
+                  <input
+                    type="number"
+                    className="w-full p-2.5 border border-gray-300 rounded-md outline-none focus:ring-2 focus:ring-orange/50 text-sm"
+                    placeholder="0"
+                    {...register("stockQuantity")}
+                  />
+                  {errors.stockQuantity && <p className="text-xs text-red-500">{errors.stockQuantity.message}</p>}
+                </div>
+              </div>
+
+              <div className="p-4 bg-gray-50 rounded-xl border border-gray-200 space-y-4">
+                <h3 className="text-sm font-bold text-gray-700 mb-2">Shipping Dimensions</h3>
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="flex flex-col gap-1">
+                    <label className="text-[10px] font-semibold text-gray-500 uppercase">Length (cm)</label>
+                    <input
+                      type="number"
+                      className="w-full p-2 border border-gray-300 rounded-md outline-none text-sm"
+                      placeholder="0"
+                      {...register("lengthCm")}
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-[10px] font-semibold text-gray-500 uppercase">Width (cm)</label>
+                    <input
+                      type="number"
+                      className="w-full p-2 border border-gray-300 rounded-md outline-none text-sm"
+                      placeholder="0"
+                      {...register("widthCm")}
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-[10px] font-semibold text-gray-500 uppercase">Height (cm)</label>
+                    <input
+                      type="number"
+                      className="w-full p-2 border border-gray-300 rounded-md outline-none text-sm"
+                      placeholder="0"
+                      {...register("heightCm")}
+                    />
+                  </div>
+                </div>
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs font-semibold text-gray-500 uppercase">Weight (kg)</label>
+                  <input
+                    type="number"
+                    className="w-full p-2 border border-gray-300 rounded-md outline-none text-sm"
+                    placeholder="0.0"
+                    {...register("weightKg")}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-5">
+              <div className="flex flex-col gap-1">
+                <label className="text-xs font-semibold text-gray-500 uppercase">Category</label>
+                <select
+                  className="w-full p-2.5 border border-gray-300 rounded-md outline-none focus:ring-2 focus:ring-orange/50 text-sm bg-white"
+                  {...register("categoryId")}
+                >
+                  <option value="">Select Category</option>
+                  {categories.map((cat: any) => (
+                    <option key={cat.id} value={cat.id}>{cat.name}</option>
+                  ))}
+                </select>
+                {errors.categoryId && <p className="text-xs text-red-500">{errors.categoryId.message}</p>}
+              </div>
+
+              <div className="flex flex-col gap-1">
+                <label className="text-xs font-semibold text-gray-500 uppercase">Sub-Category</label>
+                <select
+                  className="w-full p-2.5 border border-gray-300 rounded-md outline-none focus:ring-2 focus:ring-orange/50 text-sm bg-white"
+                  {...register("subCategoryId")}
+                >
+                  <option value="">Select Sub-Category</option>
+                  {filteredSubCategories.map((sub: any) => (
+                    <option key={sub.id} value={sub.id}>{sub.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="flex flex-col gap-1">
+                <label className="text-xs font-semibold text-gray-500 uppercase">Brand</label>
+                <select
+                  className="w-full p-2.5 border border-gray-300 rounded-md outline-none focus:ring-2 focus:ring-orange/50 text-sm bg-white"
+                  {...register("brandId")}
+                >
+                  <option value="">Select Brand</option>
+                  {brands.map((brand: any) => (
+                    <option key={brand.id} value={brand.id}>{brand.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="flex flex-col gap-1">
+                <label className="text-xs font-semibold text-gray-500 uppercase">Logistics Category</label>
+                <select
+                  className="w-full p-2.5 border border-gray-300 rounded-md outline-none focus:ring-2 focus:ring-orange/50 text-sm bg-white"
+                  {...register("logisticsCategoryId")}
+                >
+                  <option value="">Select Logistics Category</option>
+                  {logisticsCats.map((lc: any) => (
+                    <option key={lc.id} value={lc.id}>{lc.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-200">
+                <div className="flex flex-col">
+                  <span className="text-sm font-bold text-gray-700">Published Status</span>
+                  <span className="text-xs text-gray-500">Make product visible to customers</span>
+                </div>
+                <input type="checkbox" {...register("isPublished")} className="w-5 h-5 accent-orange" />
+              </div>
+              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-200">
+                <div className="flex flex-col">
+                  <span className="text-sm font-bold text-gray-700">Draft Mode</span>
+                  <span className="text-xs text-gray-500">Save as draft for later review</span>
+                </div>
+                <input type="checkbox" {...register("draft")} className="w-5 h-5 accent-orange" />
+              </div>
+            </div>
+          </div>
+
+          {/* Discounts Section */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-semibold text-gray-500 uppercase">Tiered Discounts</label>
+              <button
+                type="button"
+                onClick={() => append({ minQty: 1, value: 0, type: "PERCENTAGE" })}
+                className="text-orange hover:text-orange/80 text-xs font-bold flex items-center gap-1"
+              >
+                <FaPlus size={10} /> Add Tier
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {fields.map((field, index) => (
+                <div key={field.id} className="p-4 bg-gray-50 rounded-xl border border-gray-200 relative group">
+                  <button
+                    type="button"
+                    onClick={() => remove(index)}
+                    className="absolute top-2 right-2 text-gray-300 hover:text-red-500 transition-colors"
+                  >
+                    <FaTrash size={12} />
+                  </button>
+                  <div className="grid grid-cols-2 gap-2 mb-3">
+                    <div className="flex flex-col gap-1">
+                      <label className="text-[10px] font-semibold text-gray-400 uppercase">Min Qty</label>
+                      <input
+                        type="number"
+                        className="p-1.5 border border-gray-300 rounded text-xs"
+                        {...register(`discounts.${index}.minQty` as any)}
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <label className="text-[10px] font-semibold text-gray-400 uppercase">Max Qty</label>
+                      <input
+                        type="number"
+                        className="p-1.5 border border-gray-300 rounded text-xs"
+                        placeholder="Optional"
+                        {...register(`discounts.${index}.maxQty` as any)}
+                      />
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <div className="flex-1 flex flex-col gap-1">
+                      <label className="text-[10px] font-semibold text-gray-400 uppercase">Value</label>
+                      <input
+                        type="number"
+                        className="p-1.5 border border-gray-300 rounded text-xs"
+                        {...register(`discounts.${index}.value` as any)}
+                      />
+                    </div>
+                    <div className="w-24 flex flex-col gap-1">
+                      <label className="text-[10px] font-semibold text-gray-400 uppercase">Type</label>
+                      <select
+                        className="p-1.5 border border-gray-300 rounded text-xs bg-white"
+                        {...register(`discounts.${index}.type` as any)}
+                      >
+                        <option value="PERCENTAGE">Perc%</option>
+                        <option value="FIXED">Fixed</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <label className="text-xs font-semibold text-gray-500 uppercase">Product Images</label>
+            <div className="flex flex-wrap gap-4">
+              {imagePreviews.map((url, idx) => (
+                <div key={idx} className="relative w-20 h-20 group">
+                  <img src={url} className="w-full h-full object-cover rounded-lg border border-gray-200" alt="preview" />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const currentImages = (document.querySelector('input[type="file"]') as any)?.files;
+                      // Note: FileList is read-only, actual logic handled via setValue in handleImageChange
+                    }}
+                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <FaTrash size={10} />
+                  </button>
+                </div>
+              ))}
+              <label className="w-20 h-20 border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors text-gray-400">
+                <FaCloudUploadAlt size={20} />
+                <span className="text-[10px] mt-1">Add Image</span>
+                <input
+                  type="file"
+                  hidden
+                  multiple
+                  accept="image/*"
+                  {...register("images")}
+                  onChange={(e) => {
+                    const files = e.target.files;
+                    if (files) {
+                      const fileArray = Array.from(files);
+                      setValue("images", fileArray);
+                      const previews = fileArray.map(file => URL.createObjectURL(file));
+                      setImagePreviews(prev => [...prev, ...previews]);
+                    }
+                  }}
+                />
+              </label>
+            </div>
+            {errors.images && <p className="text-xs text-red-500">{errors.images.message}</p>}
+          </div>
+
+          <div className="flex justify-end gap-3 pt-6 border-t border-gray-100">
+            <button
+              type="button"
+              onClick={handleShowProduct}
+              className="px-6 py-2.5 text-sm font-medium text-gray-600 hover:text-gray-800 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="bg-orange text-white px-8 py-2.5 rounded-md text-sm font-bold hover:bg-orange/90 transition-all disabled:opacity-50 flex items-center gap-2"
+            >
+              {isSubmitting ? <Spinner size="small" /> : "Create Product"}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}

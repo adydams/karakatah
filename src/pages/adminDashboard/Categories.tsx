@@ -1,176 +1,108 @@
-import NavBar from "../../components/adminDashboard/NavBar";
-
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { getCategories } from "../../services/adminDashboard/apiProducts";
-
-import Spinner from "../../components/adminDashboard/Spinner";
-import AddCategory from "../../components/adminDashboard/AddCategory";
+import React, { useState } from "react";
+import Spinner from "../../components/Spinner";
 import DashboardPagination from "../../components/adminDashboard/DashboardPagination";
-
+import { FaEye, FaEdit, FaTrashAlt, FaDownload } from "react-icons/fa";
 import { IoMdArrowDropdown } from "react-icons/io";
-import TableCategoryItem from "../../components/adminDashboard/TableCategoryItem";
+import { getCategories, deleteCategory } from "../../services/adminDashboard/apiCategories";
+import toast from "react-hot-toast";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
-const tableHeaders = ["Categories", "ID", "Product Stock", "Action"];
-
-const CATEGORY_PER_PAGE = 10;
-
-type Category = {
-  id: string;
-  name: string;
-  totalProducts: number;
-  categoryImage: string;
-};
+const tableHeaders = [
+  "Categories",
+  "Starting Price",
+  "ID",
+  "Product Stock",
+  "Action",
+];
 
 export default function Categories() {
-  const [showAddCat, setShowAddCat] = useState(false);
-
+  const queryClient = useQueryClient();
   const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
-  const {
-    data: categories,
-    isLoading: isFetchingCategories,
-    isError,
-    error,
-  } = useQuery({
+  const { data: categoryData, isLoading } = useQuery({
     queryKey: ["categories"],
     queryFn: getCategories,
   });
 
-  function handleShowAddCategory() {
-    setShowAddCat((cat) => !cat);
-  }
-
-  if (isError) {
-    return (
-      <div className="flex h-[300px] items-center justify-center">
-        <p>
-          {error instanceof Error
-            ? error.message
-            : "Failed to fetch categories"}
-        </p>
-      </div>
-    );
-  }
-
-  const categoryList: Category[] = categories?.data ?? [];
-
-  // Pagination
-  const totalPages = Math.ceil(
-    categoryList.length / CATEGORY_PER_PAGE,
+  const categories = categoryData?.data ?? [];
+  const totalPages = Math.ceil(categories.length / itemsPerPage);
+  const paginatedCategories = categories.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
   );
 
-  const start = (currentPage - 1) * CATEGORY_PER_PAGE;
-
-  const paginatedCategories = categoryList.slice(
-    start,
-    start + CATEGORY_PER_PAGE,
-  );
+  async function handleDelete(id: string) {
+    if (window.confirm("Are you sure you want to delete this category?")) {
+      try {
+        await deleteCategory({ id });
+        toast.success("Category deleted successfully");
+        queryClient.invalidateQueries({ queryKey: ["categories"] });
+      } catch (err: any) {
+        toast.error(err.message || "Failed to delete category");
+      }
+    }
+  }
 
   return (
     <div className="font-primary w-full">
-      <NavBar title="Categories" />
 
-      {/* Top cards */}
-      {isFetchingCategories ? (
-        <div className="flex h-[300px] items-center justify-center">
-          <Spinner type="big" />
-        </div>
-      ) : (
-        <div className="my-2 grid w-full grid-cols-2 gap-5 md:grid-cols-4 lg:mt-10 lg:mb-5">
-          {categoryList.slice(0, 4).map((item) => (
-            <div
-              key={item.id}
-              className="flex flex-col items-center gap-3 rounded-lg bg-white p-3 shadow-sm/5"
-            >
-              <div className="h-[160px] w-full overflow-hidden rounded-md">
-                <img
-                  className="h-full w-full object-cover"
-                  src={item.categoryImage}
-                  alt={item.name}
-                />
-              </div>
+      <div className="my-5 flex w-full flex-col items-start justify-start rounded-xl bg-white py-2 shadow-sm/5 transition-all duration-1000">
+        <div className="flex w-full items-center justify-between px-5 py-2 text-sm">
+          <h2 className="font-medium">All Categories</h2>
 
-              <h2 className="text-sm font-semibold">
-                {item.name}
-              </h2>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Add category modal */}
-      {showAddCat && (
-        <AddCategory handleShowAddCategory={handleShowAddCategory} />
-      )}
-
-      {/* Table */}
-      <div className="flex w-full flex-col rounded-xl bg-white px-3 py-3 shadow-sm/5">
-
-        <div className="flex w-full items-center justify-between py-2 text-sm">
-          <h2 className="font-medium">
-            All Categories List
-          </h2>
-
-          <div className="flex items-center gap-4 text-xs">
-            {!showAddCat && (
-              <button
-                onClick={handleShowAddCategory}
-                className="bg-muted-green rounded-md px-4 py-2 font-semibold text-white"
-              >
-                Add Category
-              </button>
-            )}
-
-            <div className="border-dark-gray/40 flex items-center gap-2 rounded-md border px-3 py-2">
-              This Month
-              <IoMdArrowDropdown size={18} />
-            </div>
+          <div className="border-dark-gray/40 flex cursor-pointer items-center justify-end gap-2 rounded-md border px-3 py-2 text-xs">
+            This Month <IoMdArrowDropdown size={18} />
           </div>
         </div>
 
-        {/* Header */}
-        <div className="bg-light-gray/40 border-dark-gray/10 mt-3 grid w-full grid-cols-[2fr_1fr_1fr_1fr] rounded-md border px-2 py-3 text-sm font-medium">
-          {tableHeaders.map((item) => (
-            <h3 key={item}>{item}</h3>
-          ))}
-        </div>
-
-        {/* Content */}
-        {isFetchingCategories ? (
-          <div className="flex h-[300px] items-center justify-center">
+        {isLoading ? (
+          <div className="flex h-64 items-center justify-center">
             <Spinner type="big" />
           </div>
-        ) : paginatedCategories.length > 0 ? (
-          <>
-            {paginatedCategories.map((item) => (
-              <TableCategoryItem
-                key={item.id}
-                category={item.name}
-                productStock={item.totalProducts}
-                id={item.id}
-                categoryImage={item.categoryImage}
-              />
-            ))}
-
-            {totalPages > 1 && (
-              <DashboardPagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                setCurrentPage={setCurrentPage}
-              />
-            )}
-          </>
         ) : (
-          <div className="flex h-[600px] flex-col items-center justify-center">
-            <p>No Category</p>
+          <>
+            <div className="bg-light-gray/40 border-dark-gray/10 mt-3 grid w-full grid-cols-5 gap-1 rounded-md border-t border-b px-2 py-3 text-sm font-medium">
+              {tableHeaders.map((item) => (
+                <h3 className="text-xs" key={item}>
+                  {item}
+                </h3>
+              ))}
+            </div>
 
-            <button
-              onClick={handleShowAddCategory}
-              className="bg-muted-green mt-3 rounded-lg px-10 py-4 font-bold text-white"
-            >
-              Add Category
-            </button>
+            {paginatedCategories.map((category: any) => (
+              <div key={category.id} className="grid w-full grid-cols-5 items-center border-b border-gray-100 px-2 py-3 text-sm hover:bg-gray-50 transition-colors">
+                <div className="text-gray-800 font-medium truncate">{category.name}</div>
+                <div className="text-gray-600">₦{category.lowestPrice || "N/A"}</div>
+                <div className="text-gray-800 truncate">{category.id}</div>
+                <div className="text-gray-600">{category.productStock || 0} items</div>
+                <div className="flex justify-end gap-3">
+                  <button className="text-blue-600 hover:text-blue-800 transition-colors" title="View">
+                    <FaEye size={14} />
+                  </button>
+                  <button className="text-orange-600 hover:text-orange-800 transition-colors" title="Edit">
+                    <FaEdit size={14} />
+                  </button>
+                  <button
+                    onClick={() => handleDelete(category.id)}
+                    className="text-red-600 hover:text-red-800 transition-colors"
+                    title="Delete"
+                  >
+                    <FaTrashAlt size={14} />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </>
+        )}
+
+        {categories.length > itemsPerPage && (
+          <div className="flex justify-center py-4">
+            <DashboardPagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+            />
           </div>
         )}
       </div>

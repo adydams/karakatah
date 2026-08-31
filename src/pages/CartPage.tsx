@@ -78,7 +78,9 @@ export default function CartPage() {
                     <CartItem
                       key={item.id}
                       name={item.product?.name}
-                      price={item.product?.price || 0}
+                      price={item.product?.currentPrice || item.product?.price || 0}
+                      originalPrice={item.product?.originalPrice}
+                      isDiscounted={item.product?.isDiscounted}
                       image={item.product?.images?.[0]?.url}
                       quantity={item.quantity}
                       id={item.id}

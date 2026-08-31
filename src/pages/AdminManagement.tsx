@@ -111,72 +111,7 @@ export default function AdminManagement() {
   };
 
   return (
-    <div className="flex min-h-screen bg-[#fbf8ff] text-[#1a1b22]">
-      {/* Sidebar */}
-      <aside className="h-screen w-64 bg-[#f4f2fd] border-r border-[#dec1af] flex flex-col py-6 z-50">
-        <div className="px-6 mb-8">
-          <h1 className="text-xl font-bold text-[#1a1b22]">Admin Panel</h1>
-          <p className="text-sm text-[#574235]">Karakata Marketplace</p>
-        </div>
-        <nav className="flex-grow space-y-1">
-          <a className="text-[#574235] hover:bg-[#e3e1ec] rounded-lg mx-2 my-1 px-4 py-3 flex items-center gap-3 transition-all cursor-pointer" href="/dashboard/overview">
-            <MdDashboard />
-            <span className="text-sm font-semibold">Overview</span>
-          </a>
-          <a className="text-[#574235] hover:bg-[#e3e1ec] rounded-lg mx-2 my-1 px-4 py-3 flex items-center gap-3 transition-all cursor-pointer" href="/dashboard/orders">
-            <MdShoppingBag />
-            <span className="text-sm font-semibold">Orders</span>
-          </a>
-          <a className="text-[#574235] hover:bg-[#e3e1ec] rounded-lg mx-2 my-1 px-4 py-3 flex items-center gap-3 transition-all cursor-pointer" href="/dashboard/categories">
-            <MdInventory2 />
-            <span className="text-sm font-semibold">Categories</span>
-          </a>
-          <a className="text-[#574235] hover:bg-[#e3e1ec] rounded-lg mx-2 my-1 px-4 py-3 flex items-center gap-3 transition-all cursor-pointer" href="/dashboard/products">
-            <MdInventory2 />
-            <span className="text-sm font-semibold">Products</span>
-          </a>
-          <a className="text-[#574235] hover:bg-[#e3e1ec] rounded-lg mx-2 my-1 px-4 py-3 flex items-center gap-3 transition-all cursor-pointer" href="/dashboard/customers">
-            <MdGroup />
-            <span className="text-sm font-semibold">Customers</span>
-          </a>
-          <a className="text-[#574235] hover:bg-[#e3e1ec] rounded-lg mx-2 my-1 px-4 py-3 flex items-center gap-3 transition-all cursor-pointer" href="/dashboard/stores">
-            <MdInventory2 />
-            <span className="text-sm font-semibold">Stores</span>
-          </a>
-          <a className="text-[#574235] hover:bg-[#e3e1ec] rounded-lg mx-2 my-1 px-4 py-3 flex items-center gap-3 transition-all cursor-pointer" href="/dashboard/transactions">
-            <MdSettings />
-            <span className="text-sm font-semibold">Transactions</span>
-          </a>
-          <a className="text-[#574235] hover:bg-[#e3e1ec] rounded-lg mx-2 my-1 px-4 py-3 flex items-center gap-3 transition-all cursor-pointer" href="/dashboard/shipment">
-            <MdLocalShipping />
-            <span className="text-sm font-semibold">Shipment</span>
-          </a>
-          <a className="bg-[#f57c00] text-white rounded-lg mx-2 my-1 px-4 py-3 flex items-center gap-3 transition-all cursor-pointer" href="/dashboard/admin-management">
-            <MdSettings />
-            <span className="text-sm font-semibold">Admin Management</span>
-          </a>
-        </nav>
-        <div className="px-2 mt-auto">
-          <p className="text-dark-gray/70 px-5 text-xs font-semibold mb-2">USERS</p>
-          <a className="text-[#574235] hover:bg-[#e3e1ec] rounded-lg mx-2 my-1 px-4 py-3 flex items-center gap-3 transition-all cursor-pointer" href="/dashboard/help">
-            <MdGroup />
-            <span className="text-sm font-semibold">Help Center</span>
-          </a>
-          <a className="text-[#574235] hover:bg-[#e3e1ec] rounded-lg mx-2 my-1 px-4 py-3 flex items-center gap-3 transition-all cursor-pointer" href="/dashboard/settings">
-            <MdSettings />
-            <span className="text-sm font-semibold">Settings</span>
-          </a>
-          <button
-            onClick={() => navigate("/sign-in")}
-            className="w-full text-[#574235] hover:bg-[#e3e1ec] rounded-lg px-4 py-3 flex items-center gap-3 transition-all"
-          >
-            <MdLogout />
-            <span className="text-sm font-semibold">Logout</span>
-          </button>
-        </div>
-      </aside>
-
-      {/* Main Content */}
+    <>
       <main className="flex-1 p-10 min-h-screen">
         <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-10">
           <div>
@@ -518,6 +453,6 @@ export default function AdminManagement() {
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }

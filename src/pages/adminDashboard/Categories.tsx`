@@ -1,0 +1,209 @@
+import React, { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import NavBar from "../../components/adminDashboard/NavBar";
+import Spinner from "../../components/adminDashboard/Spinner";
+import DashboardPagination from "../../components/adminDashboard/DashboardPagination";
+import { getCategories, deleteCategory, updateCategoryStatus } from "../../services/adminDashboard/apiProducts";
+import { useModal } from "../../contexts/hooks/useModal";
+import AddCategory from "../../components/adminDashboard/AddCategory";
+import EditCategoryModal from "../../components/adminDashboard/EditCategoryModal";
+import CategoryDetailsModal from "../../components/adminDashboard/CategoryDetailsModal";
+import { FaDownload, FaEye, FaTrash2, FaEdit } from "react-icons/fa";
+import toast from "react-hot-toast";
+
+export default function Categories() {
+  const [currentPage, setCurrentPage] = useState(1);
+  const { openModal } = useModal();
+  const queryClient = useQueryClient();
+
+  const { data: catData, isLoading, isError, error } = useQuery({
+    queryKey: ["categories"],
+    queryFn: getCategories,
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: deleteCategory,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["categories"] });
+      toast.success("Category deleted successfully");
+    },
+    onError: (err: any) => {
+      toast.error(err.message || "Failed to delete category");
+    },
+  });
+
+  const statusMutation = useMutation({
+    mutationFn: ({ id, status }: { id: string; status: string }) => updateCategoryStatus(id, status),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["categories"] });
+      toast.success("Status updated successfully");
+    },
+    onError: (err: any) => {
+      toast.error(err.message || "Failed to update status");
+    },
+  });
+
+  if (isError) {
+    return (
+      <div className="flex h-[300px] items-center justify-center">
+        <p>{error instanceof Error ? error.message : "Failed to fetch categories"}</p>
+      </div>
+    );
+  }
+
+  const categoryList = catData?.data ?? [];
+
+  const sortedCategories = [...categoryList].sort((a, b) => {
+    return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
+  });
+
+  const totalPages = Math.ceil(sortedCategories.length / 10);
+  const start = (currentPage - 1) * 10;
+  const paginatedCategories = sortedCategories.slice(start, start + 10);
+
+  const handleExport = () => {
+    toast.success("Exporting categories list...");
+  };
+
+  const handleDelete = async (id: string, subCount: number) => {
+    if (subCount > 0) {
+      toast.error("Cannot delete category with existing sub-categories. Please delete or move sub-categories first.");
+      return;
+    }
+    if (!confirm("Are you sure you want to delete this category?")) return;
+    deleteMutation.mutate(id);
+  };
+
+  return (
+    <div className="font-primary w-full bg-[#f4f2fd] min-h-screen pb-10">
+      <NavBar title="Categories" />
+
+      <div className="max-w-7xl mx-auto px-4 md:px-6 mt-10">
+        {/* Top Summary Cards - Smaller Images */}
+        {!isLoading && categoryList.length > 0 && (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            {categoryList.slice(0, 4).map((item: any) => (
+              <div key={item.id} className="bg-white p-3 rounded-xl shadow-sm border border-[#dec1af] flex flex-col items-center text-center group hover:border-[#f57c00] transition-all">
+                <div className="h-16 w-16 rounded-full overflow-hidden mb-2 border-2 border-[#dec1af] group-hover:border-[#f57c00] transition-all">
+                  <img src={item.categoryImage} alt={item.name} className="h-full w-full object-cover" />
+                </div>
+                <h3 className="text-xs font-bold text-[#574235] truncate w-full">{item.name}</h3>
+                <p className="text-[10px] text-gray-500">{item.totalProducts || 0} Products</p>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <div className="bg-white rounded-2xl shadow-sm border border-[#dec1af] overflow-hidden">
+          <div className="p-6 border-b border-[#dec1af] flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+              <h2 className="text-xl font-bold text-[#574235]">Manage Categories</h2>
+              <p className="text-sm text-gray-500 mt-1">Control your top-level product classifications.</p>
+            </div>
+            <div className="flex items-center gap-3 w-full sm:w-auto">
+              <button
+                onClick={handleExport}
+                className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-all shadow-sm"
+              >
+                <FaDownload size={14} />
+                Export
+              </button>
+              <button
+                onClick={() => openModal(<AddCategory />)}
+                className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-[#f57c00] rounded-lg hover:bg-[#e67300] transition-all shadow-sm"
+              >
+                + Add Category
+              </button>
+            </div>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-[#f4f2fd] text-[#574235] text-xs uppercase font-bold border-b border-[#dec1af]">
+                  <th className="px-6 py-4">Name</th>
+                  <th className="px-6 py-4">Description</th>
+                  <th className="px-6 py-4">Status</th>
+                  <th className="px-6 py-4 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#dec1af]/30">
+                {isLoading ? (
+                  <tr>
+                    <td colSpan={4} className="text-center py-20">
+                      <Spinner type="big" />
+                    </td>
+                  </tr>
+                ) : paginatedCategories.length > 0 ? (
+                  paginatedCategories.map((cat: any) => (
+                    <tr key={cat.id} className="hover:bg-gray-50 transition-colors text-sm text-[#574235]">
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="h-8 w-8 rounded-md overflow-hidden border border-gray-200 shrink-0">
+                            <img src={cat.categoryImage} alt={cat.name} className="h-full w-full object-cover" />
+                          </div>
+                          <span className="font-medium">{cat.name}</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-gray-500 max-w-xs truncate">{cat.description || 'No description provided'}</td>
+                      <td className="px-6 py-4">
+                        <select
+                          value={cat.status || 'Active'}
+                          onChange={(e) => statusMutation.mutate({ id: cat.id, status: e.target.value })}
+                          className={`px-2 py-1 rounded-full text-[10px] font-bold outline-none border-none cursor-pointer ${
+                            cat.status === 'Active' ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-600'
+                          }`}
+                        >
+                          <option value="Active">Active</option>
+                          <option value="Inactive">Inactive</option>
+                        </select>
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <div className="flex justify-end gap-3">
+                          <button
+                            onClick={() => openModal(<CategoryDetailsModal categoryId={cat.id} categoryName={cat.name} />)}
+                            className="text-blue-600 hover:text-blue-800 font-medium transition-colors flex items-center gap-1"
+                          >
+                            <FaEye size={14} /> View
+                          </button>
+                          <button
+                            onClick={() => openModal(<EditCategoryModal category={cat} />)}
+                            className="text-amber-600 hover:text-amber-800 font-medium transition-colors flex items-center gap-1"
+                          >
+                            <FaEdit size={14} /> Edit
+                          </button>
+                          <button
+                            onClick={() => handleDelete(cat.id, cat.subCategoriesCount || 0)}
+                            className="text-red-600 hover:text-red-800 font-medium transition-colors"
+                          >
+                            <FaTrash2 size={14} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={4} className="text-center py-20 text-gray-500">
+                      No Categories found
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {totalPages > 1 && (
+            <div className="p-4 border-t border-[#dec1af] bg-white">
+              <DashboardPagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                setCurrentPage={setCurrentPage}
+              />
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}

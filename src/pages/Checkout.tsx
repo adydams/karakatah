@@ -246,6 +246,7 @@ export default function Checkout() {
                 selectedCourierFinal.id || selectedCourierFinal.courierId || selectedCourierFinal.courier_id
               ),
               requestToken:
+                requestToken ||
                 selectedCourierFinal.requestToken ||
                 selectedCourierFinal.request_token ||
                 selectedCourierFinal.request_token_value ||
@@ -279,11 +280,8 @@ export default function Checkout() {
         }, 1500);
       }
     } catch (err: unknown) {
-      if (err instanceof Error) {
-        toast.error(err.message);
-      } else {
-        toast("An unexpected error occurred");
-      }
+      // Error is already handled by axiosInstance interceptor (toast.error)
+      console.error("Checkout error:", err);
     }
   }
 
@@ -448,7 +446,7 @@ export default function Checkout() {
             <div className="space-y-4">
               <h3 className="text-sm font-semibold text-gray-700">Payment Gateway</h3>
               <PaymentGatewaySelector
-                selectedGateway={getValues("gateway")}
+                selectedGateway={watch("gateway")}
                 onSelect={(val) => setValue("gateway", val)}
               />
               {errors.gateway && <p className="text-xs text-red-500">{errors.gateway.message}</p>}

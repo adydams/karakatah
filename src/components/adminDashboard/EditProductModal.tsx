@@ -1,8 +1,8 @@
 import { useEffect, useState, type ChangeEvent } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useForm } from "react-hook-form";
+import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { FaCloudUploadAlt } from "react-icons/fa";
+import { FaCloudUploadAlt, FaTrash, FaPlus } from "react-icons/fa";
 import { MdOutlineCancel } from "react-icons/md";
 import toast from "react-hot-toast";
 import type { ProductPayload } from "../../libs/types";
@@ -11,7 +11,7 @@ import { getProductById, getBrands, getCategories, getLogisticsCategories, getSu
 import { getBoxSizes } from "../../services/apiLogistics";
 import { assignProductToStation, getPickupStations, updateStationStock } from "../../services/adminDashboard/apiPickupStation";
 import PickupStationForm from "./PickupStationForm";
-import Spinner from "./Spinner";
+import Spinner from "../Spinner";
 import ImagePreviewList from "./ImagePreviewList";
 import { normalizeListData } from "../../utils/utils";
 
@@ -41,19 +41,7 @@ type ApiProductInventory = {
   productPickupStationId?: string;
 };
 
-type EditProductFormValues = {
-  name: string;
-  description: string;
-  price: string;
-  stockQuantity: string;
-  categoryId: string;
-  subCategoryId: string;
-  brandId: string;
-  storeId?: string;
-  logisticsCategoryId?: string;
-  boxSizeId?: string;
-  images?: File[];
-};
+type EditProductFormValues = TProductEditSchema;
 
 type ApiProduct = {
   name?: string;
@@ -100,7 +88,13 @@ export default function EditProductModal({ open, onClose, productId, onUpdated }
     formState: { errors, isSubmitting },
     setValue,
     watch,
-  } = useForm<EditProductFormValues>({ resolver: zodResolver(productEditSchema) });
+    control,
+  } = useForm<any>({ resolver: zodResolver(productEditSchema) });
+
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: "discounts",
+  });
 
   useEffect(() => {
     const urls = selectedFiles.map((file) => URL.createObjectURL(file));
@@ -344,6 +338,7 @@ export default function EditProductModal({ open, onClose, productId, onUpdated }
         heightCm: dimensions.height || undefined,
         images: selectedFiles,
         removedImageIds,
+        discounts: data.discounts,
       };
 
       await updateProduct(productId, payload);
@@ -392,7 +387,7 @@ export default function EditProductModal({ open, onClose, productId, onUpdated }
               <div className="flex flex-col gap-2">
                 <label className="text-xs font-semibold text-slate-600" htmlFor="edit-name">Product Name</label>
                 <input id="edit-name" {...register("name")} className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-orange/70 focus:ring-2 focus:ring-orange/10" />
-                {errors.name && <p className="text-xs text-red-500">{errors.name.message}</p>}
+                {errors.name && <p className="text-xs text-red-500">{String(errors.name?.message || "")}</p>}
               </div>
               <div className="flex flex-col gap-2">
                 <label className="text-xs font-semibold text-slate-600" htmlFor="edit-description">Description</label>
@@ -536,6 +531,75 @@ export default function EditProductModal({ open, onClose, productId, onUpdated }
               </div>
             </section>
           </div>
+
+          <section className="rounded-[28px] bg-slate-50 p-6 shadow-sm ring-1 ring-slate-200">
+            <div className="mb-5 flex items-center justify-between">
+              <div className="flex flex-col">
+                <h3 className="text-lg font-semibold text-slate-900">Tiered Discounts</h3>
+                <p className="text-sm text-slate-500">Offer discounts based on quantity purchased.</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => append({ discountType: "PERCENTAGE", value: "0", minQuantity: "1", maxQuantity: "", startDate: "", endDate: "", isActive: true })}
+                className="rounded-full border border-orange/20 bg-orange/10 px-3 py-2 text-sm font-semibold text-orange transition hover:bg-orange/20"
+              >
+                <FaPlus size={12} className="inline mr-1" /> Add Tier
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {fields.map((field, index) => (
+                <div key={field.id} className="p-4 bg-white rounded-2xl border border-slate-200 relative group shadow-sm">
+                  <button
+                    type="button"
+                    onClick={() => remove(index)}
+                    className="absolute top-2 right-2 text-slate-300 hover:text-red-500 transition-colors"
+                  >
+                    <FaTrash size={12} />
+                  </button>
+                  <div className="grid grid-cols-2 gap-3 mb-3">
+                    <div className="flex flex-col gap-1">
+                      <label className="text-[10px] font-semibold text-slate-500 uppercase">Min Qty</label>
+                      <input
+                        type="number"
+                        className="p-2 border border-slate-200 rounded-xl text-xs outline-none focus:border-orange/50"
+                        {...register(`discounts.${index}.minQuantity` as any)}
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <label className="text-[10px] font-semibold text-slate-500 uppercase">Max Qty</label>
+                      <input
+                        type="number"
+                        className="p-2 border border-slate-200 rounded-xl text-xs outline-none focus:border-orange/50"
+                        placeholder="Optional"
+                        {...register(`discounts.${index}.maxQuantity` as any)}
+                      />
+                    </div>
+                  </div>
+                  <div className="flex gap-3">
+                    <div className="flex-1 flex flex-col gap-1">
+                      <label className="text-[10px] font-semibold text-slate-500 uppercase">Value</label>
+                      <input
+                        type="text"
+                        className="p-2 border border-slate-200 rounded-xl text-xs outline-none focus:border-orange/50"
+                        {...register(`discounts.${index}.value` as any)}
+                      />
+                    </div>
+                    <div className="w-32 flex flex-col gap-1">
+                      <label className="text-[10px] font-semibold text-slate-500 uppercase">Type</label>
+                      <select
+                        className="p-2 border border-slate-200 rounded-xl text-xs bg-white outline-none focus:border-orange/50"
+                        {...register(`discounts.${index}.discountType` as any)}
+                      >
+                        <option value="PERCENTAGE">Percentage (%)</option>
+                        <option value="FIXED">Fixed Amount (₦)</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
 
           <section className="rounded-[28px] bg-slate-50 p-6 shadow-sm ring-1 ring-slate-200">
             <div className="mb-5">

@@ -62,14 +62,15 @@ export function UserProvider({ children }: UserProviderProp) {
 
       if (data.success) {
         setUser(data.user);
-        // console.log(user);
       }
       return data;
     } catch (error) {
+      setUser(null);
+      localStorage.removeItem("token");
       if (error instanceof Error) {
-        throw new Error(error.message);
+        return { success: false, message: error.message };
       }
-      throw Error("No Current User");
+      return { success: false, message: "No Current User" };
     }
   }
 

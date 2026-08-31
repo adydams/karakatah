@@ -1,5 +1,4 @@
 import { Outlet, useParams } from "react-router";
-import NavBar from "../../components/adminDashboard/NavBar";
 import Store from "./Store";
 import { FaArrowUp } from "react-icons/fa6";
 export default function StoreLayout() {
@@ -7,7 +6,6 @@ export default function StoreLayout() {
 
   return (
     <section className="font-primary relative flex h-full w-full flex-col gap-10">
-      <NavBar title="" />
 
       <div className={`relative grid w-full grow gap-5 ${storeId ? "grid-cols-1 md:grid-cols-[2fr_1fr]" : "grid-cols-1"}`}>
         <Store />

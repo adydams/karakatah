@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { getPickupStations } from "../../services/adminDashboard/apiPickupStation";
-import Spinner from "../../components/adminDashboard/Spinner";
+import Spinner from "../../components/Spinner";
 import PickupStationForm from "../../components/adminDashboard/PickupStationForm";
 import { MdSearch, MdEdit, MdAddLocation } from "react-icons/md";
 import { useState } from "react";
@@ -92,26 +92,26 @@ export default function PickupStations() {
               <div className="space-y-2 mb-6">
                 <div className="flex items-center gap-2 text-xs text-gray-600">
                   <span className="font-semibold">Mon-Fri:</span> 9:00 AM - 6:00 PM
-                </div >
+                </div>
                 <div className="flex items-center gap-2 text-xs text-gray-600">
                   <span className="font-semibold">Sat:</span> 10:00 AM - 4:00 PM
-                </div >
+                </div>
                 {station.phone && (
                   <div className="flex items-center gap-2 text-xs text-gray-600">
                     <span className="font-semibold">Phone:</span> {station.phone}
-                  </div >
+                  </div>
                 )}
                 {station.email && (
                   <div className="flex items-center gap-2 text-xs text-gray-600">
                     <span className="font-semibold">Email:</span> {station.email}
-                  </div >
+                  </div>
                 )}
-              </div >
+              </div>
 
               <div className="pt-4 border-t border-gray-100 flex justify-between items-center">
                 <div className="text-xs text-gray-500">
                   <span className="font-semibold">Contact:</span> {station.contactPerson || "Admin"}
-                </div >
+                </div>
                 <button
                   onClick={() => {
                     setEditStationId(station.id);
@@ -121,24 +121,24 @@ export default function PickupStations() {
                 >
                   <MdEdit size={14} /> Edit Details
                 </button>
-              </div >
-            </div >
+              </div>
+            </div>
           ))
         ) : (
           <div className="col-span-full text-center py-10 text-gray-500 text-sm">
             No pickup stations found.
-          </div >
+          </div>
         )}
 
         {/* "New Location?" Placeholder Card */}
         <div className="border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center p-6 text-center hover:border-orange hover:bg-orange/5 transition-all cursor-pointer group">
           <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mb-3 group-hover:bg-orange/20 transition-colors">
             <MdAddLocation className="text-gray-400 group-hover:text-orange" size={24} />
-          </div >
+          </div>
           <h3 className="font-bold text-gray-700 text-sm mb-1">New Location?</h3>
           <p className="text-xs text-gray-500">Click here to add a new pickup station to the network</p>
-        </div >
-      </div >
-    </div >
+        </div>
+      </div>
+    </div>
   );
 }

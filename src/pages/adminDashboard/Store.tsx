@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import StoreCard from "../../components/adminDashboard/StoreCard";
 import { getStores } from "../../services/adminDashboard/apiStore";
-import Spinner from "../../components/adminDashboard/Spinner";
+import Spinner from "../../components/Spinner";
 import { TiPlus } from "react-icons/ti";
 import { Link } from "react-router";
 

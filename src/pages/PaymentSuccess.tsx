@@ -5,21 +5,30 @@ import { formatPrice } from "../utils/utils";
 import { getOrder } from "../services/apiCheckout";
 import { useQuery } from "@tanstack/react-query";
 import InvoicePulseSkeleton from "../components/InvoicePulseSkeleton";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { FaDownload, FaShareAlt, FaWhatsapp, FaEnvelope } from "react-icons/fa";
+import toast from "react-hot-toast";
 
 type OrderItem = {
   id: string;
-  orderId: string;
-  productId: string;
-  price: string; // ⚠️ comes as string
+  price: string;
   quantity: number;
-  createdAt: string;
-  updatedAt: string;
+  subtotal: string;
+  discount?: {
+    name: string;
+    percentage: number;
+    value: number;
+  };
+  product: {
+    name: string;
+    image: string | null;
+  };
 };
 
 export default function PaymentSuccess() {
   const [searchParams] = useSearchParams();
   const orderId = searchParams.get("orderId");
+  const [showShareMenu, setShowShareMenu] = useState(false);
 
   const navigate = useNavigate();
 
@@ -59,28 +68,38 @@ export default function PaymentSuccess() {
     );
   }
 
-  const date = order?.data.order?.createdAt;
+  const date = order?.data.order?.createdAt
+    ? new Date(order.data.order.createdAt).toLocaleDateString("en-US", {
+        month: "long",
+        day: "numeric",
+        year: "numeric",
+      })
+    : "N/A";
   const orderNumber = order?.data.order?.id;
   const status = order?.data.order?.status;
 
-  const address = [
+  const address = order?.data.order?.shippingAddress ? [
     {
       title: "Name",
-      value: "John Doe",
+      value: order.data.order.customer.fullName,
     },
     {
       title: "Address",
-      value: "123 Main St, City, State 12345",
+      value: order.data.order.shippingAddress.address,
     },
     {
       title: "Phone",
-      value: "(123) 456-7890",
+      value: order.data.order.customer.phone,
     },
     {
       title: "Email",
-      value: "john.doe@example.com",
+      value: order.data.order.customer.email,
     },
-  ];
+    {
+      title: "Discount",
+      value: order.data.order.discount ? `₦${formatPrice(order.data.order.discount.value)}` : "0",
+    },
+  ] : [];
 
   const orderInfo = [
     {
@@ -97,15 +116,52 @@ export default function PaymentSuccess() {
     },
   ];
 
+  const handleDownloadPdf = async () => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/orders/invoice/${orderId}/pdf`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`
+        }
+      });
+      if (!response.ok) throw new Error("PDF download failed");
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `Invoice_${orderId?.slice(0, 8)}.pdf`;
+      a.click();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Download error:", err);
+      toast.error("Failed to download PDF");
+    }
+  };
+
+  const shareInvoice = (platform: 'whatsapp' | 'email' | 'link') => {
+    const shareUrl = `${window.location.href}`;
+    const text = `Check out my order invoice #${orderId?.slice(0, 8)} from Karakata Commerce: ${shareUrl}`;
+
+    if (platform === 'whatsapp') {
+      window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+    } else if (platform === 'email') {
+      window.location.href = `mailto:?subject=My Order Invoice #${orderId?.slice(0, 8)}&body=${encodeURIComponent(text)}`;
+    } else if (platform === 'link') {
+      navigator.clipboard.writeText(shareUrl);
+      toast.success("Link copied to clipboard!");
+    }
+    setShowShareMenu(false);
+  };
+
   const products: OrderItem[] = order?.data.items ?? [];
+  const orderData = order?.data.order;
 
   const subTotal = products.reduce((total, product) => {
-    return total + Number(product.price) * product.quantity;
+    return total + Number(product.subtotal);
   }, 0);
 
-  const tax = subTotal * 0.1; // Assuming a tax rate of 10%
-  const shipping = 5000;
-  const total = subTotal + tax + shipping;
+  const shipping = orderData?.shippingFee || 0;
+  const total = orderData?.totalAmount || 0;
+  const globalDiscount = orderData?.discount;
 
   return (
     <>
@@ -134,24 +190,72 @@ export default function PaymentSuccess() {
                 shipped.
               </p>
 
-              <h3 className="font-primary mt-4 text-lg font-bold md:text-xl">
-                Billing address
+              <h3 className="font-primary mt-6 text-lg font-bold md:text-xl">
+                Billing Address
               </h3>
-              <ul className="text-charcoal-gray flex flex-col items-start justify-start gap-1 text-sm">
+              <div className="mt-3 flex flex-col gap-2">
                 {address.map((item, index) => (
-                  <li
+                  <div
                     key={index}
-                    className="flex items-center justify-start gap-2.5"
+                    className="flex items-start justify-start gap-2 text-sm"
                   >
-                    <span className="font-semibold">{item.title}:</span>{" "}
-                    {item.value}
-                  </li>
+                    <span className="font-semibold text-gray-500 min-w-[80px]">{item.title}:</span>
+                    <span className="text-charcoal-gray font-medium">{item.value}</span>
+                  </div>
                 ))}
-              </ul>
+              </div>
 
-              <button className="bg-orange hover:bg-orange/90 cursor-pointer rounded-full px-16 py-2.5 text-sm font-semibold tracking-wide text-white">
-                Track your Order
-              </button>
+              <div className="flex flex-col gap-5 mt-8">
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <button
+                    onClick={handleDownloadPdf}
+                    className="flex-1 px-6 py-3 bg-orange-600 text-white rounded-full text-sm font-bold hover:bg-orange-700 transition-all shadow-md flex items-center justify-center gap-2"
+                  >
+                    <FaDownload size={16} />
+                    Download Invoice
+                  </button>
+
+                  <div className="relative flex-1">
+                    <button
+                      onClick={() => setShowShareMenu(!showShareMenu)}
+                      className="w-full px-6 py-3 bg-white border-2 border-orange-600 text-orange-600 rounded-full text-sm font-bold hover:bg-orange-50 transition-all shadow-sm flex items-center justify-center gap-2"
+                    >
+                      <FaShareAlt size={16} />
+                      Share Invoice
+                    </button>
+
+                    {showShareMenu && (
+                      <div className="absolute bottom-full left-0 mb-2 w-48 bg-white border border-gray-200 rounded-xl shadow-xl z-50 py-2">
+                        <button
+                          onClick={() => shareInvoice('whatsapp')}
+                          className="w-full px-4 py-2 text-left text-xs hover:bg-gray-50 flex items-center gap-3 text-gray-700"
+                        >
+                          <FaWhatsapp className="text-green-500" size={14} /> WhatsApp
+                        </button>
+                        <button
+                          onClick={() => shareInvoice('email')}
+                          className="w-full px-4 py-2 text-left text-xs hover:bg-gray-50 flex items-center gap-3 text-gray-700"
+                        >
+                          <FaEnvelope className="text-blue-500" size={14} /> Email
+                        </button>
+                        <button
+                          onClick={() => shareInvoice('link')}
+                          className="w-full px-4 py-2 text-left text-xs hover:bg-gray-50 flex items-center gap-3 text-gray-700"
+                        >
+                          <FaShareAlt className="text-gray-500" size={14} /> Copy Link
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => navigate(`/invoice/${orderId}`)}
+                  className="w-full py-3 text-sm font-semibold text-gray-600 hover:text-orange-600 transition-all flex items-center justify-center gap-2 underline underline-offset-4"
+                >
+                  Track your Order ➔
+                </button>
+              </div>
             </div>
 
             {/* ORDER SUMMARY */}
@@ -183,22 +287,27 @@ export default function PaymentSuccess() {
                       <div className="h-full w-30 overflow-hidden rounded-xl text-xs">
                         <img
                           className="h-full w-full object-cover"
-                          src="/balloons.jpg"
-                          alt={product.id}
+                          src={product.product.image || "/balloons.jpg"}
+                          alt={product.product.name}
                         />
                       </div>
                       <div className="py-5">
                         <h4 className="text-primary font-semibold">
-                          {product.id}
+                          {product.product.name}
                         </h4>
                         <p className="mt-1 text-xs">
                           Quantity:{" "}
                           <span className="font-bold">{product.quantity}</span>
                         </p>
+                        {product.discount && (
+                          <p className="mt-1 text-xs text-green-600 font-medium">
+                            {product.discount.name} (-₦{formatPrice(product.discount.value)})
+                          </p>
+                        )}
                       </div>
                     </div>
                     <p className="font-primary mt-5 font-bold">
-                      {formatPrice(product.price)}
+                      ₦{formatPrice(product.price)}
                     </p>
                   </div>
                 ))}
@@ -211,16 +320,31 @@ export default function PaymentSuccess() {
                       ₦{formatPrice(subTotal)}
                     </span>
                   </p>
-                  <p className="flex w-full items-center justify-between">
-                    Shipping{" "}
-                    <span className="font-primary">
-                      ₦{formatPrice(shipping)}
-                    </span>
-                  </p>
-                  <p className="flex w-full items-center justify-between">
-                    Tax{" "}
-                    <span className="font-primary">₦{formatPrice(tax)}</span>
-                  </p>
+                  {globalDiscount && (
+                    <p className="flex w-full items-center justify-between text-green-600">
+                      {globalDiscount.code} (-₦{formatPrice(globalDiscount.value)})
+                    </p>
+                  )}
+                    <div className="flex flex-col gap-1">
+                      <p className="flex w-full items-center justify-between text-xs text-gray-500">
+                        Courier Base Fee{" "}
+                        <span className="font-medium">
+                          ₦{formatPrice(orderData?.shippingDetails?.baseFee || 0)}
+                        </span>
+                      </p>
+                      <p className="flex w-full items-center justify-between text-xs text-gray-500">
+                        Sourcing Fee{" "}
+                        <span className="font-medium">
+                          ₦{formatPrice(orderData?.shippingDetails?.sourcingFee || 0)}
+                        </span>
+                      </p>
+                      <p className="flex w-full items-center justify-between mt-1 border-t border-gray-100 pt-1">
+                        Shipping Total{" "}
+                        <span className="font-primary font-bold">
+                          ₦{formatPrice(shipping)}
+                        </span>
+                      </p>
+                    </div>
                 </div>
 
                 <h3 className="font-primary flex w-full items-center justify-between text-xl font-bold">

@@ -4,7 +4,6 @@ import { PiUsersFourFill } from "react-icons/pi";
 import { GrTransaction } from "react-icons/gr";
 import { LuSettings2 } from "react-icons/lu";
 
-import NavBar from "../../components/adminDashboard/NavBar";
 import {
   Area,
   AreaChart,
@@ -19,40 +18,10 @@ import {
 } from "recharts";
 import RangeInfo from "../../components/adminDashboard/RangeInfo";
 import Table from "../../components/adminDashboard/Table";
-
-
-const views = [
-  {
-    title: "Orders Completed",
-    icon: <FaOpencart size={20} />,
-    val: "1.24k",
-  },
-  {
-    title: "Total revenue",
-    icon: <GiCash size={20} />,
-    val: "$168k",
-  },
-  {
-    title: "No of Customers",
-    icon: <PiUsersFourFill size={20} />,
-    val: "2.5m",
-  },
-  {
-    title: "Total sales made",
-    icon: <GrTransaction size={20} />,
-    val: "52,712",
-  },
-];
-
-const weeklyRevenueData = [
-  { day: "Monday", revenue: 1200 },
-  { day: "Tuesday", revenue: 1850 },
-  { day: "Wednesday", revenue: 1600 },
-  { day: "Thursday", revenue: 2100 },
-  { day: "Friday", revenue: 2750 },
-  { day: "Saturday", revenue: 3200 },
-  { day: "Sunday", revenue: 2400 },
-];
+import { useQuery } from "@tanstack/react-query";
+import { apiFinance } from "../../services/adminDashboard/apiFinance";
+import Spinner from "../../components/Spinner";
+import { formatPrice } from "../../utils/utils";
 
 const storeData = [
   {
@@ -79,11 +48,53 @@ const customerData = [
 ];
 
 export default function Overview() {
+  const { data: overviewData, isLoading: loadingOverview } = useQuery({
+    queryKey: ["adminFinanceOverview"],
+    queryFn: apiFinance.getOverview,
+  });
+
+  const { data: chartData, isLoading: loadingChart } = useQuery({
+    queryKey: ["adminFinanceRevenueChart"],
+    queryFn: apiFinance.getRevenueChart,
+  });
+
+  const stats = overviewData?.data;
+  const revenueChart = chartData?.data || [];
+
+  const views = [
+    {
+      title: "Platform Revenue",
+      icon: <GiCash size={20} />,
+      val: `₦${formatPrice(stats?.totalPlatformRevenue || 0)}`,
+    },
+    {
+      title: "Store Earnings",
+      icon: <FaOpencart size={20} />,
+      val: `₦${formatPrice(stats?.totalStoreEarnings || 0)}`,
+    },
+    {
+      title: "Pending Balance",
+      icon: <GrTransaction size={20} />,
+      val: `₦${formatPrice(stats?.totalPendingBalance || 0)}`,
+    },
+    {
+      title: "Available Balance",
+      icon: <PiUsersFourFill size={20} />,
+      val: `₦${formatPrice(stats?.totalAvailableBalance || 0)}`,
+    },
+  ];
+
+  if (loadingOverview || loadingChart) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center">
+        <Spinner size="big" />
+      </div>
+    );
+  }
+
   return (
     <div className="font-primary w-full">
-      <NavBar title="Dashboard" />
-
-      <div className="font-primary my-2 grid w-full grid-cols-2 gap-3 rounded-2xl py-5 lg:mt-10 lg:mb-5 lg:grid-cols-4 lg:bg-white lg:px-5 lg:shadow-sm/5">
+      <div className="font-primary my-2 grid w-full grid-cols-2 gap-3 rounded-2xl py-5 px-5 bg-white shadow-sm/5 lg:mt-10 lg:mb-5 lg:grid-cols-4 lg:py-0">
         {views.map((view, index) => (
           <div
             key={index}
@@ -92,9 +103,9 @@ export default function Overview() {
             <div className="bg-orange/10 text-orange flex h-[40px] w-[40px] items-center justify-center rounded-2xl lg:h-[50px] lg:w-[50px]">
               {view.icon}
             </div>
-            <div>
-              <h3 className="text-xs font-medium sm:text-sm">{view.title}</h3>
-              <p className="text-lg font-bold">{view.val}</p>
+            <div className="min-w-0">
+              <h3 className="text-xs font-medium sm:text-sm truncate">{view.title}</h3>
+              <p className="text-lg font-bold truncate">{view.val}</p>
             </div>
           </div>
         ))}
@@ -104,28 +115,27 @@ export default function Overview() {
 
       <div className="grid w-full grid-cols-1 gap-5 text-xs lg:grid-cols-[2fr_1fr]">
         <div className="w-full rounded-lg bg-white p-5">
-          <p className="font-primary text-sm font-medium">Revenue this week</p>
-          <h2 className="mb-5 text-xl font-bold">$8,792</h2>
+          <p className="font-primary text-sm font-medium">Revenue Trend</p>
+          <h2 className="mb-5 text-xl font-bold">
+            ₦{formatPrice(stats?.totalPlatformRevenue || 0)}
+          </h2>
 
           <ResponsiveContainer height={300} width="100%">
-            <AreaChart data={weeklyRevenueData}>
+            <AreaChart data={revenueChart}>
               <CartesianGrid strokeDasharray="3" />
-              <XAxis dataKey="day" />
+              <XAxis dataKey="date" />
               <YAxis unit="₦" />
               <Tooltip />
               <Area
                 type="monotone"
-                dataKey="revenue"
+                dataKey="totalRevenue"
                 stroke="#02114d"
                 fill="#c7d2fe"
-                // fill="#fde68a"
-                // strokeWidth={2}
               />
             </AreaChart>
           </ResponsiveContainer>
         </div>
 
-        {/* Store visits */}
         {/* Store visits */}
         <div className="w-full rounded-lg bg-white p-5">
           <div className="flex items-center justify-between">
@@ -150,7 +160,6 @@ export default function Overview() {
         </div>
 
         {/* Top Products */}
-        {/* Top Products */}
         <div className="w-full rounded-lg bg-white py-5">
           <div className="flex items-center justify-between px-5">
             <div className="">
@@ -168,7 +177,6 @@ export default function Overview() {
         </div>
 
         {/* Customers */}
-        {/* Customers */}
         <div className="w-full rounded-lg bg-white p-5">
           <div className="flex items-center justify-between">
             <div className="">
@@ -181,7 +189,7 @@ export default function Overview() {
           </div>
 
           <div className="mt-5 flex flex-col items-center justify-center">
-            <div className="flex items-start justify-evenly gap-4 lg:gap-1">
+            <div className="flex flex-wrap justify-center gap-4 mb-6">
               <div className="flex items-start justify-start gap-3">
                 <div className="bg-orange mt-1 h-2 w-2 rounded-full"></div>
                 <div className="font-semibold">
@@ -205,14 +213,14 @@ export default function Overview() {
               </div>
             </div>
 
-            <div style={{ width: "300px", height: "300px" }}>
+            <div className="w-full h-[300px] relative">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
                     data={customerData}
                     dataKey="value"
                     nameKey="name"
-                    cx="40%"
+                    cx="50%"
                     cy="50%"
                     innerRadius={85}
                     outerRadius={110}

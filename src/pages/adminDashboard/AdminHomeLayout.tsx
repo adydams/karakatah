@@ -1,31 +1,87 @@
 import { useState } from "react";
-
-import { CgMenuGridR } from "react-icons/cg";
-import { Outlet } from "react-router";
+import { Outlet, useLocation } from "react-router";
 import Sidebar from "../../components/adminDashboard/Sidebar";
-import Modal from "../../components/adminDashboard/Modal";
+import NavBar from "../../components/adminDashboard/NavBar";
+import Modal from "../../components/Modal";
 
 export default function AdminHomeLayout() {
-  const [showSidebar, setShowSidebar] = useState(false);
+  const [showSidebar, setShowSidebar] = useState(true);
+  const location = useLocation();
 
-  function handleSidebar() {
-    setShowSidebar((bar) => !bar);
-  }
+  const pageTitles: Record<string, string> = {
+    "/dashboard": "Dashboard",
+    "/dashboard/overview": "Dashboard",
+    "/dashboard/orders": "Orders",
+    "/dashboard/categories": "Categories",
+    "/dashboard/sub-categories": "Sub-Categories",
+    "/dashboard/brands": "Brands",
+    "/dashboard/products": "Products",
+    "/dashboard/customers": "Customer Management",
+    "/dashboard/stores": "Stores",
+    "/dashboard/transactions": "Transactions",
+    "/dashboard/finance": "Finance",
+    "/dashboard/shipment": "Fleet Management",
+    "/dashboard/pickup-stations": "Pickup Stations",
+    "/dashboard/audit-trail": "System Audit Trail",
+    "/dashboard/permissions": "Permissions Management",
+    "/dashboard/help": "Help",
+    "/dashboard/settings": "Logistics Settings",
+    "/dashboard/admin-management": "Admin Management",
+    "/dashboard/profile": "My Profile",
+  };
+
+  const title =
+    pageTitles[location.pathname] ??
+    (location.pathname.startsWith("/dashboard/stores/") ? "Stores" : "Dashboard");
+
+  const handleSidebar = () => {
+    setShowSidebar((prev) => !prev);
+  };
 
   return (
-    <main className="relative block h-screen w-full grid-cols-[1fr_4fr] lg:grid">
-      <CgMenuGridR
-        size={30}
-        onClick={handleSidebar}
-        className={`text-dark-gray absolute top-8 right-5 z-[999] block cursor-pointer lg:hidden`}
+    <div className="flex min-h-screen w-full bg-gray-50">
+      {/* Mobile overlay */}
+      {showSidebar && (
+        <div
+          className="fixed inset-0 z-[900] bg-black/20 lg:hidden"
+          onClick={handleSidebar}
+        />
+      )}
+
+      {/* Sidebar */}
+      <Sidebar
+        showSidebar={showSidebar}
+        handleSidebar={handleSidebar}
       />
 
-      <Sidebar showSidebar={showSidebar} />
-      <div className="dash text-dark-gray/90 h-full w-full overflow-scroll px-4 py-7 lg:px-10">
-        <Outlet />
+      {/* Main area */}
+      <div
+        className={`
+          flex-1
+          min-h-screen
+          transition-all
+          duration-300
+          flex
+          flex-col
+          ${showSidebar ? "lg:ml-[260px]" : "ml-0"}
+        `}
+      >
+        {/* Navbar - Now a direct child of Layout, not the Page */}
+        <header className="sticky top-0 z-[800] bg-white px-4 py-4 shadow-sm w-full">
+          <NavBar
+            title={title}
+            handleSidebar={handleSidebar}
+            showSidebar={showSidebar}
+          />
+        </header>
+
+        {/* Page content */}
+        <main className="p-4 flex-1">
+          <Outlet />
+        </main>
       </div>
 
       <Modal />
-    </main>
+    </div>
   );
 }

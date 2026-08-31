@@ -11,6 +11,11 @@ export async function getProducts(): Promise<ProductsResponse> {
   return response.data;
 }
 
+export async function getFeaturedDiscounts(): Promise<ProductsResponse> {
+  const response = await axiosInstance.get(`/api/products/featured-discounts`);
+  return response.data;
+}
+
 export async function getProduct(id: string): Promise<ProductResponse> {
   const response = await axiosInstance.get(`/api/products/${id}`);
   return response.data;

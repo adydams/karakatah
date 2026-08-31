@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { getStores } from "../../services/adminDashboard/apiStore";
-import Spinner from "../../components/adminDashboard/Spinner";
+import Spinner from "../../components/Spinner";
 import { TiPlus } from "react-icons/ti";
 import { Link } from "react-router";
 import { MdEdit, MdDelete, MdSearch } from "react-icons/md";

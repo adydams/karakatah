@@ -1,138 +1,166 @@
-import React, { useEffect } from "react";
-import { useForm } from "react-hook-form";
-import MapPicker from "../MapPicker";
-import Spinner from "./Spinner";
-import { createPickupStation, updatePickupStation, getPickupStationById } from "../../services/adminDashboard/apiPickupStation";
+import React, { useState, useEffect } from "react";
+import { useLogin } from "../../contexts/hooks/useLogin";
+import { createPickupStation, getPickupStationById, updatePickupStation } from "../../services/adminDashboard/apiPickupStation";
+import toast from "react-hot-toast";
+import Spinner from "../Spinner";
 
 type Props = {
   open: boolean;
+  stationId?: string;
   onClose: () => void;
-  stationId?: string | undefined;
-  onSaved?: () => void;
+  onSaved: () => void;
 };
 
-export default function PickupStationForm({ open, onClose, stationId, onSaved }: Props) {
-  const { register, handleSubmit, reset, setValue, getValues, formState: { isSubmitting } } = useForm<any>();
+export default function PickupStationForm({ open, stationId, onClose, onSaved }: Props) {
+  const { token } = useLogin();
+  const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    name: "",
+    address: "",
+    phone: "",
+    email: "",
+    contactPerson: "",
+  });
 
   useEffect(() => {
-    if (!open) return;
     if (stationId) {
       async function loadStation() {
         try {
+          setLoading(true);
           const res = await getPickupStationById(stationId);
-          if (res && res.success && res.data) {
-            const data = res.data;
-            reset({
-              name: data.name,
-              address: data.address,
-              contactPerson: data.contactPerson,
-              phone: data.phone,
-              email: data.email,
-              latitude: data.latitude,
-              longitude: data.longitude,
+          if (res.data) {
+            setFormData({
+              name: res.data.name || "",
+              address: res.data.address || "",
+              phone: res.data.phone || "",
+              email: res.data.email || "",
+              contactPerson: res.data.contactPerson || "",
             });
           }
-        } catch (err) {
-          console.error("Failed to load station data:", err);
+        } catch (err: any) {
+          toast.error(err.message || "Failed to load station details");
+        } finally {
+          setLoading(false);
         }
       }
       loadStation();
     } else {
-      reset({});
+      setFormData({
+        name: "",
+        address: "",
+        phone: "",
+        email: "",
+        contactPerson: "",
+      });
     }
-  }, [open, stationId, reset]);
+  }, [stationId]);
 
-  if (!open) return null;
-
-  async function onSubmit(data: any) {
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setLoading(true);
     try {
       if (stationId) {
-        await updatePickupStation(stationId, data);
+        await updatePickupStation(stationId, formData);
+        toast.success("Station updated successfully");
       } else {
-        await createPickupStation(data);
+        await createPickupStation(formData);
+        toast.success("Station created successfully");
       }
-      onSaved && onSaved();
+      onSaved();
       onClose();
     } catch (err: any) {
-      console.error(err);
-      alert(err?.message || "Failed to save pickup station");
+      toast.error(err.message || "An error occurred while saving the station");
+    } finally {
+      setLoading(false);
     }
   }
 
+  if (!open) return null;
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-      <div className="w-[90%] max-w-lg rounded-xl bg-white p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-bold">{stationId ? 'Edit' : 'Add'} Pickup Station</h2>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-800">Close</button>
+    <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+      <div className="bg-white rounded-2xl shadow-2xl border border-gray-200 w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200">
+        <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+          <h2 className="text-xl font-bold text-gray-800">
+            {stationId ? "Edit Pickup Station" : "Add New Pickup Station"}
+          </h2>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors text-2xl">&times;</button>
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="grid grid-cols-1 gap-3">
-          <div>
-            <label className="text-xs">Name</label>
-            <input {...register('name')} className="w-full border px-3 py-2" />
+        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-semibold text-gray-500 uppercase">Station Name</label>
+            <input
+              type="text"
+              required
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              className="w-full p-2 border border-gray-300 rounded-md outline-none focus:ring-2 focus:ring-orange/50 text-sm"
+              placeholder="e.g. Lekki Hub"
+            />
           </div>
 
-          <div>
-            <label className="text-xs">Address</label>
-            <input {...register('address')} className="w-full border px-3 py-2" />
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-semibold text-gray-500 uppercase">Full Address</label>
+            <textarea
+              required
+              value={formData.address}
+              onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+              className="w-full p-2 border border-gray-300 rounded-md outline-none focus:ring-2 focus:ring-orange/50 text-sm"
+              placeholder="Enter complete street address"
+              rows={3}
+            ></textarea>
           </div>
 
-          <div className="grid grid-cols-2 gap-3 mt-2">
-            <div>
-              <label className="text-xs">Latitude</label>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-semibold text-gray-500 uppercase">Phone</label>
               <input
-                readOnly
-                {...register('latitude')}
-                className="w-full border px-3 py-2 bg-gray-50 cursor-not-allowed text-xs"
+                type="text"
+                value={formData.phone}
+                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                className="w-full p-2 border border-gray-300 rounded-md outline-none focus:ring-2 focus:ring-orange/50 text-sm"
+                placeholder="080..."
               />
             </div>
-            <div>
-              <label className="text-xs">Longitude</label>
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-semibold text-gray-500 uppercase">Email</label>
               <input
-                readOnly
-                {...register('longitude')}
-                className="w-full border px-3 py-2 bg-gray-50 cursor-not-allowed text-xs"
+                type="email"
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                className="w-full p-2 border border-gray-300 rounded-md outline-none focus:ring-2 focus:ring-orange/50 text-sm"
+                placeholder="hub@karakata.com"
               />
             </div>
           </div>
 
-          <div className="mt-4 w-full">
-            <label className="text-xs font-medium">Select location on map</label>
-            <div className="mt-2 rounded-lg border border-gray-200 overflow-hidden">
-              <MapPicker
-                initialLat={Number(getValues('latitude')) || undefined}
-                initialLng={Number(getValues('longitude')) || undefined}
-                onSelect={(res) => {
-                  setValue('latitude', res.latitude);
-                  setValue('longitude', res.longitude);
-                  if (res.formattedAddress) {
-                    setValue('address', res.formattedAddress);
-                  }
-                }}
-              />
-            </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-semibold text-gray-500 uppercase">Contact Person</label>
+            <input
+              type="text"
+              value={formData.contactPerson}
+              onChange={(e) => setFormData({ ...formData, contactPerson: e.target.value })}
+              className="w-full p-2 border border-gray-300 rounded-md outline-none focus:ring-2 focus:ring-orange/50 text-sm"
+              placeholder="Name of station manager"
+            />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="text-xs">Contact Person</label>
-              <input {...register('contactPerson')} className="w-full border px-3 py-2" />
-            </div>
-            <div>
-              <label className="text-xs">Phone Number</label>
-              <input {...register('phone')} className="w-full border px-3 py-2" />
-            </div>
-          </div>
-
-          <div>
-            <label className="text-xs">Email Address (Optional)</label>
-            <input {...register('email')} className="w-full border px-3 py-2" />
-          </div>
-
-          <div className="flex justify-end gap-2">
-            <button type="button" onClick={onClose} className="border px-4 py-2">Cancel</button>
-            <button type="submit" disabled={isSubmitting} className="bg-orange text-white px-4 py-2">{isSubmitting ? <Spinner type="small" /> : 'Save'}</button>
+          <div className="flex justify-end gap-3 mt-6">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-800 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="bg-orange text-white px-6 py-2 rounded-md text-sm font-bold hover:bg-orange/90 transition-all disabled:opacity-50 flex items-center gap-2"
+            >
+              {loading ? <Spinner size="small" /> : (stationId ? "Update Station" : "Create Station")}
+            </button>
           </div>
         </form>
       </div>

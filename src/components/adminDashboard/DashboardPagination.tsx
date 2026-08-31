@@ -1,14 +1,16 @@
-type DashboardPaginationProps = {
+import React from "react";
+
+type PaginationProps = {
   currentPage: number;
   totalPages: number;
-  setCurrentPage: React.Dispatch<React.SetStateAction<number>>;
+  setCurrentPage: (page: number) => void;
 };
 
 export default function DashboardPagination({
   currentPage,
   totalPages,
   setCurrentPage,
-}: DashboardPaginationProps) {
+}: PaginationProps) {
   const pages = [];
 
   const start = Math.max(1, currentPage - 2);
@@ -19,35 +21,62 @@ export default function DashboardPagination({
   }
 
   return (
-    <div className="mt-5 flex items-center justify-center gap-2 self-end text-xs font-semibold">
+    <div className="flex items-center justify-center gap-2">
+      {/* Prev */}
       <button
         disabled={currentPage === 1}
-        onClick={() => setCurrentPage((prev) => prev - 1)}
-        className="border-dark-gray/20 hover:bg-light-gray rounded-full border px-4 py-2 disabled:opacity-40"
+        onClick={() => setCurrentPage(currentPage - 1)}
+        className="rounded-lg bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-600 disabled:cursor-not-allowed disabled:opacity-40 hover:bg-gray-200 transition-colors"
       >
         Prev
       </button>
 
+      {/* First page */}
+      {start > 1 && (
+        <>
+          <button
+            onClick={() => setCurrentPage(1)}
+            className="rounded-lg bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-200 transition-colors"
+          >
+            1
+          </button>
+          {start > 2 && <span className="text-gray-400 text-xs">...</span>}
+        </>
+      )}
+
+      {/* Visible Pages */}
       {pages.map((page) => (
         <button
           key={page}
           onClick={() => setCurrentPage(page)}
-          className={`rounded-full px-4 py-2 transition
-            ${
-              currentPage === page
-                ? "bg-orange text-white"
-                : "border-dark-gray/20 hover:bg-light-gray border"
-            }
-          `}
+          className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-all ${
+            currentPage === page
+              ? "bg-[#f57c00] text-white shadow-sm"
+              : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+          }`}
         >
           {page}
         </button>
       ))}
 
+      {/* Last Page */}
+      {end < totalPages && (
+        <>
+          {end < totalPages - 1 && <span className="text-gray-400 text-xs">...</span>}
+          <button
+            onClick={() => setCurrentPage(totalPages)}
+            className="rounded-lg bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-200 transition-colors"
+          >
+            {totalPages}
+          </button>
+        </>
+      )}
+
+      {/* Next */}
       <button
         disabled={currentPage === totalPages}
-        onClick={() => setCurrentPage((prev) => prev + 1)}
-        className="border-dark-gray/20 hover:bg-light-gray rounded-full border px-4 py-2 disabled:opacity-40"
+        onClick={() => setCurrentPage(currentPage + 1)}
+        className="rounded-lg bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-600 disabled:cursor-not-allowed disabled:opacity-40 hover:bg-gray-200 transition-colors"
       >
         Next
       </button>
