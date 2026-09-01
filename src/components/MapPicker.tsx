@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -29,7 +29,7 @@ export default function MapPicker({ initialLat, initialLng, onSelect, onCancel, 
         iconUrl: 'https://unpkg.com/leaflet@1.9.3/dist/images/marker-icon.png',
         shadowUrl: 'https://unpkg.com/leaflet@1.9.3/dist/images/marker-shadow.png',
       });
-    } catch (e) {
+    } catch {
       // swallow
     }
   }, []);
@@ -43,7 +43,7 @@ export default function MapPicker({ initialLat, initialLng, onSelect, onCancel, 
             setLng(position.coords.longitude);
             setIsInitialized(true);
           },
-          (err) => {
+          () => {
             console.warn("Geolocation denied or unavailable, using fallback.");
             // Fallback to a general region if no initial props are provided
             // Using a very generic center if everything fails
@@ -91,7 +91,7 @@ export default function MapPicker({ initialLat, initialLng, onSelect, onCancel, 
       if (!res.ok) throw new Error('Reverse geocode failed');
       const data = await res.json();
       return data.display_name as string | undefined;
-    } catch (err) {
+    } catch {
       return undefined;
     } finally {
       setLoading(false);
@@ -135,7 +135,7 @@ export default function MapPicker({ initialLat, initialLng, onSelect, onCancel, 
         setError('No locations found. Try removing the house number or using a broader area name.');
         setTimeout(() => setError(null), 3000);
       }
-    } catch (err) {
+    } catch {
       setError('Error searching for address.');
       setTimeout(() => setError(null), 3000);
     } finally {

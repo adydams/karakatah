@@ -7,7 +7,7 @@ export const getDriverTasks = async () => {
   return response.data;
 };
 
-export const updateShipmentStatus = async (shipmentId, statusData) => {
+export const updateShipmentStatus = async (shipmentId: string, statusData: Record<string, unknown>) => {
   const response = await axiosInstance.patch(`${DRIVER_BASE}/shipment/${shipmentId}/status`, statusData);
   return response.data;
 };

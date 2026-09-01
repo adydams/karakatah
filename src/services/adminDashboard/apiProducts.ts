@@ -31,6 +31,27 @@ export async function updateCategoryStatus(id: string, status: string) {
   return response.data;
 }
 
+export async function updateCategory(
+  id: string,
+  { name, description, image }: { name?: string; description?: string; image?: File | string }
+) {
+  const formData = new FormData();
+  if (name) formData.append("name", name);
+  if (description) formData.append("description", description);
+  if (image) {
+    if (typeof image === "string") {
+      formData.append("imageUrl", image);
+    } else {
+      formData.append("image", image);
+    }
+  }
+
+  const response = await axiosInstance.put(`/api/categories/${id}`, formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+  return response.data;
+}
+
 export async function createSubCategory({ categoryId, name, description }: SubCategoryItem) {
   const response = await axiosInstance.post(`/api/subcategories`, { categoryId, name, description });
   return response.data;

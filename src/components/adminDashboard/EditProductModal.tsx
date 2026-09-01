@@ -34,31 +34,7 @@ type ExistingImage = {
   name?: string;
 };
 
-type ApiProductInventory = {
-  productPickupStation?: { id?: string; station?: { id?: string } };
-  pickupStation?: { id?: string };
-  quantityOnHand?: number;
-  productPickupStationId?: string;
-};
-
 type EditProductFormValues = TProductEditSchema;
-
-type ApiProduct = {
-  name?: string;
-  description?: string;
-  price?: string | number;
-  stockQuantity?: string | number;
-  categoryId?: string;
-  subCategoryId?: string;
-  brandId?: string;
-  logisticsCategoryId?: string;
-  weightKg?: string | number;
-  lengthCm?: string | number;
-  widthCm?: string | number;
-  heightCm?: string | number;
-  images?: Array<{ id?: string; url: string; name?: string; filename?: string }>;
-  inventories?: ApiProductInventory[];
-};
 
 type SelectOption = {
   id: string;
@@ -306,8 +282,9 @@ export default function EditProductModal({ open, onClose, productId, onUpdated }
     ...selectedFiles.map((file, index) => ({
       id: `${file.name}-${index}`,
       kind: "file" as const,
-      name: file.name,
+      url: previewUrls[index] || "",
       previewUrl: previewUrls[index],
+      name: file.name,
       sourceIndex: index,
     })),
   ];
@@ -392,7 +369,7 @@ export default function EditProductModal({ open, onClose, productId, onUpdated }
               <div className="flex flex-col gap-2">
                 <label className="text-xs font-semibold text-slate-600" htmlFor="edit-description">Description</label>
                 <textarea id="edit-description" {...register("description")} className="h-32 w-full rounded-3xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-orange/70 focus:ring-2 focus:ring-orange/10" />
-                {errors.description && <p className="text-xs text-red-500">{errors.description.message}</p>}
+                {errors.description && <p className="text-xs text-red-500">{String(errors.description?.message ?? "")}</p>}
               </div>
             </div>
           </section>
@@ -427,13 +404,13 @@ export default function EditProductModal({ open, onClose, productId, onUpdated }
                 <div className="flex flex-col gap-2">
                   <label className="text-xs font-semibold text-slate-600" htmlFor="edit-price">Price</label>
                   <input id="edit-price" type="text" {...register("price")} className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-orange/70 focus:ring-2 focus:ring-orange/10" />
-                  {errors.price && <p className="text-xs text-red-500">{errors.price.message}</p>}
+                  {errors.price && <p className="text-xs text-red-500">{String(errors.price?.message ?? "")}</p>}
                 </div>
                 <div className="flex flex-col gap-2">
                   <label className="text-xs font-semibold text-slate-600" htmlFor="edit-stock">Stock Quantity</label>
                   <input id="edit-stock" type="text" {...register("stockQuantity")} className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-orange/70 focus:ring-2 focus:ring-orange/10" readOnly />
                   <p className="text-xs text-slate-500">Stock quantity is the sum of the pickup station inventory.</p>
-                  {errors.stockQuantity && <p className="text-xs text-red-500">{errors.stockQuantity.message}</p>}
+                  {errors.stockQuantity && <p className="text-xs text-red-500">{String(errors.stockQuantity?.message ?? "")}</p>}
                 </div>
               </div>
             </section>
@@ -526,7 +503,7 @@ export default function EditProductModal({ open, onClose, productId, onUpdated }
                       logisticsCategoryList.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)
                     )}
                   </select>
-                  {errors.logisticsCategoryId && <p className="text-xs text-red-500">{errors.logisticsCategoryId.message}</p>}
+                  {errors.logisticsCategoryId && <p className="text-xs text-red-500">{String(errors.logisticsCategoryId?.message ?? "")}</p>}
                 </div>
               </div>
             </section>
@@ -612,7 +589,7 @@ export default function EditProductModal({ open, onClose, productId, onUpdated }
                   <option value="">Select category</option>
                 {isFetchingCategories ? <option disabled>Loading categories...</option> : categoriesList.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
                 </select>
-                {errors.categoryId && <p className="text-xs text-red-500">{errors.categoryId.message}</p>}
+                {errors.categoryId && <p className="text-xs text-red-500">{String(errors.categoryId?.message ?? "")}</p>}
               </div>
               <div className="flex flex-col gap-2">
                 <label className="text-xs font-semibold text-slate-600" htmlFor="edit-subcategory">Subcategory</label>
@@ -620,7 +597,7 @@ export default function EditProductModal({ open, onClose, productId, onUpdated }
                   <option value="">Select subcategory</option>
                   {isFetchingSubCategories ? <option disabled>Loading subcategories...</option> : subcategoriesList.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
                 </select>
-                {errors.subCategoryId && <p className="text-xs text-red-500">{errors.subCategoryId.message}</p>}
+                {errors.subCategoryId && <p className="text-xs text-red-500">{String(errors.subCategoryId?.message ?? "")}</p>}
               </div>
               <div className="flex flex-col gap-2">
                 <label className="text-xs font-semibold text-slate-600" htmlFor="edit-brand">Brand</label>
@@ -628,7 +605,7 @@ export default function EditProductModal({ open, onClose, productId, onUpdated }
                   <option value="">Select brand</option>
                   {isFetchingBrand ? <option disabled>Loading brands...</option> : brandsList.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
                 </select>
-                {errors.brandId && <p className="text-xs text-red-500">{errors.brandId.message}</p>}
+                {errors.brandId && <p className="text-xs text-red-500">{String(errors.brandId?.message ?? "")}</p>}
               </div>
             </div>
           </section>

@@ -1,9 +1,8 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import toast from "react-hot-toast";
 import { useQueryClient } from "@tanstack/react-query";
-import { useLogin } from "../../contexts/hooks/useLogin";
 import { categorySchema, type TCategorySchema } from "../../libs/formSchema";
 import { updateCategory } from "../../services/adminDashboard/apiProducts";
 import Spinner from "../Spinner";
@@ -17,7 +16,6 @@ type Props = {
 export default function EditCategoryModal({ category }: Props) {
   const { closeModal } = useModal();
   const [fileName, setFileName] = useState(category.categoryImage ? "Image already uploaded" : "");
-  const { token } = useLogin();
   const queryClient = useQueryClient();
 
   const {
@@ -35,7 +33,7 @@ export default function EditCategoryModal({ category }: Props) {
 
   async function onSubmit(data: TCategorySchema) {
     try {
-      const success = await updateCategory(category.id, { ...data, image: data.image || category.categoryImage }, token);
+      const success = await updateCategory(category.id, { ...data, image: data.image || category.categoryImage });
 
       if (success) {
         toast.success("Category Updated Successfully");

@@ -1,5 +1,3 @@
-import React from "react";
-
 type Courier = {
   id: string | number;
   name?: string;

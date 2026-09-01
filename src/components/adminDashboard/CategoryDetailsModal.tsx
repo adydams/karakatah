@@ -1,13 +1,9 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getSubCategories } from "../../services/adminDashboard/apiProducts";
 import toast from "react-hot-toast";
 import Spinner from "../Spinner";
 import { useModal } from "../../contexts/hooks/useModal";
-
-type Props = {
-  walletId: string;
-};
 
 export default function CategoryDetailsModal({ categoryId, categoryName }: { categoryId: string, categoryName: string }) {
   const { closeModal } = useModal();
@@ -23,7 +19,7 @@ export default function CategoryDetailsModal({ categoryId, categoryName }: { cat
     },
   });
 
-  const handleUpdateSub = async (subId: string) => {
+  const handleUpdateSub = async (_subId: string) => {
     try {
       toast.success(`Updated sub-category to ${editValue}`);
       queryClient.invalidateQueries({ queryKey: ["subcategories"] });
@@ -33,7 +29,7 @@ export default function CategoryDetailsModal({ categoryId, categoryName }: { cat
     }
   };
 
-  const handleDeleteSub = async (subId: string) => {
+  const handleDeleteSub = async (_subId: string) => {
     if (!confirm("Are you sure you want to delete this sub-category?")) return;
     try {
       toast.success("Sub-category deleted");

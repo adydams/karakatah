@@ -7,7 +7,7 @@ export const getOrderSummary = async () => {
   return response.data;
 };
 
-export const getOrderInvoice = async (orderId) => {
+export const getOrderInvoice = async (orderId: string) => {
   const response = await axiosInstance.get(`${ORDERS_BASE}/invoice/${orderId}`);
   return response.data;
 };

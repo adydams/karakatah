@@ -2,32 +2,32 @@ import axiosInstance from "./apiClient";
 
 const ADMIN_BASE = "/api/admin";
 
-export const getAdmins = async (params = {}) => {
+export const getAdmins = async (params: Record<string, unknown> = {}) => {
   const response = await axiosInstance.get(`${ADMIN_BASE}/list`, { params });
   return response.data;
 };
 
-export const onboardAdmin = async (adminData) => {
+export const onboardAdmin = async (adminData: Record<string, unknown>) => {
   const response = await axiosInstance.post(`${ADMIN_BASE}/onboard-admin`, adminData);
   return response.data;
 };
 
-export const updateAdmin = async (id, updates) => {
+export const updateAdmin = async (id: string, updates: Record<string, unknown>) => {
   const response = await axiosInstance.put(`${ADMIN_BASE}/${id}`, updates);
   return response.data;
 };
 
-export const deleteAdmin = async (id) => {
+export const deleteAdmin = async (id: string) => {
   const response = await axiosInstance.delete(`${ADMIN_BASE}/${id}`);
   return response.data;
 };
 
-export const updateAdminRole = async (id, role) => {
+export const updateAdminRole = async (id: string, role: string) => {
   const response = await axiosInstance.patch(`${ADMIN_BASE}/${id}/role`, { role });
   return response.data;
 };
 
-export const updateAdminStatus = async (id, isActive) => {
+export const updateAdminStatus = async (id: string, isActive: boolean) => {
   const response = await axiosInstance.patch(`${ADMIN_BASE}/${id}/status`, { isActive });
   return response.data;
 };

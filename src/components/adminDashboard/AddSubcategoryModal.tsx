@@ -1,9 +1,6 @@
-import React, { useState } from "react";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import toast from "react-hot-toast";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
-import { useLogin } from "../../contexts/hooks/useLogin";
 import { createSubCategory, getCategories } from "../../services/adminDashboard/apiProducts";
 import Spinner from "../Spinner";
 import { useModal } from "../../contexts/hooks/useModal";
@@ -17,7 +14,6 @@ type TSubCategorySchema = {
 
 export default function AddSubcategoryModal() {
   const { closeModal } = useModal();
-  const { token } = useLogin();
   const queryClient = useQueryClient();
 
   const { data: categoriesData, isLoading: isLoadingCats } = useQuery({
@@ -35,7 +31,7 @@ export default function AddSubcategoryModal() {
 
   async function onSubmit(data: TSubCategorySchema) {
     try {
-      const success = await createSubCategory({ ...data }, token);
+      const success = await createSubCategory({ ...data });
 
       if (success) {
         toast.success("Sub-Category Added Successfully");
