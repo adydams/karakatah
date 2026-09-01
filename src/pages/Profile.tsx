@@ -45,8 +45,11 @@ export default function Profile() {
     : Array.isArray(user?.permissions)
       ? user.permissions
       : [];
-  const avatarUrl = user?.profilePicture || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || "User")}&background=F59E0B&color=fff&rounded=true&size=256`;
-
+  //const avatarUrl = user?.profilePicture || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || "User")}&background=F59E0B&color=fff&rounded=true&size=256`;
+  const avatarUrl =
+  user?.profilePicture ||
+  "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80";
+  
   if (loadingProfile) return <Spinner />;
 
   if (!user) return <div className="flex h-screen items-center justify-center">User not found.</div>;
