@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { useLogin } from "../../contexts/hooks/useLogin";
 import { createPickupStation, getPickupStationById, updatePickupStation } from "../../services/adminDashboard/apiPickupStation";
 import toast from "react-hot-toast";
 import Spinner from "../Spinner";
@@ -12,7 +11,7 @@ type Props = {
 };
 
 export default function PickupStationForm({ open, stationId, onClose, onSaved }: Props) {
-  const { token } = useLogin();
+  const safeStationId = typeof stationId === "string" && stationId.trim() ? stationId : undefined;
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
@@ -23,11 +22,12 @@ export default function PickupStationForm({ open, stationId, onClose, onSaved }:
   });
 
   useEffect(() => {
-    if (stationId) {
+    if (safeStationId) {
+      const stationKey = safeStationId || "";
       async function loadStation() {
         try {
           setLoading(true);
-          const res = await getPickupStationById(stationId);
+          const res = await getPickupStationById(stationKey);
           if (res.data) {
             setFormData({
               name: res.data.name || "",
@@ -59,8 +59,8 @@ export default function PickupStationForm({ open, stationId, onClose, onSaved }:
     e.preventDefault();
     setLoading(true);
     try {
-      if (stationId) {
-        await updatePickupStation(stationId, formData);
+      if (safeStationId) {
+        await updatePickupStation(safeStationId, formData);
         toast.success("Station updated successfully");
       } else {
         await createPickupStation(formData);
@@ -82,7 +82,7 @@ export default function PickupStationForm({ open, stationId, onClose, onSaved }:
       <div className="bg-white rounded-2xl shadow-2xl border border-gray-200 w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200">
         <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50">
           <h2 className="text-xl font-bold text-gray-800">
-            {stationId ? "Edit Pickup Station" : "Add New Pickup Station"}
+            {safeStationId ? "Edit Pickup Station" : "Add New Pickup Station"}
           </h2>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors text-2xl">&times;</button>
         </div>
@@ -159,7 +159,7 @@ export default function PickupStationForm({ open, stationId, onClose, onSaved }:
               disabled={loading}
               className="bg-orange text-white px-6 py-2 rounded-md text-sm font-bold hover:bg-orange/90 transition-all disabled:opacity-50 flex items-center gap-2"
             >
-              {loading ? <Spinner size="small" /> : (stationId ? "Update Station" : "Create Station")}
+              {loading ? <Spinner size="small" /> : (safeStationId ? "Update Station" : "Create Station")}
             </button>
           </div>
         </form>

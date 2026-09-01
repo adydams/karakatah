@@ -24,23 +24,18 @@ export type UserType = {
   updatedAt: string; // ISO date string
 };
 
-export type GetAdminByIdResponse = {
-  success: boolean;
-  user: {
-    id: string;
-    name: string;
-    email: string;
-    phone: string;
-    roleId: string;
-    provider: string | null;
-    providerId: string | null;
-    profilePicture?: string | null;
-    createdAt: string; // ISO date string
-    updatedAt: string; // ISO date string
-  };
+export type PermissionSummary = {
+  id: string;
+  name: string;
+  description?: string;
 };
 
-type LoginContextType = {
+export type GetAdminByIdResponse = {
+  success: boolean;
+  user: UserType;
+};
+
+export type LoginContextType = {
   adminId: string | undefined;
   role: string | undefined;
   user: UserType | null;

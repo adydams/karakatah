@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { keepPreviousData } from "@tanstack/react-query";
 
@@ -165,7 +165,7 @@ export default function Products() {
                   <DashboardPagination
                     currentPage={page}
                     totalPages={totalPages}
-                    setCurrentPage={setPage}
+                    onPageChange={setPage}
                   />
                   <button
                     disabled={page === totalPages}
@@ -296,3 +296,4 @@ export default function Products() {
     </div>
   );
 }
+

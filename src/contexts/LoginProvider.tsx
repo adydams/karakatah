@@ -1,5 +1,5 @@
-import { useState, useCallback, useMemo, type ReactNode } from "react";
-import { LoginContext, type UserType } from "./LoginContext";
+import { useState, useCallback, useMemo, type ReactNode, type Dispatch, type SetStateAction } from "react";
+import { LoginContext, type LoginContextType, type UserType } from "./LoginContext";
 import type { ApiLoginType } from "../libs/types";
 import { decodeToken } from "../utils/utils";
 import { AdminLogin, getAdminById } from "../services/adminDashboard/apiAuth";
@@ -24,12 +24,15 @@ export function LoginProvider({ children }: LoginProviderProp) {
   const adminId: string | undefined = tokenState ? tokenObj?.id : undefined;
   const role: string | undefined = tokenState ? tokenObj?.role : undefined;
 
-  const setToken = useCallback((t: string | null) => {
-    setTokenState(t);
-    try {
-      if (t) localStorage.setItem("token", t);
-      else localStorage.removeItem("token");
-    } catch {}
+  const setToken: Dispatch<SetStateAction<string | null>> = useCallback((nextValue) => {
+    setTokenState((previous) => {
+      const resolved = typeof nextValue === "function" ? nextValue(previous) : nextValue;
+      try {
+        if (resolved) localStorage.setItem("token", resolved);
+        else localStorage.removeItem("token");
+      } catch {}
+      return resolved;
+    });
   }, []);
 
   const login = useCallback(
@@ -52,7 +55,7 @@ export function LoginProvider({ children }: LoginProviderProp) {
 
       try {
         const data = await getAdminById(id, tokenState);
-        if (data) setUser(data.user);
+        if (data) setUser(data.user as UserType);
         return data;
       } catch (error) {
         if (error instanceof Error) throw new Error(error.message);
@@ -80,7 +83,7 @@ export function LoginProvider({ children }: LoginProviderProp) {
     }
   }, [tokenState, setToken]);
 
-  const value = useMemo(
+  const value = useMemo<LoginContextType>(
     () => ({
       token: tokenState,
       setToken,

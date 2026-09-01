@@ -1,8 +1,6 @@
 import axiosInstance from "../apiClient";
-import type {
-  CategoriesResponse,
-  categoryItem,
-} from "../libs/types";
+import type { CategoriesResponse } from "../serviceTypes";
+import type { categoryItem } from "../../libs/types";
 
 export async function getCategories(): Promise<CategoriesResponse> {
   const response = await axiosInstance.get(`/api/categories`);

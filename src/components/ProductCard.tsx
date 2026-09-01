@@ -26,15 +26,15 @@ export default function ProductCard({ id, image, name, price, isDiscounted, curr
   const getBestPrice = () => {
     if (!discounts || discounts.length === 0) return null;
 
-    const basePrice = parseFloat(price || 0);
+    const basePrice = Number(price ?? 0);
     let minPrice = basePrice;
 
     discounts.forEach((rule: any) => {
       let rulePrice = basePrice;
-      if (rule.discountType === 'PERCENTAGE') {
-        rulePrice = basePrice - (basePrice * (parseFloat(rule.value) / 100));
-      } else if (rule.discountType === 'FIXED') {
-        rulePrice = basePrice - parseFloat(rule.value);
+      if (rule.discountType === "PERCENTAGE") {
+        rulePrice = basePrice - basePrice * (Number(rule.value ?? 0) / 100);
+      } else if (rule.discountType === "FIXED") {
+        rulePrice = basePrice - Number(rule.value ?? 0);
       }
       if (rulePrice < minPrice) minPrice = rulePrice;
     });
@@ -45,16 +45,16 @@ export default function ProductCard({ id, image, name, price, isDiscounted, curr
   const getBestRuleTeaser = () => {
     if (!discounts || discounts.length === 0) return null;
 
-    const basePrice = parseFloat(price || 0);
-    let bestRule = null;
+    const basePrice = Number(price ?? 0);
+    let bestRule: { discountType?: string; value?: number | string; minQuantity?: number } | null = null;
     let minPrice = basePrice;
 
     discounts.forEach((rule: any) => {
       let rulePrice = basePrice;
-      if (rule.discountType === 'PERCENTAGE') {
-        rulePrice = basePrice - (basePrice * (parseFloat(rule.value) / 100));
-      } else if (rule.discountType === 'FIXED') {
-        rulePrice = basePrice - parseFloat(rule.value);
+      if (rule.discountType === "PERCENTAGE") {
+        rulePrice = basePrice - basePrice * (Number(rule.value ?? 0) / 100);
+      } else if (rule.discountType === "FIXED") {
+        rulePrice = basePrice - Number(rule.value ?? 0);
       }
       if (rulePrice < minPrice) {
         minPrice = rulePrice;
@@ -64,11 +64,12 @@ export default function ProductCard({ id, image, name, price, isDiscounted, curr
 
     if (!bestRule) return null;
 
-    const valueStr = bestRule.discountType === 'PERCENTAGE'
-      ? `${bestRule.value}% off`
-      : `₦${bestRule.value} off`;
+    const bestRuleAny = bestRule as any;
+    const valueStr = bestRuleAny.discountType === "PERCENTAGE"
+      ? `${bestRuleAny.value}% off`
+      : `₦${bestRuleAny.value} off`;
 
-    return `Buy ${bestRule.minQuantity}+ get ${valueStr}`;
+    return `Buy ${bestRuleAny.minQuantity ?? 1}+ get ${valueStr}`;
   };
 
   const bestPrice = getBestPrice();

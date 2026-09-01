@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+﻿import React, { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Spinner from "../../components/Spinner";
 import DashboardPagination from "../../components/adminDashboard/DashboardPagination";
@@ -164,7 +164,7 @@ export default function Customers() {
               <DashboardPagination
                 currentPage={currentPage}
                 totalPages={totalPages}
-                setCurrentPage={setCurrentPage}
+                onPageChange={setCurrentPage}
               />
             )}
           </>
@@ -177,3 +177,4 @@ export default function Customers() {
     </div>
   );
 }
+

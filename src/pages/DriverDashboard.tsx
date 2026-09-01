@@ -1,17 +1,26 @@
-import React, { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
 import { getDriverTasks, updateShipmentStatus } from "../services/apiDriver";
 import Spinner from "../components/Spinner";
 
+type DriverTask = {
+  id?: string;
+  status?: string;
+  order?: {
+    user?: { name?: string; email?: string };
+    shippingAddress?: { addressLine1?: string; city?: string; state?: string };
+  };
+};
+
 export default function DriverDashboard() {
-  const [tasks, setTasks] = useState([]);
-  const [selectedTask, setSelectedTask] = useState(null);
+  const [tasks, setTasks] = useState<DriverTask[]>([]);
+  const [selectedTask, setSelectedTask] = useState<DriverTask | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchTasks = async () => {
       try {
         const res = await getDriverTasks();
-        setTasks(res.data || []);
+        setTasks(Array.isArray(res?.data) ? res.data : []);
       } catch (err) {
         console.error("Error fetching tasks:", err);
       } finally {
@@ -21,22 +30,22 @@ export default function DriverDashboard() {
     fetchTasks();
   }, []);
 
-  const handleStatusUpdate = async (shipmentId, status) => {
+  const handleStatusUpdate = async (shipmentId: string, status: "picked_up" | "in_transit" | "delivered") => {
     try {
       await updateShipmentStatus(shipmentId, {
         status,
         location: "Current GPS Location",
-        note: `Shipment marked as ${status}`
+        note: `Shipment marked as ${status}`,
       });
-      // Refresh tasks
       const res = await getDriverTasks();
-      setTasks(res.data || []);
+      setTasks(Array.isArray(res?.data) ? res.data : []);
       if (selectedTask?.id === shipmentId) {
-        setSelectedTask(prev => ({ ...prev, status }));
+        setSelectedTask((prev) => prev ? { ...prev, status } : prev);
       }
       alert(`Shipment updated to ${status}`);
     } catch (err) {
-      alert("Error updating status: " + err.message);
+      const message = err instanceof Error ? err.message : "Unknown error";
+      alert("Error updating status: " + message);
     }
   };
 
@@ -44,7 +53,6 @@ export default function DriverDashboard() {
 
   return (
     <div className="font-primary w-full min-h-screen bg-gray-100 flex flex-col lg:flex-row">
-      {/* Task List (Left Side) */}
       <div className="w-full lg:w-1/3 bg-white border-r border-gray-200 h-screen overflow-y-auto">
         <div className="p-4 border-b border-gray-200 bg-gray-50">
           <h2 className="text-xl font-bold text-gray-800">Today's Deliveries</h2>
@@ -54,17 +62,17 @@ export default function DriverDashboard() {
         <div className="divide-y divide-gray-100">
           {tasks.length > 0 ? tasks.map((task, index) => (
             <div
-              key={index}
+              key={task.id ?? index}
               onClick={() => setSelectedTask(task)}
-              className={`p-4 cursor-pointer transition hover:bg-blue-50 ${selectedTask?.id === task.id ? 'bg-blue-50 border-l-4 border-blue-600' : ''}`}
+              className={`p-4 cursor-pointer transition hover:bg-blue-50 ${selectedTask?.id === task.id ? "bg-blue-50 border-l-4 border-blue-600" : ""}`}
             >
               <div className="flex justify-between items-start mb-2">
-                <span className="text-sm font-bold text-gray-800">#{task.id.slice(0, 8)}...</span>
+                <span className="text-sm font-bold text-gray-800">#{task.id?.slice(0, 8) ?? "N/A"}...</span>
                 <span className={`text-[10px] px-2 py-1 rounded-full font-bold uppercase ${
-                  task.status === 'delivered' ? 'bg-green-100 text-green-600' :
-                  task.status === 'in_transit' ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-600'
+                  task.status === "delivered" ? "bg-green-100 text-green-600" :
+                  task.status === "in_transit" ? "bg-blue-100 text-blue-600" : "bg-gray-100 text-gray-600"
                 }`}>
-                  {task.status || 'pending'}
+                  {task.status || "pending"}
                 </span>
               </div>
               <p className="text-sm text-gray-600 font-medium">{task.order?.user?.name || "Customer"}</p>
@@ -76,7 +84,6 @@ export default function DriverDashboard() {
         </div>
       </div>
 
-      {/* Detail View (Right Side) */}
       <div className="flex-1 p-6 flex flex-col justify-center items-center text-center">
         {selectedTask ? (
           <div className="max-w-md w-full bg-white p-8 rounded-2xl shadow-xl border border-gray-200">
@@ -103,19 +110,19 @@ export default function DriverDashboard() {
 
             <div className="grid grid-cols-1 gap-3">
               <button
-                onClick={() => handleStatusUpdate(selectedTask.id, 'picked_up')}
+                onClick={() => handleStatusUpdate(selectedTask.id ?? "", "picked_up")}
                 className="w-full py-3 rounded-xl font-bold border-2 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white transition"
               >
                 Mark as Picked Up
               </button>
               <button
-                onClick={() => handleStatusUpdate(selectedTask.id, 'in_transit')}
+                onClick={() => handleStatusUpdate(selectedTask.id ?? "", "in_transit")}
                 className="w-full py-3 rounded-xl font-bold border-2 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white transition"
               >
                 Mark as In Transit
               </button>
               <button
-                onClick={() => handleStatusUpdate(selectedTask.id, 'delivered')}
+                onClick={() => handleStatusUpdate(selectedTask.id ?? "", "delivered")}
                 className="w-full py-3 rounded-xl font-bold bg-green-600 text-white hover:bg-green-700 transition shadow-lg"
               >
                 Mark as Delivered

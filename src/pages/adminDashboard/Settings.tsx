@@ -38,7 +38,8 @@ export default function Settings() {
       await updateShippingSettings(settings);
       alert("Pricing settings updated successfully!");
     } catch (err) {
-      alert("Error saving settings: " + err.message);
+      const message = err instanceof Error ? err.message : "Unknown error";
+      alert("Error saving settings: " + message);
     } finally {
       setSaving(false);
     }

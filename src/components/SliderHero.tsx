@@ -21,9 +21,13 @@ type FeaturedProduct = {
   discountPercent: number;
 };
 
+type Slide =
+  | { type: "banner"; content: string }
+  | { type: "product"; content: FeaturedProduct };
+
 export default function SliderHero() {
-  const [slides, setSlides] = useState<{ type: 'banner' | 'product', content: any }[]>(
-    staticBanners.map(img => ({ type: 'banner', content: img }))
+  const [slides, setSlides] = useState<Slide[]>(
+    staticBanners.map((img) => ({ type: "banner", content: img })),
   );
 
   useEffect(() => {
@@ -31,11 +35,14 @@ export default function SliderHero() {
       try {
         const res = await getFeaturedDiscounts();
         if (res && res.success && res.data) {
-          const productSlides = res.data.map((p: FeaturedProduct) => ({
-            type: 'product',
+          const featuredProducts = res.data as unknown as FeaturedProduct[];
+          const bannerSlides: Slide[] = staticBanners.map((img): Slide => ({ type: "banner", content: img }));
+          const productSlides: Slide[] = featuredProducts.map((p: FeaturedProduct): Slide => ({
+            type: "product",
             content: p,
           }));
-          setSlides([...staticBanners.map(img => ({ type: 'banner', content: img })), ...productSlides]);
+          const nextSlides: Slide[] = [...bannerSlides, ...productSlides];
+          setSlides(nextSlides);
         }
       } catch (err) {
         console.error("Failed to load featured discounts:", err);
@@ -60,7 +67,7 @@ export default function SliderHero() {
       <Slider {...settings} key={slides.length}>
         {slides.map((slide, index) => (
           <div className="relative h-full w-full" key={index}>
-            {slide.type === 'banner' ? (
+            {slide.type === "banner" ? (
               <img
                 className="h-full w-full object-cover"
                 src={optimizeImage(slide.content)}
@@ -70,7 +77,7 @@ export default function SliderHero() {
               <div className="relative h-full w-full">
                 <img
                   className="h-full w-full object-cover"
-                  src={optimizeImage(slide.content.images?.[0]?.url)}
+                  src={optimizeImage(slide.content.images?.[0]?.url || "")}
                   alt={slide.content.name}
                 />
                 <div className="absolute inset-0 bg-black/20" />
@@ -80,7 +87,6 @@ export default function SliderHero() {
                     <span className="text-lg line-through opacity-70">₦{slide.content.originalPrice}</span>
                     <span className="text-2xl font-bold text-orange-400">₦{slide.content.currentPrice}</span>
                   </div>
-                  {/* Flashing Discount Badge */}
                   <div className="mt-2 inline-block animate-pulse rounded-full bg-orange-600 px-3 py-1 text-xs font-bold text-white">
                     -{slide.content.discountPercent}% OFF
                   </div>

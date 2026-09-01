@@ -1,13 +1,13 @@
 type PaginationProps = {
   currentPage: number;
   totalPages: number;
-  setCurrentPage: (page: number) => void;
+  onPageChange: (page: number) => void;
 };
 
 export default function DashboardPagination({
   currentPage,
   totalPages,
-  setCurrentPage,
+  onPageChange,
 }: PaginationProps) {
   const pages = [];
 
@@ -23,7 +23,7 @@ export default function DashboardPagination({
       {/* Prev */}
       <button
         disabled={currentPage === 1}
-        onClick={() => setCurrentPage(currentPage - 1)}
+        onClick={() => onPageChange(currentPage - 1)}
         className="rounded-lg bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-600 disabled:cursor-not-allowed disabled:opacity-40 hover:bg-gray-200 transition-colors"
       >
         Prev
@@ -33,7 +33,7 @@ export default function DashboardPagination({
       {start > 1 && (
         <>
           <button
-            onClick={() => setCurrentPage(1)}
+            onClick={() => onPageChange(1)}
             className="rounded-lg bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-200 transition-colors"
           >
             1
@@ -46,7 +46,7 @@ export default function DashboardPagination({
       {pages.map((page) => (
         <button
           key={page}
-          onClick={() => setCurrentPage(page)}
+          onClick={() => onPageChange(page)}
           className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-all ${
             currentPage === page
               ? "bg-[#f57c00] text-white shadow-sm"
@@ -62,7 +62,7 @@ export default function DashboardPagination({
         <>
           {end < totalPages - 1 && <span className="text-gray-400 text-xs">...</span>}
           <button
-            onClick={() => setCurrentPage(totalPages)}
+            onClick={() => onPageChange(totalPages)}
             className="rounded-lg bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-200 transition-colors"
           >
             {totalPages}
@@ -73,7 +73,7 @@ export default function DashboardPagination({
       {/* Next */}
       <button
         disabled={currentPage === totalPages}
-        onClick={() => setCurrentPage(currentPage + 1)}
+        onClick={() => onPageChange(currentPage + 1)}
         className="rounded-lg bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-600 disabled:cursor-not-allowed disabled:opacity-40 hover:bg-gray-200 transition-colors"
       >
         Next

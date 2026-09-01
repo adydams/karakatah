@@ -2,9 +2,24 @@ import React, { useState, useEffect } from "react";
 import { getDriversSummary, getActiveDeliveries } from "../../services/apiAdmin";
 import Spinner from "../../components/Spinner";
 
+type DriverSummary = {
+  name: string;
+  email: string;
+  status: string;
+  activeTasks: number;
+  completedTasks: number;
+};
+
+type DeliveryShipment = {
+  id: string;
+  driver?: { name?: string };
+  order?: { user?: { name?: string } };
+  events?: Array<{ location?: string }>;
+};
+
 export default function Shipment() {
-  const [drivers, setDrivers] = useState([]);
-  const [activeDeliveries, setActiveDeliveries] = useState([]);
+  const [drivers, setDrivers] = useState<DriverSummary[]>([]);
+  const [activeDeliveries, setActiveDeliveries] = useState<DeliveryShipment[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+﻿import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import Spinner from "../../components/Spinner";
 import DashboardPagination from "../../components/adminDashboard/DashboardPagination";
@@ -108,7 +108,7 @@ export default function AuditTrail() {
               <DashboardPagination
                 currentPage={currentPage}
                 totalPages={totalPages}
-                setCurrentPage={setCurrentPage}
+                onPageChange={setCurrentPage}
               />
             )}
           </>
@@ -121,3 +121,4 @@ export default function AuditTrail() {
     </div>
   );
 }
+

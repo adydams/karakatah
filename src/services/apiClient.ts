@@ -1,4 +1,4 @@
-﻿import axios from "axios";
+﻿import axios, { type AxiosError, type InternalAxiosRequestConfig } from "axios";
 import toast from "react-hot-toast";
 
 const API_ROOT = import.meta.env.VITE_API_URL || "http://localhost:5000";
@@ -8,15 +8,15 @@ const axiosInstance = axios.create({
 });
 
 axiosInstance.interceptors.request.use(
-  (config) => {
+  (config: InternalAxiosRequestConfig) => {
     try {
       const token = localStorage.getItem("token");
       if (token) {
-        if (!config.headers) config.headers = {} as any;
-        (config.headers as any).Authorization = `Bearer ${token}`;
+        config.headers = config.headers ?? {};
+        config.headers.Authorization = `Bearer ${token}`;
       }
     } catch (err) {
-      // ignore localStorage errors
+      console.warn("Unable to attach auth token:", err);
     }
     return config;
   },
@@ -25,17 +25,22 @@ axiosInstance.interceptors.request.use(
 
 axiosInstance.interceptors.response.use(
   (response) => response,
-  (error) => {
+  (error: AxiosError) => {
     if (error.response?.status === 401) {
       localStorage.removeItem("token");
       toast.error("Session expired. Please login again.");
       return Promise.reject(error);
     }
 
-    const message = error.response?.data?.message || error.message || "An unexpected error occurred";
+    const payload = error.response?.data;
+    const message =
+      typeof payload === "object" && payload && "message" in payload && typeof payload.message === "string"
+        ? payload.message
+        : error.message || "An unexpected error occurred";
+
     toast.error(message);
     return Promise.reject(error);
-  }
+  },
 );
 
 export default axiosInstance;

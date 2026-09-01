@@ -43,7 +43,7 @@ export const getActiveDeliveries = async () => {
   return response.data;
 };
 
-export const getDriverReport = async (driverId) => {
+export const getDriverReport = async (driverId: string) => {
   const response = await axiosInstance.get(`${ADMIN_BASE}/drivers/report/${driverId}`);
   return response.data;
 };
@@ -54,7 +54,7 @@ export const getShippingSettings = async () => {
   return response.data;
 };
 
-export const updateShippingSettings = async (settings) => {
+export const updateShippingSettings = async (settings: Record<string, number | string | boolean>) => {
   const response = await axiosInstance.patch(`${ADMIN_BASE}/settings`, settings);
   return response.data;
 };

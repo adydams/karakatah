@@ -38,7 +38,7 @@ export default function Orders() {
   const { openModal } = useModal();
   const offset = (page - 1) * limit;
 
-  const { data, isLoading, isError, error, isFetching } = useQuery({
+  const { data, isLoading, isError, error, isFetching } = useQuery<{ orders: any[]; total: number } | undefined>({
     queryKey: ["adminOrders", page, search, limit, statusFilter, startDate, endDate],
     queryFn: async () => {
       const res = await getAdminOrders({
@@ -47,11 +47,10 @@ export default function Orders() {
         search,
         status: statusFilter,
         startDate,
-        endDate
+        endDate,
       });
-      return res;
+      return res as { orders: any[]; total: number };
     },
-    keepPreviousData: true,
   });
 
   // Reset applying state when data changes
@@ -59,9 +58,9 @@ export default function Orders() {
     setIsApplying(false);
   }, [data]);
 
-  const { data: summary, isLoading: loadingSummary } = useQuery({
+  const { data: summary, isLoading: loadingSummary } = useQuery<{ data: Record<string, number> }>({
     queryKey: ["adminOrdersSummary"],
-    queryFn: () => getOrderSummary(),
+    queryFn: async () => (await getOrderSummary()) as { data: Record<string, number> },
   });
 
   const orders = data?.orders || [];

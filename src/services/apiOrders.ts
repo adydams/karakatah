@@ -19,7 +19,21 @@ export const downloadOrderInvoice = async (orderId: string) => {
   return response.data as Blob;
 };
 
-export const getAdminOrders = async ({ limit = 10, offset = 0, search = "", status = "ALL", startDate = null, endDate = null }) => {
+export const getAdminOrders = async ({
+  limit = 10,
+  offset = 0,
+  search = "",
+  status = "ALL",
+  startDate = null as string | null,
+  endDate = null as string | null,
+}: {
+  limit?: number;
+  offset?: number;
+  search?: string;
+  status?: string;
+  startDate?: string | null;
+  endDate?: string | null;
+}) => {
   const params = new URLSearchParams({
     limit: String(limit),
     offset: String(offset),

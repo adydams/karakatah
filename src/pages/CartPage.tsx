@@ -28,7 +28,7 @@ export default function CartPage() {
     navigate("/checkout");
   }
 
-  const items = cart?.data?.items ?? [];
+  const items = (cart?.data?.items ?? []) as any[];
   const totalAmount = cart?.data?.totalAmount ?? 0;
 
   const queryClient = useQueryClient();

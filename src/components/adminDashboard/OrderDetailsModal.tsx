@@ -14,7 +14,7 @@ type OrderDetailsModalProps = {
 };
 
 export default function OrderDetailsModal({ orderId, initialTab = "details" }: OrderDetailsModalProps) {
-  const [activeTab, setActiveTab] = useState(initialTab);
+  const [activeTab, setActiveTab] = useState<"details" | "tracking" | "invoice">(initialTab);
   const { closeModal } = useModal();
 
   const { data: response, isLoading, isError } = useQuery({
@@ -58,10 +58,10 @@ export default function OrderDetailsModal({ orderId, initialTab = "details" }: O
             { id: "details", label: "Details", icon: <FaBox size={16} /> },
             { id: "tracking", label: "Tracking", icon: <FaTruck size={16} /> },
             { id: "invoice", label: "Invoice", icon: <FaFileInvoice size={16} /> },
-          ].map(tab => (
+          ].map((tab) => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => setActiveTab(tab.id as "details" | "tracking" | "invoice")}
               className={`flex items-center gap-2 py-4 text-sm font-semibold transition-all relative ${
                 activeTab === tab.id ? "text-orange-600" : "text-gray-400 hover:text-gray-600"
               }`}

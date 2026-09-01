@@ -395,9 +395,9 @@ export default function Checkout() {
                       )}
                     </div>
                     <CourierSelector
-                      couriers={liveCouriers}
+                      couriers={liveCouriers as any[]}
                       selectedCourierId={selectedCourier ? getCourierKey(selectedCourier) : null}
-                      onSelect={handleCourierSelect}
+                      onSelect={handleCourierSelect as any}
                       isLoading={isLiveRatesLoading}
                     />
                   </div>

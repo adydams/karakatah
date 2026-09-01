@@ -24,7 +24,7 @@ export default function Homepage() {
     queryFn: getProducts,
   });
 
-  const products = productData?.data ?? [];
+  const products = (productData?.data ?? []) as any[];
 
   const { isLoading: isGettingCategories, data: categoryData } = useQuery({
     queryKey: ["categories"],

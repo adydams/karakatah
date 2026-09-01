@@ -105,7 +105,21 @@ export default function Profile() {
             ))}</div>
         )}
         {activeTab === "Access & Permissions" && (
-          <div><h2 className="mb-4 text-lg font-bold text-[#574235]">{user.role || "Admin"} permissions</h2>{user.permissions?.length ? <div className="grid gap-3 md:grid-cols-2">{user.permissions.map((permission) => <div key={permission.id} className="rounded-lg border border-gray-100 bg-gray-50 p-3"><p className="text-sm font-semibold text-gray-800">{permission.name}</p><p className="text-xs text-gray-500">{permission.description || "Granted permission"}</p></div>)}</div> : <p className="text-sm text-gray-500">No permissions assigned.</p>}</div>
+          <div>
+            <h2 className="mb-4 text-lg font-bold text-[#574235]">{user.role || "Admin"} permissions</h2>
+            {user.permissions && user.permissions.length > 0 ? (
+              <div className="grid gap-3 md:grid-cols-2">
+                {user.permissions.map((permission: { id: string; name: string; description?: string }) => (
+                  <div key={permission.id} className="rounded-lg border border-gray-100 bg-gray-50 p-3">
+                    <p className="text-sm font-semibold text-gray-800">{permission.name}</p>
+                    <p className="text-xs text-gray-500">{permission.description || "Granted permission"}</p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-gray-500">No permissions assigned.</p>
+            )}
+          </div>
         )}
       </div>
     </div>
