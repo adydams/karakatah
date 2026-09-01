@@ -57,7 +57,8 @@ export default function InvoiceTracking() {
 
   const handleDownloadPdf = async () => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/orders/invoice/${orderId}/pdf`, {
+      const apiBaseUrl = import.meta.env.VITE_API_URL || (window.location.hostname === "localhost" ? "http://localhost:5000" : "https://karakatanodebe.onrender.com");
+      const response = await fetch(`${apiBaseUrl}/api/orders/invoice/${orderId}/pdf`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`
         }

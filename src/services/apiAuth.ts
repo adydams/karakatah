@@ -1,4 +1,6 @@
-﻿export const ROOT_URL = "http://localhost:5000";//"https://karakatanodebe.onrender.com";
+﻿export const ROOT_URL =
+  import.meta.env.VITE_API_URL ||
+  (window.location.hostname === "localhost" ? "http://localhost:5000" : "https://karakatanodebe.onrender.com");
 export interface CreateUserParams {
   name: string;
   email: string;

@@ -1,7 +1,9 @@
 ﻿import axios, { type AxiosError, type InternalAxiosRequestConfig } from "axios";
 import toast from "react-hot-toast";
 
-const API_ROOT = import.meta.env.VITE_API_URL || "http://localhost:5000";
+const API_ROOT =
+  import.meta.env.VITE_API_URL ||
+  (window.location.hostname === "localhost" ? "http://localhost:5000" : "https://karakatanodebe.onrender.com");
 
 const axiosInstance = axios.create({
   baseURL: API_ROOT,
