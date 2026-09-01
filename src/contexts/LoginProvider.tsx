@@ -69,7 +69,7 @@ export function LoginProvider({ children }: LoginProviderProp) {
     try {
       if (tokenState) {
         await axios.post(
-          `${process.env.VITE_API_URL}/api/auth/logout`,
+          `${import.meta.env.VITE_API_URL}/api/auth/logout`,
           {},
           { headers: { Authorization: `Bearer ${tokenState}` } }
         );
