@@ -68,8 +68,17 @@ export function LoginProvider({ children }: LoginProviderProp) {
   const logout = useCallback(async () => {
     try {
       if (tokenState) {
+        const envValue = import.meta.env.VITE_API_URL?.trim();
+        const host = typeof window !== "undefined" ? window.location.hostname : "";
+        const productionFallback = "https://karakatanodebe.onrender.com";
+        const apiBaseUrl = envValue
+          ? envValue.replace(/\/$/, "")
+          : host === "localhost"
+            ? "http://localhost:5000"
+            : productionFallback;
+
         await axios.post(
-          `${import.meta.env.VITE_API_URL}/api/auth/logout`,
+          `${apiBaseUrl}/api/auth/logout`,
           {},
           { headers: { Authorization: `Bearer ${tokenState}` } }
         );

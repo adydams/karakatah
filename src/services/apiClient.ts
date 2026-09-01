@@ -1,9 +1,23 @@
 ﻿import axios, { type AxiosError, type InternalAxiosRequestConfig } from "axios";
 import toast from "react-hot-toast";
 
-const API_ROOT =
-  import.meta.env.VITE_API_URL ||
-  (window.location.hostname === "localhost" ? "http://localhost:5000" : "https://karakatanodebe.onrender.com");
+const getApiBaseUrl = () => {
+  const envValue = import.meta.env.VITE_API_URL?.trim();
+  const host = typeof window !== "undefined" ? window.location.hostname : "";
+  const productionFallback = "https://karakatanodebe.onrender.com";
+
+  if (envValue) {
+    const normalized = envValue.replace(/\/$/, "");
+    if (host !== "localhost" && normalized.includes("localhost")) {
+      return productionFallback;
+    }
+    return normalized;
+  }
+
+  return host === "localhost" ? "http://localhost:5000" : productionFallback;
+};
+
+const API_ROOT = getApiBaseUrl();
 
 const axiosInstance = axios.create({
   baseURL: API_ROOT,

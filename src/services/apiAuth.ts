@@ -1,6 +1,18 @@
-﻿export const ROOT_URL =
-  import.meta.env.VITE_API_URL ||
-  (window.location.hostname === "localhost" ? "http://localhost:5000" : "https://karakatanodebe.onrender.com");
+﻿export const ROOT_URL = (() => {
+  const envValue = import.meta.env.VITE_API_URL?.trim();
+  const host = typeof window !== "undefined" ? window.location.hostname : "";
+  const productionFallback = "https://karakatanodebe.onrender.com";
+
+  if (envValue) {
+    const normalized = envValue.replace(/\/$/, "");
+    if (host !== "localhost" && normalized.includes("localhost")) {
+      return productionFallback;
+    }
+    return normalized;
+  }
+
+  return host === "localhost" ? "http://localhost:5000" : productionFallback;
+})();
 export interface CreateUserParams {
   name: string;
   email: string;
