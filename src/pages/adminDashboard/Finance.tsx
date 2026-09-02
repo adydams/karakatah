@@ -317,6 +317,14 @@ export default function Finance() {
                 <div className="p-4 md:p-5 border-b border-[#dec1af] flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                   <h3 className="font-bold text-[#574235]">Global Transaction Ledger</h3>
                   <div className="flex gap-2 w-full sm:w-auto">
+                    <input
+                      type="text"
+                      placeholder="Search Txn ID or Store..."
+                      className="text-xs border border-[#dec1af] rounded px-2 py-1 outline-none w-full sm:w-48"
+                      onChange={(e) => {
+                        // Filter logic should be handled by state
+                      }}
+                    />
                     <select className="text-xs border border-[#dec1af] rounded px-2 py-1 outline-none w-full sm:w-auto">
                       <option>All Types</option>
                       <option>SALE_CREDIT</option>
