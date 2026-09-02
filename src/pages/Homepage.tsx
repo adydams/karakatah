@@ -1,4 +1,5 @@
 import { MdDensitySmall } from "react-icons/md";
+import { FiMenu } from "react-icons/fi";
 import ProductCard from "../components/ProductCard";
 import Pagination from "../components/Pagination";
 import Filter from "../components/Filter";
@@ -73,22 +74,22 @@ export default function Homepage() {
         </div>
       </main>
 
-      <section className="relative mt-2 mb-10 flex w-full flex-col items-center justify-center font-bold">
+      <section className="relative mt-1 mb-10 flex w-full flex-col items-center justify-center font-bold">
         <div className="w-[92%] lg:w-[85%]">
-          <div className="mb-5 flex items-center justify-between gap-3 overflow-x-auto pb-2">
+          <div className="mb-4 flex items-center gap-3 overflow-x-auto pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             <button
               type="button"
               onClick={() => {
                 setSelectedCategoryId(null);
                 setCurrentPage(1);
               }}
-              className={`whitespace-nowrap rounded-full border px-5 py-2.5 text-sm font-semibold transition-all ${
+              className={`flex shrink-0 items-center justify-center rounded-full border px-4 py-2.5 text-sm font-semibold transition-all ${
                 selectedCategoryId === null
                   ? "border-orange bg-orange text-white shadow-sm"
                   : "border-orange/40 bg-white text-orange hover:bg-orange/5"
               }`}
             >
-              All
+              <FiMenu size={16} />
             </button>
 
             {isGettingCategories ? (
@@ -106,7 +107,7 @@ export default function Homepage() {
                       setSelectedCategoryId((prev) => (prev === category.id ? null : category.id));
                       setCurrentPage(1);
                     }}
-                    className={`whitespace-nowrap rounded-full border px-5 py-2.5 text-sm font-semibold transition-all ${
+                    className={`shrink-0 whitespace-nowrap rounded-full border px-4 py-2.5 text-sm font-semibold transition-all ${
                       isActive
                         ? "border-orange bg-orange text-white shadow-sm"
                         : "border-orange/40 bg-white text-orange hover:bg-orange/5"
@@ -121,11 +122,11 @@ export default function Homepage() {
         </div>
 
         <div
-          className={`mt-4 ${
+          className={`mt-2 ${
             isGettingProducts
               ? "flex h-[400px] items-center justify-center"
               : "grid"
-          } w-[92%] grid-cols-1 gap-x-7 gap-y-5 md:grid-cols-2 lg:w-[85%] lg:grid-cols-6`}
+          } w-[92%] grid-cols-1 gap-x-4 gap-y-4 md:grid-cols-2 lg:w-[85%] lg:grid-cols-6`}
         >
           <Filter showFilter={showFilter} setShowFilter={setShowFilter} />
 

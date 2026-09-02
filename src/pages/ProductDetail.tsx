@@ -157,7 +157,7 @@ export default function ProductDetail() {
                 >
                   {(product?.stockQuantity ?? 0) <= 0
                     ? "OUT OF STOCK"
-                    : isPending ? <Spinner size="small" /> : "ADD TO CART"}
+                    : isPending ? <Spinner size="medium" /> : "ADD TO CART"}
                 </button>
               </div>
             </div>

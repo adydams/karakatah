@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { CiHeart } from "react-icons/ci";
 import { GoHeartFill } from "react-icons/go";
+import { FiShoppingCart } from "react-icons/fi";
+import { FaStar } from "react-icons/fa";
 import type { ProductProp } from "../types/type";
 import { useNavigate } from "react-router";
 import { addItemToCart } from "../services/apiCarts";
@@ -19,7 +21,6 @@ type AddItemVariables = {
 
 export default function ProductCard({ id, image, name, price, isDiscounted, currentPrice, discounts }: ProductProp & { discounts?: any[] }) {
   const [addWish, setAddWish] = useState(false);
-  const [showAddtoCart, setShowAddtoCart] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
 
   // Calculate the absolute best price available across all tiers
@@ -116,93 +117,109 @@ export default function ProductCard({ id, image, name, price, isDiscounted, curr
   }
 
   return (
-    <div
-      onMouseEnter={() => setShowAddtoCart(true)}
-      onMouseLeave={() => setShowAddtoCart(false)}
-      className="relative h-[460px] w-full overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm transition-shadow duration-200 hover:shadow-md"
-    >
-      {/* IMAGE CONTAINER */}
-      <div className="relative h-[70%] w-full overflow-hidden rounded-t-xl">
-        {discountTeaser && (
-          <div className="absolute top-2 left-2 z-10 rounded-full bg-orange px-3 py-1.5 text-[12px] font-bold text-white shadow-md">
-            {discountTeaser}
-          </div>
-        )}
-        {!imageLoaded && (
-          <div className="absolute inset-0 animate-pulse bg-gray-200" />
-        )}
+    <div className="group relative h-[480px] w-full overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition-all duration-300 hover:shadow-xl hover:border-orange-200, justify-betweeen ">
+      {/* Image Section */}
+      <div className="relative h-[350px] w-full overflow-hidden">
+        {!imageLoaded && <div className="absolute inset-0 animate-pulse bg-gray-100" />}
 
-        <img
-          src={optimizeImage(image || "", 400, 400)}
-          alt={name}
-          loading="lazy"
-          onLoad={() => setImageLoaded(true)}
-          className={`h-full w-full object-cover transition-all duration-300 ${
-            showAddtoCart ? "scale-105" : "scale-100"
-          } ${imageLoaded ? "opacity-100" : "opacity-0"}`}
-        />
-      </div>
+        <button
+          type="button"
+          onClick={handleViewMore}
+          className="block h-full w-full overflow-hidden transition-transform duration-500 group-hover:scale-105"
+          aria-label={`View details for ${name}`}
+        >
+          <img
+            src={optimizeImage(image || "", 500, 500)}
+            alt={name}
+            loading="lazy"
+            onLoad={() => setImageLoaded(true)}
+            className={`h-full w-full object-cover transition-opacity duration-300 ${imageLoaded ? "opacity-100" : "opacity-0"}`}
+          />
+        </button>
 
-      {/* DETAILS */}
-      <div className="flex w-full items-center justify-between">
-        <div className="h-[20%] w-[80%] cursor-pointer">
-          <h2 className="font-primary mt-1.5 font-light">{name}</h2>
+        <div className="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
 
-          <div className="flex items-center gap-2">
-            {isDiscounted ? (
-              <>
-                <h2 className="font-primary text-xl text-slate-400 line-through">₦{price}</h2>
-                <h2 className="font-primary text-xl text-orange">₦{currentPrice}</h2>
-              </>
-            ) : (
-              <h2 className="font-primary text-xl">₦{price}</h2>
-            )}
-          </div>
-          {bestPrice && (
-            <div className="flex items-center gap-1 mt-1">
-              <span className="text-[10px] font-bold uppercase text-gray-400">Best Price:</span>
-              <span className="text-xs font-bold text-green-600">₦{bestPrice.toLocaleString()}</span>
+        <div className="absolute left-2 top-2 flex flex gap-1 z-10">
+          {discountTeaser && (
+            <div className="rounded-md bg-orange-600 px-2 py-1 text-[10px] font-bold text-white shadow-sm">
+              {discountTeaser}
             </div>
           )}
         </div>
-
-        <button onClick={handleWish}>
-          {addWish ? (
-            <GoHeartFill className="text-muted-green" size={25} />
-          ) : (
-            <CiHeart size={25} />
-          )}
-        </button>
       </div>
 
-      {/* HOVER OVERLAY */}
-      {showAddtoCart && (
-        <div className="absolute inset-0 bg-white/10" aria-hidden="true">
-          <div className="relative flex h-full items-end justify-between gap-2 p-3">
-            <button
-              className="bg-orange hover:bg-orange/90 h-10 w-[48%] text-[10px] font-semibold text-white hover:cursor-pointer"
-              disabled={isAddingToCart}
-              onClick={handleAddToCart}
-            >
-              {isAddingToCart ? <Spinner size="small" /> : "ADD TO CART"}
-            </button>
+      {/* Content Section */}
+      <div className="flex h-[170px] w-full flex-col  ">
+        <div className="flex justify-between">
+          <div className="ml-2 mt-2 mb-2">
+          <h2
+            title={name}
+            className="h-10 font-primary text-xl font-semibold text-gray-800 line-clamp-2 leading-tight"
+          >
+            {name}
+          </h2>
 
-            <button
-              onClick={handleWish}
-              className="bg-muted-green hover:bg-muted-green/90 h-10 w-[48%] text-[10px] font-semibold text-white hover:cursor-pointer"
-            >
-              WISHLIST
-            </button>
-
-            <button
-              onClick={handleViewMore}
-              className="border-dark-gray absolute inset-x-0 bottom-4 m-auto flex h-[36px] w-[52%] items-center justify-center border-2 bg-white/90 text-xs font-bold text-gray-800 shadow-md"
-            >
-              VIEW MORE
-            </button>
+          <div className="flex items-center gap-1.5  ">
+            <div className="flex items-center text-amber-400 ">
+              <FaStar size={14} /><FaStar size={14} /> <FaStar size={14} />  <FaStar size={14} /> <FaStar size={14}  />
+              <span className="ml-1 text-[18px] font-bold text-gray-600 ">4.8</span>
+            </div>
+            <span className="text-[15px] text-gray-500 ml-2">• 1.2k+ sold</span>
           </div>
+
+          <div className="mt-2 flex items-baseline gap-2 ">
+            {isDiscounted ? (
+              <>
+                <span className="font-primary text-2xl font-extrabold text-orange-600">₦{currentPrice}</span>
+                <span className="text-sm font-medium text-gray-400 line-through">₦{price}</span>
+              </>
+            ) : (
+              <span className="font-primary text-2xl font-extrabold text-gray-900">₦{price}</span>
+            )}
+          </div>
+
+          {bestPrice && (
+            <div className="mt-0.5 flex items-center gap-1">
+              <span className="text-[9px] font-bold uppercase text-gray-400">Best Offer:</span>
+              <span className="text-[12px] font-bold text-green-600">₦{bestPrice.toLocaleString()}</span>
+            </div>
+          )}
         </div>
-      )}
+          <div className="flex flex-col mr-4 items-center justify-center gap-2">
+          <button
+            type="button"
+            onClick={(event) => {
+              event.stopPropagation();
+              handleAddToCart();
+            }}
+            disabled={isAddingToCart}
+            className="flex h-8 w-8 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-700 shadow-sm transition-all duration-200 hover:bg-gray-50 disabled:opacity-70"
+            aria-label="Add to cart"
+          >
+            {isAddingToCart ? (
+              <Spinner size="small" />
+            ) : (
+              <FiShoppingCart size={25} />
+            )}
+          </button>
+
+          <button
+            type="button"
+            onClick={(event) => {
+              event.stopPropagation();
+              handleWish();
+            }}
+            className={`flex h-8 w-8 items-center justify-center rounded-full border border-gray-200 bg-white shadow-sm transition-all duration-200 hover:bg-gray-50 ${
+              addWish ? "text-red-500" : "text-gray-700"
+            }`}
+            aria-label={addWish ? "Remove from wishlist" : "Add to wishlist"}
+          >
+            {addWish ? <GoHeartFill size={30} /> : <CiHeart size={35} />}
+          </button>
+        </div>
+
+        </div>
+      </div>
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { FiBell } from "react-icons/fi";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiNotifications } from "../services/apiNotifications";
@@ -6,6 +6,23 @@ import { apiNotifications } from "../services/apiNotifications";
 export default function NotificationBell() {
   const [showDropdown, setShowDropdown] = useState(false);
   const queryClient = useQueryClient();
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowDropdown(false);
+      }
+    }
+
+    if (showDropdown) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showDropdown]);
 
   const { data, isLoading } = useQuery({
     queryKey: ["notifications"],
@@ -31,7 +48,7 @@ export default function NotificationBell() {
   const unreadCount = notifications.filter((n: any) => !n.isRead).length;
 
   return (
-    <div className="relative">
+    <div className="relative" ref={dropdownRef}>
       <div
         onClick={() => setShowDropdown(!showDropdown)}
         className="relative cursor-pointer p-2 transition-colors hover:text-orange"
