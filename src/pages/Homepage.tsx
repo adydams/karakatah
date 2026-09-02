@@ -13,6 +13,7 @@ import { formatPrice, shortenText } from "../utils/utils";
 export default function Homepage() {
   const [showFilter, setShowFilter] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
 
   const PRODUCTS_PER_PAGE = showFilter ? 12 : 16;
   const {
@@ -33,19 +34,26 @@ export default function Homepage() {
 
   const categories = categoryData?.data ?? [];
 
+  const filteredProducts = selectedCategoryId
+    ? products.filter((product) => {
+        const categoryMatch = product.categoryId === selectedCategoryId;
+        const nestedCategoryMatch = product.category?.id === selectedCategoryId;
+        return categoryMatch || nestedCategoryMatch;
+      })
+    : products;
+
   function handleShowFilter() {
     setShowFilter((prev) => !prev);
   }
 
-  console.log(products);
-
   // Pagination Logic
-  const totalPages = Math.ceil(products.length / PRODUCTS_PER_PAGE);
+  const totalPages = Math.ceil(filteredProducts.length / PRODUCTS_PER_PAGE);
 
-  const startIndex = (currentPage - 1) * PRODUCTS_PER_PAGE;
+  const safePage = Math.min(currentPage, totalPages || 1);
+  const startIndex = (safePage - 1) * PRODUCTS_PER_PAGE;
   const endIndex = startIndex + PRODUCTS_PER_PAGE;
 
-  const paginatedProducts = products.slice(startIndex, endIndex);
+  const paginatedProducts = filteredProducts.slice(startIndex, endIndex);
 
   return (
     <>
@@ -66,33 +74,52 @@ export default function Homepage() {
       </main>
 
       <section className="relative mt-2 mb-10 flex w-full flex-col items-center justify-center font-bold">
-        {/* Categories */}
-        <div className="bg-orange font-primary flex h-full w-[92%] items-center justify-start gap-10 text-xs text-white lg:w-[85%]">
-          <h2
-            onClick={handleShowFilter}
-            className="hover:bg-deep-blue/50 flex cursor-pointer items-center gap-1 px-3 py-1"
-          >
-            <MdDensitySmall size={20} />
-            <span>All Categories</span>
-          </h2>
+        <div className="w-[92%] lg:w-[85%]">
+          <div className="mb-5 flex items-center justify-between gap-3 overflow-x-auto pb-2">
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedCategoryId(null);
+                setCurrentPage(1);
+              }}
+              className={`whitespace-nowrap rounded-full border px-5 py-2.5 text-sm font-semibold transition-all ${
+                selectedCategoryId === null
+                  ? "border-orange bg-orange text-white shadow-sm"
+                  : "border-orange/40 bg-white text-orange hover:bg-orange/5"
+              }`}
+            >
+              All
+            </button>
 
-          <div className="dash hidden w-[85%] gap-5 overflow-scroll lg:flex">
             {isGettingCategories ? (
-              <Spinner size="small" />
+              <div className="flex items-center justify-center px-4 py-2">
+                <Spinner size="small" />
+              </div>
             ) : (
-              categories.map((category) => (
-                <p
-                  key={category.id}
-                  className="hover:bg-deep-blue/50 flex w-25 cursor-pointer items-center justify-center px-4 py-2 text-center text-[10px]"
-                >
-                  {shortenText(category.name)}
-                </p>
-              ))
+              categories.map((category) => {
+                const isActive = selectedCategoryId === category.id;
+                return (
+                  <button
+                    key={category.id}
+                    type="button"
+                    onClick={() => {
+                      setSelectedCategoryId((prev) => (prev === category.id ? null : category.id));
+                      setCurrentPage(1);
+                    }}
+                    className={`whitespace-nowrap rounded-full border px-5 py-2.5 text-sm font-semibold transition-all ${
+                      isActive
+                        ? "border-orange bg-orange text-white shadow-sm"
+                        : "border-orange/40 bg-white text-orange hover:bg-orange/5"
+                    }`}
+                  >
+                    {shortenText(category.name, 24)}
+                  </button>
+                );
+              })
             )}
           </div>
         </div>
 
-        {/* Products */}
         <div
           className={`mt-4 ${
             isGettingProducts
@@ -104,17 +131,17 @@ export default function Homepage() {
 
           {isGettingProducts ? (
             <Spinner size="big" />
-          ) : products.length === 0 ? (
-            <div className="flex h-[250px] w-full flex-col items-center justify-center rounded-xl bg-gray-50">
-              <p className="text-dark-gray text-sm font-medium">
-                Failed to load products
-              </p>
-
+          ) : filteredProducts.length === 0 ? (
+            <div className="flex h-[250px] w-full flex-col items-center justify-center rounded-xl bg-gray-50 md:col-span-2 lg:col-span-6">
+              <p className="text-dark-gray text-sm font-medium">No products found in this category.</p>
               <button
-                onClick={() => refetch()}
+                onClick={() => {
+                  setSelectedCategoryId(null);
+                  refetch();
+                }}
                 className="bg-orange mt-3 rounded-lg px-6 py-2 text-xs font-semibold text-white"
               >
-                Try Again
+                View all
               </button>
             </div>
           ) : (
@@ -136,10 +163,9 @@ export default function Homepage() {
           )}
         </div>
 
-        {/* Pagination */}
-        {products.length > PRODUCTS_PER_PAGE && (
+        {filteredProducts.length > PRODUCTS_PER_PAGE && (
           <Pagination
-            currentPage={currentPage}
+            currentPage={safePage}
             totalPages={totalPages}
             onPageChange={setCurrentPage}
           />

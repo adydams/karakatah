@@ -119,29 +119,27 @@ export default function ProductCard({ id, image, name, price, isDiscounted, curr
     <div
       onMouseEnter={() => setShowAddtoCart(true)}
       onMouseLeave={() => setShowAddtoCart(false)}
-      className="relative h-[460px] w-full overflow-hidden"
+      className="relative h-[460px] w-full overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm transition-shadow duration-200 hover:shadow-md"
     >
       {/* IMAGE CONTAINER */}
-      <div className="relative h-[70%] w-full overflow-hidden">
+      <div className="relative h-[70%] w-full overflow-hidden rounded-t-xl">
         {discountTeaser && (
           <div className="absolute top-2 left-2 z-10 rounded-full bg-orange px-3 py-1.5 text-[12px] font-bold text-white shadow-md">
             {discountTeaser}
           </div>
         )}
-        {/* Skeleton */}
         {!imageLoaded && (
           <div className="absolute inset-0 animate-pulse bg-gray-200" />
         )}
 
-        {/* Actual image */}
         <img
           src={optimizeImage(image || "", 400, 400)}
           alt={name}
           loading="lazy"
           onLoad={() => setImageLoaded(true)}
-          className={`h-full w-full transition-all duration-1000 ${
-            showAddtoCart ? "scale-105 object-cover" : "scale-100 object-cover"
-          } ${imageLoaded ? "opacity-100" : "opacity-0"} `}
+          className={`h-full w-full object-cover transition-all duration-300 ${
+            showAddtoCart ? "scale-105" : "scale-100"
+          } ${imageLoaded ? "opacity-100" : "opacity-0"}`}
         />
       </div>
 
@@ -179,10 +177,10 @@ export default function ProductCard({ id, image, name, price, isDiscounted, curr
 
       {/* HOVER OVERLAY */}
       {showAddtoCart && (
-        <div className="bg-light-gray/40 absolute inset-0 shadow-sm/10">
-          <div className="relative flex h-full items-end justify-between gap-2">
+        <div className="absolute inset-0 bg-white/10" aria-hidden="true">
+          <div className="relative flex h-full items-end justify-between gap-2 p-3">
             <button
-              className="bg-orange hover:bg-orange/90 h-9 w-1/2 text-[10px] text-white hover:cursor-pointer"
+              className="bg-orange hover:bg-orange/90 h-10 w-[48%] text-[10px] font-semibold text-white hover:cursor-pointer"
               disabled={isAddingToCart}
               onClick={handleAddToCart}
             >
@@ -191,14 +189,14 @@ export default function ProductCard({ id, image, name, price, isDiscounted, curr
 
             <button
               onClick={handleWish}
-              className="bg-muted-green hover:bg-muted-green/90 h-9 w-1/2 text-[10px] text-white hover:cursor-pointer"
+              className="bg-muted-green hover:bg-muted-green/90 h-10 w-[48%] text-[10px] font-semibold text-white hover:cursor-pointer"
             >
-              ADD TO WISHLIST
+              WISHLIST
             </button>
 
             <button
               onClick={handleViewMore}
-              className="border-dark-gray absolute inset-0 m-auto flex h-[30px] w-1/2 items-center justify-center border-2 bg-white/80 text-xs"
+              className="border-dark-gray absolute inset-x-0 bottom-4 m-auto flex h-[36px] w-[52%] items-center justify-center border-2 bg-white/90 text-xs font-bold text-gray-800 shadow-md"
             >
               VIEW MORE
             </button>

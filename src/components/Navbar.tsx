@@ -34,6 +34,9 @@ export default function Navbar() {
     queryKey: ["cart"],
     queryFn: () => getCart(),
     enabled: !!localStorage.getItem("token"),
+    refetchOnWindowFocus: true,
+    refetchInterval: 15000,
+    refetchIntervalInBackground: false,
   });
 
   // console.log(isGettingCart);

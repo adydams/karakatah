@@ -18,9 +18,14 @@ export default function Modal() {
   return (
     <section
       onClick={closeModal}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
     >
-      {modalContent} {/* 🔥 Dynamic content renders here */}
+      <div
+        className="w-full max-w-5xl"
+        onClick={(event) => event.stopPropagation()}
+      >
+        {modalContent}
+      </div>
     </section>
   );
 }
