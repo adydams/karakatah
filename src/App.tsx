@@ -25,6 +25,7 @@ import Products from "./pages/adminDashboard/Products";
 import Customer from "./pages/adminDashboard/Customer";
 import Transactions from "./pages/adminDashboard/Transactions";
 import Shipment from "./pages/adminDashboard/Shipment";
+import SettlementReview from "./pages/adminDashboard/SettlementReview";
 import AuditTrail from "./pages/adminDashboard/AuditTrail";
 import Permissions from "./pages/adminDashboard/Permissions";
 import Help from "./pages/adminDashboard/Help";
@@ -228,6 +229,10 @@ export default function App() {
             {
               path: "finance",
               element: <Finance />,
+            },
+            {
+              path: "finance/settlement-review",
+              element: <SettlementReview />,
             },
             {
               path: "shipment",

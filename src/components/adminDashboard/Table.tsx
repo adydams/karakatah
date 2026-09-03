@@ -1,14 +1,16 @@
 import React from "react";
 
-const topProducts = [
-  { id: 1, name: "Nike Air Max 270", sales: 120, revenue: 1200000, status: "In Stock" },
-  { id: 2, name: "Adidas Ultraboost", sales: 95, revenue: 950000, status: "In Stock" },
-  { id: 3, name: "Puma RS-X", sales: 80, revenue: 800000, status: "Low Stock" },
-  { id: 4, name: "New Balance 574", sales: 70, revenue: 700000, status: "In Stock" },
-  { id: 5, name: "Reebok Classic", sales: 60, revenue: 600000, status: "Out of Stock" },
-];
+type ProductTableProps = {
+  data: {
+    id: string | number;
+    name: string;
+    sales: number;
+    revenue: number;
+    status: string;
+  }[];
+};
 
-export default function Table() {
+export default function Table({ data = [] }: ProductTableProps) {
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-left border-collapse">
@@ -21,7 +23,7 @@ export default function Table() {
           </tr>
         </thead>
         <tbody className="divide-y divide-gray-100">
-          {topProducts.map((product) => (
+          {data.map((product) => (
             <tr key={product.id} className="hover:bg-gray-50 transition-colors">
               <td className="px-4 py-3 text-sm font-medium text-gray-800">{product.name}</td>
               <td className="px-4 py-3 text-sm text-gray-600">{product.sales}</td>

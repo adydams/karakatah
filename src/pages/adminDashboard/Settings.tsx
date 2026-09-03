@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import NavBar from "../../components/NavBar";
 import { getShippingSettings, updateShippingSettings } from "../../services/apiAdmin";
 import Spinner from "../../components/Spinner";
 
@@ -7,6 +8,7 @@ export default function Settings() {
     internalBaseFee: 0,
     internalPricePerKm: 0,
     internalPricePerKg: 0,
+    returnWindowDays: 5,
   });
   const [sim, setSim] = useState({ distance: 10, weight: 2 });
   const [loading, setLoading] = useState(true);
@@ -18,9 +20,11 @@ export default function Settings() {
         const res = await getShippingSettings();
         if (res.data) {
           setSettings({
+            defaultCommissionRate: res.data.defaultCommissionRate || 0,
             internalBaseFee: res.data.internalBaseFee || 0,
             internalPricePerKm: res.data.internalPricePerKm || 0,
             internalPricePerKg: res.data.internalPricePerKg || 0,
+            returnWindowDays: res.data.returnWindowDays || 5,
           });
         }
       } catch (err) {
@@ -37,9 +41,8 @@ export default function Settings() {
     try {
       await updateShippingSettings(settings);
       alert("Pricing settings updated successfully!");
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "Unknown error";
-      alert("Error saving settings: " + message);
+    } catch (err: any) {
+      alert("Error saving settings: " + err.message);
     } finally {
       setSaving(false);
     }
@@ -56,13 +59,25 @@ export default function Settings() {
   if (loading) return <Spinner />;
 
   return (
-    <div className="font-primary w-full p-5 bg-gray-50 min-h-screen">
+    <div className="font-primary w-full bg-gray-50 min-h-screen">
+      <NavBar title="Logistics Settings" />
 
-      <div className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
+      <div className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8 p-5">
         {/* Config Panel */}
         <div className="lg:col-span-2 bg-white p-6 rounded-xl shadow-sm border border-gray-200">
           <h3 className="text-lg font-bold text-gray-800 mb-6">Internal Fleet Pricing</h3>
           <div className="space-y-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-600 mb-2">Platform Commission Rate (%)</label>
+              <input
+                type="number"
+                step="0.01"
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                value={settings.defaultCommissionRate || 0}
+                onChange={(e) => setSettings({...settings, defaultCommissionRate: parseFloat(e.target.value) || 0})}
+              />
+              <p className="text-xs text-gray-400 mt-1">Percentage of each sale the platform earns as commission.</p>
+            </div>
             <div>
               <label className="block text-sm font-medium text-gray-600 mb-2">Base Delivery Fee (₦)</label>
               <input
@@ -92,6 +107,16 @@ export default function Settings() {
                 onChange={(e) => setSettings({...settings, internalPricePerKg: parseFloat(e.target.value) || 0})}
               />
               <p className="text-xs text-gray-400 mt-1">Additional cost based on package weight.</p>
+            </div>
+            <div className="pt-4 border-t border-gray-100">
+              <label className="block text-sm font-medium text-gray-600 mb-2">Return Window (Days)</label>
+              <input
+                type="number"
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                value={settings.returnWindowDays}
+                onChange={(e) => setSettings({...settings, returnWindowDays: parseInt(e.target.value) || 0})}
+              />
+              <p className="text-xs text-gray-400 mt-1">Number of days a customer has to return a product before funds are settled.</p>
             </div>
             <button
               onClick={handleSave}

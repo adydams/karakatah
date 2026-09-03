@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiFinance } from "../../services/adminDashboard/apiFinance";
 import Spinner from "../../components/Spinner";
@@ -16,6 +17,7 @@ import BalanceAdjustmentModal from "../../components/adminDashboard/BalanceAdjus
 import ManualPayoutModal from "../../components/adminDashboard/ManualPayoutModal";
 
 export default function Finance() {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("overview");
   const [searchQuery, setSearchQuery] = useState("");
   const { openModal } = useModal();
@@ -50,20 +52,7 @@ export default function Finance() {
   });
 
   const handleGlobalPayout = async () => {
-    if (!confirm("Are you sure you want to trigger a global payout for all eligible stores? This will deduct available balances and create payout records.")) {
-      return;
-    }
-    try {
-      const res = await apiFinance.triggerGlobalPayout();
-      if (res.success) {
-        toast.success(res.message);
-        queryClient.invalidateQueries({ queryKey: ["adminFinanceWallets"] });
-        queryClient.invalidateQueries({ queryKey: ["adminFinanceOverview"] });
-        queryClient.invalidateQueries({ queryKey: ["adminFinancePayouts"] });
-      }
-    } catch (err: any) {
-      toast.error(err.message || "Failed to trigger global payout");
-    }
+    navigate("/dashboard/finance/settlement-review");
   };
 
   const handleExportReport = async () => {
@@ -101,7 +90,7 @@ export default function Finance() {
     .slice(0, 5);
 
   return (
-    <div className="font-primary w-full bg-[#f4f2fd] min-h-screen">
+    <div className="font-primary w-full bg-white min-h-screen">
 
       <div className="p-4 md:p-6 max-w-7xl mx-auto space-y-6">
         {/* Header */}
@@ -202,6 +191,7 @@ export default function Finance() {
                   bg="bg-purple-50"
                   trend="Ready to transfer"
                   isUp={null}
+                  onClick={() => setActiveTab("wallets")}
                 />
               </div>
 
@@ -546,9 +536,12 @@ function TabButton({ active, onClick, icon, label }: any) {
   );
 }
 
-function StatCard({ title, value, icon, color, bg, trend, isUp }: any) {
+function StatCard({ title, value, icon, color, bg, trend, isUp, onClick }: any) {
   return (
-    <div className="bg-white p-6 rounded-2xl shadow-sm border border-[#dec1af]">
+    <div
+      onClick={onClick}
+      className={`bg-white p-6 rounded-2xl shadow-sm border border-[#dec1af] transition-all cursor-pointer hover:shadow-md hover:-translate-y-1 ${onClick ? 'hover:border-[#f57c00]' : ''}`}
+    >
       <div className="flex justify-between items-start mb-4">
         <div className={`p-3 ${bg} rounded-xl ${color} text-xl`}>{icon}</div>
         {trend && (

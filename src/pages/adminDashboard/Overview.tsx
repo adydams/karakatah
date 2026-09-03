@@ -20,6 +20,7 @@ import RangeInfo from "../../components/adminDashboard/RangeInfo";
 import Table from "../../components/adminDashboard/Table";
 import { useQuery } from "@tanstack/react-query";
 import { apiFinance } from "../../services/adminDashboard/apiFinance";
+import { getTopProducts, getCustomerStats } from "../../services/apiAdmin";
 import Spinner from "../../components/Spinner";
 import { formatPrice } from "../../utils/utils";
 
@@ -41,12 +42,6 @@ const storeData = [
   },
 ];
 
-const customerData = [
-  { name: "Current Customers", value: 520, color: "#f97316" },
-  { name: "New Customers", value: 310, color: "#10b981" },
-  { name: "Retargeted Customers", value: 170, color: "#0f172a" },
-];
-
 export default function Overview() {
   const { data: overviewData, isLoading: loadingOverview } = useQuery({
     queryKey: ["adminFinanceOverview"],
@@ -58,8 +53,20 @@ export default function Overview() {
     queryFn: apiFinance.getRevenueChart,
   });
 
+  const { data: topProductsData, isLoading: loadingProducts } = useQuery({
+    queryKey: ["adminTopProducts"],
+    queryFn: getTopProducts,
+  });
+
+  const { data: customerStatsData, isLoading: loadingCustomers } = useQuery({
+    queryKey: ["adminCustomerStats"],
+    queryFn: getCustomerStats,
+  });
+
   const stats = overviewData?.data;
   const revenueChart = chartData?.data || [];
+  const topProducts = topProductsData?.data || [];
+  const customerStats = customerStatsData?.data;
 
   const views = [
     {
@@ -84,13 +91,28 @@ export default function Overview() {
     },
   ];
 
-  if (loadingOverview || loadingChart) {
+  if (loadingOverview || loadingChart || loadingProducts || loadingCustomers) {
     return (
       <div className="flex h-screen w-full items-center justify-center">
         <Spinner size="big" />
       </div>
     );
   }
+
+  // Calculate percentages for customers
+  const totalC = customerStats?.total || 0;
+  const newC = customerStats?.new || 0;
+  const retargetedC = customerStats?.retargeted || 0;
+
+  const currentCustomersPercent = totalC > 0 ? Math.round((totalC / totalC) * 100) : 0; // This is always 100%
+  const newCustomersPercent = totalC > 0 ? Math.round((newC / totalC) * 100) : 0;
+  const retargetedCustomersPercent = totalC > 0 ? Math.round((retargetedC / totalC) * 100) : 0;
+
+  const pieCustomerData = [
+    { name: "Current Customers", value: totalC, color: "#f97316" },
+    { name: "New Customers", value: newC, color: "#10b981" },
+    { name: "Retargeted Customers", value: retargetedC, color: "#0f172a" },
+  ];
 
   return (
     <div className="font-primary w-full">
@@ -172,7 +194,7 @@ export default function Overview() {
           </div>
 
           <div className="mt-3 w-full">
-            <Table />
+            <Table data={topProducts} />
           </div>
         </div>
 
@@ -194,21 +216,21 @@ export default function Overview() {
                 <div className="bg-orange mt-1 h-2 w-2 rounded-full"></div>
                 <div className="font-semibold">
                   <p className="font-light">Current customers</p>
-                  <p>66%</p>
+                  <p>{currentCustomersPercent}%</p>
                 </div>
               </div>
               <div className="flex items-start justify-start gap-3">
                 <div className="bg-muted-green mt-1 h-2 w-2 rounded-full"></div>
                 <div className="font-semibold">
                   <p className="font-light">New customers</p>
-                  <p>50%</p>
+                  <p>{newCustomersPercent}%</p>
                 </div>
               </div>
               <div className="flex items-start justify-start gap-3">
                 <div className="bg-deep-blue mt-1 h-2 w-2 rounded-full"></div>
                 <div className="font-semibold">
                   <p className="font-light">Retargeted customers</p>
-                  <p>30%</p>
+                  <p>{retargetedCustomersPercent}%</p>
                 </div>
               </div>
             </div>
@@ -217,7 +239,7 @@ export default function Overview() {
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
-                    data={customerData}
+                    data={pieCustomerData}
                     dataKey="value"
                     nameKey="name"
                     cx="50%"
@@ -226,11 +248,11 @@ export default function Overview() {
                     outerRadius={110}
                     paddingAngle={3}
                   >
-                    {customerData.map((entry) => (
+                    {pieCustomerData.map((entry, index) => (
                       <Cell
                         fill={entry.color}
                         stroke={entry.color}
-                        key={entry.value}
+                        key={index}
                       />
                     ))}
                   </Pie>

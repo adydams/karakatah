@@ -49,6 +49,16 @@ export const getDriverReport = async (driverId: string) => {
 };
 
 // --- Pricing Settings ---
+export const getTopProducts = async () => {
+  const response = await axiosInstance.get(`${ADMIN_BASE}/overview/top-products`);
+  return response.data;
+};
+
+export const getCustomerStats = async () => {
+  const response = await axiosInstance.get(`${ADMIN_BASE}/overview/customer-stats`);
+  return response.data;
+};
+
 export const getShippingSettings = async () => {
   const response = await axiosInstance.get(`${ADMIN_BASE}/settings`);
   return response.data;
