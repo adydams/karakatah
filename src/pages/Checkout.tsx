@@ -27,6 +27,7 @@ import PaymentGatewaySelector from "../components/PaymentGatewaySelector";
 
 // https://karakatang.vercel.app/api/payments/verify?gateway=paystack&orderId=885036e9-e4bd-4dce-bd56-4c290d82fb16&trxref=order_885036e9-e4bd-4dce-bd56-4c290d82fb16_1776077522047&reference=order_885036e9-e4bd-4dce-bd56-4c290d82fb16_1776077522047
 
+
 export default function Checkout() {
   // const { cart } = useCart();
 

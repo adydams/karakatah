@@ -10,6 +10,7 @@ import Spinner from "../components/Spinner";
 import { FaArrowLeftLong } from "react-icons/fa6";
 import toast from "react-hot-toast";
 
+
 export default function CartPage() {
   // const { cart } = useCart();
 
