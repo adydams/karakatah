@@ -38,7 +38,7 @@ export default function NavBar({ title, handleSidebar, showSidebar }: NavBarProp
   return (
     <nav
       id="top"
-      className="font-primary flex w-full items-center justify-between pr-10 lg:pr-0"
+      className="font-primary flex w-full min-w-0 items-center justify-between gap-3 lg:pr-0"
     >
       <div className="flex items-center gap-4">
 
@@ -56,13 +56,13 @@ export default function NavBar({ title, handleSidebar, showSidebar }: NavBarProp
           </div>
         )}
         <div className="h-6 w-[1px] bg-gray-200 mx-2 hidden sm:block"></div>
-        <h1 className="text-sm font-bold sm:text-base md:text-lg lg:text-2xl text-[#f57c00]">
+        <h1 className="min-w-0 truncate text-sm font-bold text-[#f57c00] sm:text-base md:text-lg lg:text-2xl">
           {title}
         </h1>
       </div>
 
-      <div className="flex items-center justify-end gap-3 lg:gap-6">
-        <form className="relative group">
+      <div className="flex min-w-0 items-center justify-end gap-2 sm:gap-3 lg:gap-6">
+        <form className="relative hidden group sm:block">
           <BiSearch
             size={20}
             className="text-orange absolute top-0 bottom-0 left-4 m-auto group-focus-within:text-[#f57c00] transition-colors"
@@ -70,12 +70,12 @@ export default function NavBar({ title, handleSidebar, showSidebar }: NavBarProp
           <input
             type="text"
             placeholder="Search for products, brands and categories..."
-            className="border-[#dec1af] bg-gray-50 focus:bg-white focus:outline-none w-[120px] rounded-full border px-10 py-2 text-xs transition-all duration-300 focus:w-[180px] lg:w-[300px] focus:lg:w-[400px] shadow-sm focus:ring-2 focus:ring-[#f57c00]/20"
+            className="w-[min(34vw,300px)] rounded-full border border-[#dec1af] bg-gray-50 px-10 py-2 text-xs shadow-sm transition-all duration-300 focus:w-[min(42vw,400px)] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#f57c00]/20"
           />
         </form>
 
         <div className="flex items-center gap-4">
-          <Link to="/dashboard/help" title="Help Center" className="text-dark-gray/70 hover:text-[#f57c00] transition-colors">
+          <Link to="/dashboard/help" title="Help Center" className="hidden text-dark-gray/70 transition-colors hover:text-[#f57c00] sm:block">
             <IoIosHelpCircle size={22} />
           </Link>
           <NotificationBell />

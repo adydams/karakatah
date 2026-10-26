@@ -99,7 +99,13 @@ export default function CourierSelector({
                   <div className="text-gray-500 border-l pl-3 sm:pl-4 flex flex-col">
                     <span className="text-[10px] uppercase tracking-wider text-gray-500">Delivery ETA</span>
                     <span className="text-xs font-medium text-gray-700">
-                      {c.estimated_days ?? c.estimatedDays ?? c.raw?.delivery_eta ?? "2-5"} days
+                      {(() => {
+                        const eta = c.estimated_days ?? c.estimatedDays ?? c.raw?.delivery_eta ?? "2-5";
+                        const text = String(eta);
+                        // Only append "days" for plain numeric ETAs; provider
+                        // strings like "Within 2 - 3 working days" already have it.
+                        return /^\d+(\.\d+)?$/.test(text.trim()) ? `${text} days` : text;
+                      })()}
                     </span>
                   </div>
                 </div>

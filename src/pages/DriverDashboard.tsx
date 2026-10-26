@@ -1,6 +1,7 @@
 ﻿import { useState, useEffect } from "react";
 import { getDriverTasks, updateShipmentStatus } from "../services/apiDriver";
 import Spinner from "../components/Spinner";
+import toast from "react-hot-toast";
 
 type DriverTask = {
   id?: string;
@@ -42,10 +43,10 @@ export default function DriverDashboard() {
       if (selectedTask?.id === shipmentId) {
         setSelectedTask((prev) => prev ? { ...prev, status } : prev);
       }
-      alert(`Shipment updated to ${status}`);
+      toast.success(`Shipment updated to ${status}`);
     } catch (err) {
       const message = err instanceof Error ? err.message : "Unknown error";
-      alert("Error updating status: " + message);
+      toast.error("Error updating status: " + message);
     }
   };
 

@@ -1,6 +1,6 @@
 import { Outlet } from "react-router";
-import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
+import CustomerChrome from "../components/customer/CustomerChrome";
 
 export default function HomeLayout() {
   return (
@@ -8,7 +8,7 @@ export default function HomeLayout() {
       {/* <button className="bg-muted-green fixed top-32 right-5 z-[999] p-2 text-white">
         Delete Cart
       </button> */}
-      <Navbar />
+      <CustomerChrome />
 
       <Outlet />
 

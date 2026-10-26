@@ -7,6 +7,7 @@ import { getProfile, getActivity } from "../services/apiUsers";
 import { apiNotifications } from "../services/apiNotifications";
 import { useModal } from "../contexts/hooks/useModal";
 import EditProfileModal from "../components/adminDashboard/EditProfileModal";
+import CustomerChrome from "../components/customer/CustomerChrome";
 
 type ActivityEvent = {
   id: string;
@@ -70,7 +71,9 @@ export default function Profile() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 font-primary">
+    <>
+      <CustomerChrome />
+      <div className="min-h-screen bg-gray-50 font-primary">
      
       <div className="mx-auto max-w-7xl p-6 lg:p-10">
         <div className="mb-8">
@@ -373,6 +376,7 @@ export default function Profile() {
           )}
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 }

@@ -40,6 +40,8 @@ export type ProductPayload = {
     stationId?: string;
     initialStock: number;
   }>;
+  fulfillmentMethod?: "RIDER_PICKUP" | "HUB_DROPOFF";
+  fulfillmentHubId?: string;
   discounts?: any[];
   images: File[]; // 👈 This is important
 };

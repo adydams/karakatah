@@ -37,6 +37,8 @@ export default function AddAddressModal({ isOpen, onClose, onSuccess, editingAdd
         state: editingAddress.state ?? '',
         country: editingAddress.country ?? '',
         postalCode: editingAddress.postalCode ?? editingAddress.postal_code ?? '',
+        latitude: editingAddress.latitude != null ? (editingAddress.latitude as any) : undefined,
+        longitude: editingAddress.longitude != null ? (editingAddress.longitude as any) : undefined,
       });
     } else if (isOpen) {
       reset({});

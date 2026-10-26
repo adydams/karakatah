@@ -43,15 +43,15 @@ export default function WalletDetailsModal({ walletId }: Props) {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
         <div className="p-4 rounded-xl bg-green-50 border border-green-100">
           <p className="text-xs text-green-600 font-medium mb-1">Available Balance</p>
-          <p className="text-xl font-bold text-green-700">₦{wallet.availableBalance?.toLocaleString()}</p>
+          <p className="text-xl font-bold text-green-700">₦{Number(wallet.availableBalance || 0).toLocaleString()}</p>
         </div>
         <div className="p-4 rounded-xl bg-amber-50 border border-amber-100">
           <p className="text-xs text-amber-600 font-medium mb-1">Pending Balance</p>
-          <p className="text-xl font-bold text-amber-700">₦{wallet.pendingBalance?.toLocaleString()}</p>
+          <p className="text-xl font-bold text-amber-700">₦{Number(wallet.pendingBalance || 0).toLocaleString()}</p>
         </div>
         <div className="p-4 rounded-xl bg-blue-50 border border-blue-100">
           <p className="text-xs text-blue-600 font-medium mb-1">Lifetime Earnings</p>
-          <p className="text-xl font-bold text-blue-700">₦{wallet.lifetimeEarnings?.toLocaleString()}</p>
+          <p className="text-xl font-bold text-blue-700">₦{Number(wallet.lifetimeEarnings || 0).toLocaleString()}</p>
         </div>
       </div>
 

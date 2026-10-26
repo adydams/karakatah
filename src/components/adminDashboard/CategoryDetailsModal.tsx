@@ -4,9 +4,10 @@ import { getSubCategories } from "../../services/adminDashboard/apiProducts";
 import toast from "react-hot-toast";
 import Spinner from "../Spinner";
 import { useModal } from "../../contexts/hooks/useModal";
+import AddSubcategoryModal from "./AddSubcategoryModal";
 
 export default function CategoryDetailsModal({ categoryId, categoryName }: { categoryId: string, categoryName: string }) {
-  const { closeModal } = useModal();
+  const { closeModal, openModal } = useModal();
   const queryClient = useQueryClient();
   const [isEditingSub, setIsEditingSub] = useState<string | null>(null);
   const [editValue, setEditValue] = useState("");
@@ -54,7 +55,10 @@ export default function CategoryDetailsModal({ categoryId, categoryName }: { cat
       <div className="space-y-4">
         <div className="flex justify-between items-center">
           <h3 className="font-semibold text-[#574235]">Attached Sub-Categories</h3>
-          <button className="text-xs bg-[#f57c00] text-white px-3 py-1.5 rounded-md hover:bg-[#e67300] transition-colors flex items-center gap-1">
+          <button
+            onClick={() => openModal(<AddSubcategoryModal />)}
+            className="text-xs bg-[#f57c00] text-white px-3 py-1.5 rounded-md hover:bg-[#e67300] transition-colors flex items-center gap-1"
+          >
             Add New
           </button>
         </div>
@@ -65,7 +69,8 @@ export default function CategoryDetailsModal({ categoryId, categoryName }: { cat
           </div>
         ) : data && data.length > 0 ? (
           <div className="border border-[#dec1af] rounded-xl overflow-hidden">
-            <table className="w-full text-left text-sm">
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[720px] text-left text-sm">
               <thead className="bg-[#f4f2fd] text-[#574235] font-bold">
                 <tr>
                   <th className="px-4 py-3">Sub-Category Name</th>
@@ -105,7 +110,8 @@ export default function CategoryDetailsModal({ categoryId, categoryName }: { cat
                   </tr>
                 ))}
               </tbody>
-            </table>
+              </table>
+            </div>
           </div>
         ) : (
           <div className="text-center py-10 text-gray-500 border border-dashed border-gray-300 rounded-xl">

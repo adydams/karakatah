@@ -5,4 +5,5 @@ export type ProductProp = {
   currentPrice?: string;
   isDiscounted?: boolean;
   image?: string;
+  availableStock?: number;
 };

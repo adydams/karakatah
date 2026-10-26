@@ -59,7 +59,9 @@ export default function ProductViewModal({ open, onClose, product }: Props) {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="p-3 bg-gray-50 rounded-lg border border-gray-100">
                     <p className="text-xs text-gray-400 uppercase font-semibold">Stock</p>
-                    <p className="text-sm font-bold text-gray-800">{displayProduct.stockQuantity}</p>
+                    <p className="text-sm font-bold text-gray-800">
+                      {displayProduct.availableStock ?? displayProduct.stockQuantity}
+                    </p>
                   </div>
                   <div className="p-3 bg-gray-50 rounded-lg border border-gray-100">
                     <p className="text-xs text-gray-400 uppercase font-semibold">Status</p>

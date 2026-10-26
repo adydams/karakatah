@@ -17,7 +17,7 @@ export const optimizeImage = (url: string, width: number = 1000, height: number 
   // f_auto: Automatic format (WebP/AVIF)
   // c_fill: Fill the specified dimensions (crops center)
   // w_x, h_y: dimensions
-  const transformations = `q_auto,f_auto,c_fill,w_${width},h_${height}`;
+  const transformations = `q_auto:best,f_auto,c_fill,w_${width},h_${height},dpr_auto`;
 
   return `${baseUrl}${transformations}/${remainingUrl}`;
 };

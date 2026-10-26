@@ -88,7 +88,7 @@ export default function CartItemCardNav() {
                 <p className="font-light">
                   Price:{" "}
                   <span className="font-primary text-muted-green font-bold">
-                    ₦{formatPrice(product.product?.price || 0)}
+                    ₦{formatPrice(product.product?.currentPrice ?? product.product?.price ?? 0)}
                   </span>
                 </p>
                 <p className="font-light">
@@ -109,7 +109,7 @@ export default function CartItemCardNav() {
           </span>
         </h3>
         <Link
-          to={"/checkout"}
+          to={"/cart"}
           className="bg-muted-green/90 hover:bg-muted-green font-primary flex w-full items-center justify-center py-3 text-sm font-bold text-white"
         >
           View Cart

@@ -1,5 +1,101 @@
 @import "tailwindcss";
 
+html {
+  overflow-x: hidden;
+}
+
+body {
+  min-width: 320px;
+  overflow-x: hidden;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+img, svg, video, canvas {
+  max-width: 100%;
+}
+
+button, input, select, textarea {
+  max-width: 100%;
+}
+
+table {
+  width: 100%;
+}
+
+/* Keep data tables readable on narrow viewports without widening the page. */
+[class*="overflow-x-auto"]:not(.no-scrollbar):not(.scrollbar-hide) {
+  max-width: 100%;
+  scrollbar-width: auto;
+  scrollbar-color: #f97316 #f1f5f9;
+}
+
+[class*="overflow-x-auto"]:not(.no-scrollbar):not(.scrollbar-hide)::-webkit-scrollbar {
+  height: 12px;
+}
+
+[class*="overflow-x-auto"]:not(.no-scrollbar):not(.scrollbar-hide)::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 999px;
+}
+
+[class*="overflow-x-auto"]:not(.no-scrollbar):not(.scrollbar-hide)::-webkit-scrollbar-thumb {
+  background: #f97316;
+  border: 3px solid #f1f5f9;
+  border-radius: 999px;
+}
+
+[class*="overflow-x-auto"]:not(.no-scrollbar):not(.scrollbar-hide)::-webkit-scrollbar-thumb:hover {
+  background: #ea580c;
+}
+
+[class*="overflow-x-auto"] > table,
+[class*="overflow-x-auto"] > div > table {
+  min-width: 720px;
+}
+
+.horizontal-scrollbar {
+  display: block;
+  max-width: 100%;
+  overflow-x: scroll !important;
+  overflow-y: hidden;
+  scrollbar-gutter: stable;
+  scrollbar-width: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.horizontal-scrollbar::-webkit-scrollbar {
+  height: 12px;
+  display: block;
+}
+
+.horizontal-scrollbar::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 999px;
+}
+
+.horizontal-scrollbar::-webkit-scrollbar-thumb {
+  background: #f97316;
+  border: 3px solid #f1f5f9;
+  border-radius: 999px;
+}
+
+.horizontal-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #ea580c;
+}
+
+@media (max-width: 639px) {
+  h1, h2, h3 {
+    overflow-wrap: anywhere;
+  }
+
+  [class*="overflow-x-auto"] {
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
 /* font-family: "Montserrat Alternates", sans-serif; */
 /* font-family: "Poppins", sans-serif; */
 
@@ -69,6 +165,43 @@ button:hover {
   border-right: 2px solid transparent;
   box-sizing: border-box;
   animation: rotation 1s linear infinite;
+}
+
+.invoice-brand-background {
+  background-color: #f7fffd;
+  background-image: linear-gradient(135deg, #f7fffd 0%, #f7fffd 100%);
+}
+
+.invoice-modal-background {
+  background-color: #f7fffd;
+}
+
+.invoice-content-card {
+  background-color: #f7fffd;
+  background-image:
+    radial-gradient(circle at 100% 8%, rgba(244, 223, 242, 0.95) 0 7rem, transparent 7.1rem),
+    radial-gradient(circle at 100% 42%, rgba(238, 226, 242, 0.9) 0 8rem, transparent 8.1rem),
+    radial-gradient(circle at 0% 100%, rgba(248, 239, 226, 0.95) 0 7rem, transparent 7.1rem),
+    radial-gradient(circle at 78% 100%, rgba(232, 245, 243, 0.95) 0 8rem, transparent 8.1rem),
+    linear-gradient(135deg, #f7fffd 0%, #f7fffd 100%);
+  border-color: #dce5e5;
+}
+
+@media print {
+  @page {
+    margin: 0;
+  }
+
+  .invoice-print-surface,
+  .invoice-print-surface * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .invoice-print-surface {
+    background-color: #f7fffd !important;
+    background-image: linear-gradient(135deg, #f7fffd 0%, #f7fffd 100%) !important;
+  }
 }
 
 @keyframes rotation {

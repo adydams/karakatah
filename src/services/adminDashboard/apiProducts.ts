@@ -120,6 +120,8 @@ export async function createProduct(
     isPublished,
     draft,
     pickupStations,
+    fulfillmentMethod,
+    fulfillmentHubId,
   }: ProductPayload & { isPublished?: boolean; draft?: boolean },
 ) {
   const formData = new FormData();
@@ -135,6 +137,8 @@ export async function createProduct(
   if (widthCm !== undefined) formData.append("widthCm", String(widthCm));
   if (heightCm !== undefined) formData.append("heightCm", String(heightCm));
   if (logisticsCategoryId) formData.append("logisticsCategoryId", logisticsCategoryId);
+  formData.append("fulfillmentMethod", fulfillmentMethod || "RIDER_PICKUP");
+  if (fulfillmentHubId) formData.append("fulfillmentHubId", fulfillmentHubId);
   if (isPublished !== undefined) formData.append("isPublished", String(isPublished));
   if (draft !== undefined) formData.append("draft", String(draft));
   if (pickupStations && pickupStations.length > 0) {
@@ -169,6 +173,8 @@ export async function updateProduct(
   if (payload.widthCm !== undefined) formData.append("widthCm", String(payload.widthCm));
   if (payload.heightCm !== undefined) formData.append("heightCm", String(payload.heightCm));
   if (payload.logisticsCategoryId) formData.append("logisticsCategoryId", payload.logisticsCategoryId);
+  if (payload.fulfillmentMethod) formData.append("fulfillmentMethod", payload.fulfillmentMethod);
+  if (payload.fulfillmentHubId) formData.append("fulfillmentHubId", payload.fulfillmentHubId);
   if (payload.discounts) {
     formData.append("discounts", JSON.stringify(payload.discounts));
   }

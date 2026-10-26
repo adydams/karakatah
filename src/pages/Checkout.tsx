@@ -13,22 +13,15 @@ import { createOrder } from "../services/apiCheckout";
 import { Link, useLocation } from "react-router";
 import { getShippingAddress, createShippingAddress } from "../services/apiShipping";
 import Modal from "../components/Modal";
-import { getPickupStations } from "../services/adminDashboard/apiPickupStation";
+import { getHubs, type Hub } from "../services/apiAdmin";
 import { shippingAddressSchema, type ShippingAddressFormValues } from "../types/formSchema";
 import { useState, useEffect } from "react";
 import { getCouriers, fetchRates } from "../services/apiLogistics";
+import { previewDiscount, getCheckoutQuote, type CheckoutQuote } from "../services/apiOrders";
 import AddAddressModal from "../components/AddAddressModal";
 import OrderSummarySidebar from "../components/OrderSummarySidebar";
 import CourierSelector, { getCourierKey } from "../components/CourierSelector";
 import PaymentGatewaySelector from "../components/PaymentGatewaySelector";
-
-type PickupStation = {
-  id: string;
-  name?: string;
-  address?: string;
-  city?: string;
-  state?: string;
-};
 
 // Payment on success page
 
@@ -60,14 +53,14 @@ export default function Checkout() {
   type CheckoutNavState = {
     courier?: SelectedCourier;
     shippingMethod?: "pickup" | "shipping";
-    chosenStationId?: string;
+    chosenHubId?: string;
   };
 
   const navState = (location.state as CheckoutNavState | null) || null;
   const storedShippingMethod = sessionStorage.getItem("selectedShippingMethod") as "pickup" | "shipping" | null;
-  const storedChosenStationId = sessionStorage.getItem("selectedPickupStationId") || "";
+  const storedChosenHubId = sessionStorage.getItem("selectedPickupHubId") || "";
   const defaultShippingMethod = navState?.shippingMethod ?? storedShippingMethod ?? "pickup";
-  const defaultChosenStationId = navState?.chosenStationId ?? storedChosenStationId ?? "";
+  const defaultChosenHubId = navState?.chosenHubId ?? storedChosenHubId ?? "";
 
   const {
     register,
@@ -82,7 +75,7 @@ export default function Checkout() {
       shippingMethod: defaultShippingMethod,
       gateway: "paystack",
       shippingAddressId: "",
-      chosenStationId: defaultChosenStationId,
+      chosenHubId: defaultChosenHubId,
       phone: "",
       notes: "",
     },
@@ -96,6 +89,21 @@ export default function Checkout() {
   const [selectedCourier, setSelectedCourier] = useState<SelectedCourier | null>(null);
   const [isLiveRatesLoading, setIsLiveRatesLoading] = useState(false);
   const [requestToken, setRequestToken] = useState<string | null>(null);
+  const [gatewayTotal, setGatewayTotal] = useState<number | null>(null);
+  const [fleetNotice, setFleetNotice] = useState<string | null>(null);
+
+  // Discount State
+  const [discountCode, setDiscountCode] = useState("");
+  const [discountPreview, setDiscountPreview] = useState<{
+    discountAmount: number;
+    discountLabel: string;
+    finalTotal: number;
+  } | null>(null);
+  const [isDiscountLoading, setIsDiscountLoading] = useState(false);
+
+  // Server-side checkout quote (authoritative pricing incl. fetch rates & VAT)
+  const [serverQuote, setServerQuote] = useState<CheckoutQuote | null>(null);
+  const chosenHubId = watch("chosenHubId");
 
   // Fetch general couriers on mount to show the list even before address selection
   useEffect(() => {
@@ -172,13 +180,17 @@ export default function Checkout() {
           const data = res.data;
           setRequestToken(data.request_token || null);
           setLiveCouriers(Array.isArray(data.couriers) ? data.couriers : []);
+          setFleetNotice(res.internalFleetUnavailable || null);
 
           // Auto-select first courier
           if (data.couriers && data.couriers.length > 0) {
             setSelectedCourier(data.couriers[0]);
+          } else {
+            setSelectedCourier(null);
           }
         } else {
           setLiveCouriers([]);
+          setFleetNotice(res?.internalFleetUnavailable || null);
           const errorMsg = res?.message || 'No couriers available for this address';
           toast.error(errorMsg);
         }
@@ -193,6 +205,75 @@ export default function Checkout() {
     fetchLiveRates();
   }, [shippingAddressId, cart, shippingMethod]);
 
+  // Discount Preview Logic
+  useEffect(() => {
+    const fetchDiscountPreview = async () => {
+      if (!cart?.data) return;
+
+      setIsDiscountLoading(true);
+      try {
+        const res = await previewDiscount({
+          code: discountCode || undefined,
+          orderTotal: Number(cart?.data?.totalAmount ?? 0),
+        });
+        if (res && res.success) {
+          setDiscountPreview({
+            discountAmount: res.discountAmount,
+            discountLabel: res.discountLabel,
+            finalTotal: res.finalTotal,
+          });
+        }
+      } catch (err) {
+        console.error("Discount preview error:", err);
+        setDiscountPreview(null);
+      } finally {
+        setIsDiscountLoading(false);
+      }
+    };
+
+    fetchDiscountPreview();
+  }, [discountCode, cart]);
+
+  // Fetch authoritative server quote whenever pricing inputs change
+  useEffect(() => {
+    const fetchServerQuote = async () => {
+      if (!cart?.data || cart.data.items.length === 0) {
+        setServerQuote(null);
+        return;
+      }
+      if (shippingMethod === "shipping" && !shippingAddressId) {
+        setServerQuote(null);
+        return;
+      }
+      if (shippingMethod === "pickup" && !chosenHubId) {
+        setServerQuote(null);
+        return;
+      }
+      try {
+        const res = await getCheckoutQuote({
+          shippingAddressId: shippingAddressId || undefined,
+          shippingMethod,
+          chosenHubId: chosenHubId || undefined,
+          discountCode: discountCode || undefined,
+          courierFee:
+            shippingMethod === "shipping"
+              ? Number(selectedCourier?.fee ?? selectedCourier?.price ?? 0) || undefined
+              : undefined,
+        });
+        if (res && res.success && res.data) {
+          setServerQuote(res.data);
+        } else {
+          setServerQuote(null);
+        }
+      } catch (err) {
+        console.error("Checkout quote error:", err);
+        setServerQuote(null);
+      }
+    };
+
+    fetchServerQuote();
+  }, [shippingMethod, shippingAddressId, chosenHubId, discountCode, cart, selectedCourier]);
+
   const handleCourierSelect = (courier: SelectedCourier, key: string) => {
     setSelectedCourier(courier);
     try {
@@ -202,18 +283,22 @@ export default function Checkout() {
     }
   };
 
-  const { data: pickupStationResponse, isLoading: isFetchingPickupStations } =
+  const { data: hubsResponse, isLoading: isFetchingHubs, isError: hubsLoadFailed } =
     useQuery({
-      queryKey: ["pickupStations"],
-      queryFn: getPickupStations,
+      queryKey: ["pickupHubs"],
+      queryFn: getHubs,
     });
 
-  const pickupStations = normalizeListData<PickupStation>(pickupStationResponse);
+  const pickupHubs = normalizeListData<Hub>(hubsResponse).filter((hub) => hub.isActive !== false);
   const items = cart?.data?.items ?? [];
   const subtotal = Number(cart?.data?.totalAmount ?? 0);
 
   const shippingFee = shippingMethod === "shipping" ? Number(selectedCourier?.fee ?? selectedCourier?.price ?? 0) : 0;
-  const totalAmount = subtotal + shippingFee;
+  const discountAmount = discountPreview?.discountAmount ?? 0;
+
+  // Prefer the server-calculated quote (includes fetch rates & VAT) when available
+  const quoteShippingFee = serverQuote ? Number(serverQuote.shippingFee) : shippingFee;
+  const quoteDiscountAmount = serverQuote ? Number(serverQuote.discountAmount) : discountAmount;
 
   if (isLoading)
     return (
@@ -239,7 +324,7 @@ export default function Checkout() {
         gateway: data.gateway,
         phone: data.phone,
         shippingMethod: data.shippingMethod as "pickup" | "shipping",
-        chosenStationId: data.chosenStationId || undefined,
+        chosenHubId: data.chosenHubId || undefined,
         ...(selectedCourierFinal && data.shippingMethod === "shipping"
           ? {
               courierId: String(
@@ -273,6 +358,11 @@ export default function Checkout() {
 
       if (success) {
         toast.success(success.message);
+        const confirmedTotal = Number(success.order?.totalAmount);
+        if (Number.isFinite(confirmedTotal)) {
+          setGatewayTotal(confirmedTotal);
+          toast.success(`Payment total: ₦${formatPrice(confirmedTotal)}`);
+        }
         toast.success("Redirecting to payment...");
 
         setTimeout(() => {
@@ -394,6 +484,11 @@ export default function Checkout() {
                         <span className="text-[10px] text-orange italic">Select address to see actual rates</span>
                       )}
                     </div>
+                    {fleetNotice && (
+                      <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800">
+                        {fleetNotice}
+                      </div>
+                    )}
                     <CourierSelector
                       couriers={liveCouriers as any[]}
                       selectedCourierId={selectedCourier ? getCourierKey(selectedCourier) : null}
@@ -404,19 +499,32 @@ export default function Checkout() {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  <h3 className="text-sm font-semibold text-gray-700">Select Pickup Station</h3>
-                  {isFetchingPickupStations ? (
+                  <h3 className="text-sm font-semibold text-gray-700">Select Pickup Hub</h3>
+                  {isFetchingHubs ? (
                     <div className="flex justify-center py-4"><Spinner size="small" /></div>
+                  ) : hubsLoadFailed ? (
+                    <p className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-600">
+                      Pickup hubs could not be loaded. Please refresh and try again.
+                    </p>
+                  ) : pickupHubs.length === 0 ? (
+                    <p className="rounded-lg border border-dashed border-gray-300 bg-gray-50 p-3 text-sm text-gray-500">
+                      No active pickup hubs are available yet. Please choose home delivery.
+                    </p>
                   ) : (
                     <select
-                      {...register("chosenStationId")}
-                      className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-orange focus:border-orange outline-none"
+                      {...register("chosenHubId")}
+                      aria-label="Select pickup hub"
+                      className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm outline-none focus:border-orange focus:ring-orange"
                     >
-                      <option value="">-- Choose a station --</option>
-                      {pickupStations.map(s => <option key={s.id} value={s.id}>{s.name} — {s.address}</option>)}
+                      <option value="">-- Choose a pickup hub --</option>
+                      {pickupHubs.map((hub) => (
+                        <option key={hub.id} value={hub.id}>
+                          {hub.name}{hub.code ? ` (${hub.code})` : ""} — {hub.address}
+                        </option>
+                      ))}
                     </select>
                   )}
-                  {errors.chosenStationId && <p className="text-xs text-red-500">{errors.chosenStationId.message}</p>}
+                  {errors.chosenHubId && <p className="text-xs text-red-500">{errors.chosenHubId.message}</p>}
                 </div>
               )}
             </div>
@@ -466,8 +574,15 @@ export default function Checkout() {
         <OrderSummarySidebar
           items={items}
           subtotal={subtotal}
-          shippingFee={shippingFee}
+          shippingFee={quoteShippingFee}
+          discountAmount={quoteDiscountAmount}
+          discountLabel={serverQuote?.discountLabel || discountPreview?.discountLabel || ""}
+          isDiscountLoading={isDiscountLoading}
+          discountCode={discountCode}
+          setDiscountCode={setDiscountCode}
           isSubmitting={isSubmitting}
+          gatewayTotal={gatewayTotal}
+          serverQuote={serverQuote}
           onSubmit={() => handleSubmit(onSubmit)()}
         />
       </div>

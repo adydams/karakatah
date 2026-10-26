@@ -76,8 +76,8 @@ export default function SliderHero() {
             ) : (
               <div className="relative h-full w-full">
                 <img
-                  className="h-full w-full object-cover"
-                  src={optimizeImage(slide.content.images?.[0]?.url || "")}
+                  className="h-full w-full object-cover object-center"
+                  src={optimizeImage(slide.content.images?.[0]?.url || "", 1600, 900)}
                   alt={slide.content.name}
                 />
                 <div className="absolute inset-0 bg-black/20" />

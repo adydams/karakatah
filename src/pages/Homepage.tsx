@@ -7,7 +7,8 @@ import { useState } from "react";
 import SliderHero from "../components/SliderHero";
 
 import { useQuery } from "@tanstack/react-query";
-import { getCategories, getProducts } from "../services/apiProducts";
+import { getAdvertisedDiscounts, getCategories, getFeaturedDiscounts, getProducts } from "../services/apiProducts";
+import LandingAdvertCarousel from "../components/LandingAdvertCarousel";
 import Spinner from "../components/Spinner";
 import { formatPrice, shortenText } from "../utils/utils";
 
@@ -34,6 +35,18 @@ export default function Homepage() {
   });
 
   const categories = categoryData?.data ?? [];
+
+  const { data: advertData } = useQuery({
+    queryKey: ["landingAdvertisedDiscounts"],
+    queryFn: getAdvertisedDiscounts,
+    staleTime: 60000,
+  });
+
+  const { data: featuredData } = useQuery({
+    queryKey: ["landingFeaturedDiscounts"],
+    queryFn: getFeaturedDiscounts,
+    staleTime: 60000,
+  });
 
   const filteredProducts = selectedCategoryId
     ? products.filter((product) => {
@@ -63,13 +76,14 @@ export default function Homepage() {
           <SliderHero />
 
           <div className="mt-3 flex w-full items-center justify-between gap-2 lg:mt-0 lg:h-full lg:w-[30%] lg:flex-col">
-            <div className="bg-beige flex h-[200px] w-[50%] items-center justify-center lg:h-[50%] lg:w-full">
-              Advert
-            </div>
-
-            <div className="bg-beige flex h-[200px] w-[50%] items-center justify-center lg:h-[50%] lg:w-full">
-              Advert
-            </div>
+            <LandingAdvertCarousel
+              discounts={advertData?.data || []}
+              products={
+                featuredData?.data?.length
+                  ? featuredData.data
+                  : products.slice(0, 10)
+              }
+            />
           </div>
         </div>
       </main>
@@ -131,7 +145,14 @@ export default function Homepage() {
           <Filter showFilter={showFilter} setShowFilter={setShowFilter} />
 
           {isGettingProducts ? (
-            <Spinner size="big" />
+            <div className="col-span-full flex min-h-[400px] w-full items-center justify-center rounded-2xl bg-white px-6 py-12 shadow-sm">
+              <div className="flex flex-col items-center gap-4">
+                <Spinner size="big" color="#f97316" />
+                <p className="text-sm font-semibold text-orange-700 animate-pulse">
+                  Loading products...
+                </p>
+              </div>
+            </div>
           ) : filteredProducts.length === 0 ? (
             <div className="flex h-[250px] w-full flex-col items-center justify-center rounded-xl bg-gray-50 md:col-span-2 lg:col-span-6">
               <p className="text-dark-gray text-sm font-medium">No products found in this category.</p>
@@ -158,6 +179,7 @@ export default function Homepage() {
                   isDiscounted={product.isDiscounted}
                   currentPrice={formatPrice(product.currentPrice || product.price)}
                   discounts={product.discounts}
+                  availableStock={product.availableStock}
                 />
               );
             })

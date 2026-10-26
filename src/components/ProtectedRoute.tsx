@@ -9,13 +9,18 @@ type ProtectedRouteProp = {
 };
 
 export default function ProtectedRoute({ children }: ProtectedRouteProp) {
-  const { user } = useUser();
-  console.log("ProtectedRoute user:", user);
+  const { user, isLoading } = useUser();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!user) navigate("/");
-  }, [user, navigate]);
+    if (!isLoading && !user) {
+      navigate("/login");
+    }
+  }, [user, isLoading, navigate]);
 
-  return user ? children : <Spinner size="big" />;
+  if (isLoading) {
+    return <Spinner size="big" />;
+  }
+
+  return user ? children : null;
 }

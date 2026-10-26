@@ -37,10 +37,18 @@ export const apiFinance = {
     const response = await axiosInstance.post("/api/admin/finance/payouts/global");
     return response.data;
   },
+  settleWallet: async (walletId: string) => {
+    const response = await axiosInstance.post(`/api/admin/finance/wallets/settle/${walletId}`);
+    return response.data;
+  },
   exportFinancialReport: async () => {
     const response = await axiosInstance.get("/api/admin/finance/export-report", {
       responseType: "blob",
     });
+    return response.data;
+  },
+  verifyPayment: async (paymentId: string) => {
+    const response = await axiosInstance.post(`/api/admin/finance/verify-payment/${paymentId}`);
     return response.data;
   },
 };

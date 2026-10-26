@@ -2,11 +2,12 @@
 
 type OrderProp = {
   shippingAddressId?: string;
-  phone: string;
+  phone?: string;
   notes?: string;
   gateway: string;
   shippingMethod: "pickup" | "shipping";
   chosenStationId?: string;
+  chosenHubId?: string;
   requestToken?: string;
   serviceCode?: string;
   courierId?: string;

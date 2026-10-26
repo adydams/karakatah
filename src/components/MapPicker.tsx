@@ -45,10 +45,8 @@ export default function MapPicker({ initialLat, initialLng, onSelect, onCancel, 
           },
           () => {
             console.warn("Geolocation denied or unavailable, using fallback.");
-            // Fallback to a general region if no initial props are provided
-            // Using a very generic center if everything fails
             if (!initialLat || !initialLng) {
-              setLat(6.5244); // Lagos as a last resort fallback
+              setLat(6.5244); // Lagos fallback
               setLng(3.3792);
             }
             setIsInitialized(true);
@@ -62,16 +60,18 @@ export default function MapPicker({ initialLat, initialLng, onSelect, onCancel, 
     }
   }, [initialLat, initialLng]);
 
-  function MapClickHandler() {
-    useMapEvents({
-      click(e) {
-        setLat(e.latlng.lat);
-        setLng(e.latlng.lng);
-        setFormattedAddress(undefined);
-      },
-    });
-    return null;
-  }
+  // Sync when the parent provides coordinates after mount (e.g. async form load)
+  // or when the user edits the lat/lng inputs directly.
+  useEffect(() => {
+    const newLat = Number(initialLat);
+    const newLng = Number(initialLng);
+    if (Number.isFinite(newLat) && Number.isFinite(newLng) && initialLat != null && initialLng != null) {
+      if (newLat !== lat || newLng !== lng) {
+        setLat(newLat);
+        setLng(newLng);
+      }
+    }
+  }, [initialLat, initialLng]);
 
   function MapViewUpdater() {
     const map = useMap();
@@ -87,7 +87,9 @@ export default function MapPicker({ initialLat, initialLng, onSelect, onCancel, 
     try {
       setLoading(true);
       const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}`;
-      const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+      const res = await fetch(url, {
+        headers: { 'Accept': 'application/json', 'User-Agent': 'KarakataCommerce-LocationPicker' }
+      });
       if (!res.ok) throw new Error('Reverse geocode failed');
       const data = await res.json();
       return data.display_name as string | undefined;
@@ -100,7 +102,9 @@ export default function MapPicker({ initialLat, initialLng, onSelect, onCancel, 
 
   async function performSearch(query: string) {
     const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&addressdetails=1&limit=5`;
-    const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+    const res = await fetch(url, {
+      headers: { 'Accept': 'application/json', 'User-Agent': 'KarakataCommerce-LocationPicker' }
+    });
     if (!res.ok) throw new Error('Search failed');
     return await res.json();
   }
@@ -111,11 +115,10 @@ export default function MapPicker({ initialLat, initialLng, onSelect, onCancel, 
       setLoading(true);
       setSearchResults([]);
 
-      // Strategy 1: Exact query
+      // Strategy 1: Exact query (Handles detailed addresses like "14, Karimu kotun street...")
       let data = await performSearch(searchQuery);
 
       // Strategy 2: Broaden search if no results found
-      // Many addresses fail because of the house number (e.g., "47 Iyalla Street" -> try "Iyalla Street")
       if (!data || data.length === 0) {
         const strippedQuery = searchQuery.replace(/^\d+[\s,.]*/, '').trim();
         if (strippedQuery && strippedQuery !== searchQuery) {
@@ -125,11 +128,10 @@ export default function MapPicker({ initialLat, initialLng, onSelect, onCancel, 
 
       if (data && data.length > 0) {
         setSearchResults(data);
+        // Optionally auto-select the first result to show on map
         const firstResult = data[0];
-        const newLat = parseFloat(firstResult.lat);
-        const newLng = parseFloat(firstResult.lon);
-        setLat(newLat);
-        setLng(newLng);
+        setLat(parseFloat(firstResult.lat));
+        setLng(parseFloat(firstResult.lon));
         setFormattedAddress(firstResult.display_name);
       } else {
         setError('No locations found. Try removing the house number or using a broader area name.');
@@ -151,6 +153,8 @@ export default function MapPicker({ initialLat, initialLng, onSelect, onCancel, 
     setFormattedAddress(result.display_name);
     setSearchQuery(result.display_name);
     setSearchResults([]);
+    // Immediately notify parent that a valid location is selected
+    onSelect({ latitude: newLat, longitude: newLng, formattedAddress: result.display_name });
   }
 
   async function handleUseLocation() {
@@ -181,7 +185,7 @@ export default function MapPicker({ initialLat, initialLng, onSelect, onCancel, 
             <div className="relative flex-1">
               <input
                 type="text"
-                placeholder="Search address (e.g. Victoria Island, Lagos)..."
+                placeholder="Enter detailed address (e.g. 14, Karimu Kotun St, VI, Lagos)..."
                 value={searchQuery}
                 onChange={(e) => {
                   setSearchQuery(e.target.value);
@@ -221,7 +225,6 @@ export default function MapPicker({ initialLat, initialLng, onSelect, onCancel, 
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
               />
               <MapViewUpdater />
-              <MapClickHandler />
               <Marker
                 position={[lat, lng]}
                 draggable={true}
@@ -231,6 +234,8 @@ export default function MapPicker({ initialLat, initialLng, onSelect, onCancel, 
                     setLat(p.lat);
                     setLng(p.lng);
                     setFormattedAddress(undefined);
+                    // Update parent on drag to keep coords in sync
+                    onSelect({ latitude: p.lat, longitude: p.lng, formattedAddress: undefined });
                   },
                 }}
               />
@@ -249,7 +254,7 @@ export default function MapPicker({ initialLat, initialLng, onSelect, onCancel, 
             {showControls && (
               <div className="flex items-center gap-2">
                 <button type="button" onClick={() => onCancel && onCancel()} className="px-4 py-2 rounded border hover:bg-gray-50">Cancel</button>
-                <button type="button" onClick={handleUseLocation} className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700">Use this location</button>
+                <button type="button" onClick={handleUseLocation} className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700">Confirm Location</button>
               </div>
             )}
           </div>

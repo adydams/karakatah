@@ -43,8 +43,11 @@ axiosInstance.interceptors.response.use(
   (response) => response,
   (error: AxiosError) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem("token");
-      toast.error("Session expired. Please login again.");
+      const token = localStorage.getItem("token");
+      if (token) {
+        localStorage.removeItem("token");
+        toast.error("Session expired. Please login again.");
+      }
       return Promise.reject(error);
     }
 

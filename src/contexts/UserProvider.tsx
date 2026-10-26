@@ -14,22 +14,23 @@ type UserProviderProp = {
 
 export function UserProvider({ children }: UserProviderProp) {
   const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (token) {
       getCurrentUser();
+    } else {
+      setIsLoading(false);
     }
   }, []);
 
   async function userLogin(email: string, password: string) {
     try {
       const data = await login(email, password);
-      // console.log(data);
       if (data.success) {
-        // setUser(data.user);
         localStorage.setItem("token", data.token);
-        getCurrentUser();
+        await getCurrentUser();
       }
       return data;
     } catch (error) {
@@ -44,8 +45,6 @@ export function UserProvider({ children }: UserProviderProp) {
     try {
       const data = await createUser(params);
       if (data.success) {
-        // setUser(data.user);
-        // localStorage.setItem("token", data.token);
       }
       return data;
     } catch (error) {
@@ -63,14 +62,11 @@ export function UserProvider({ children }: UserProviderProp) {
       if (data.success) {
         setUser(data.user);
       }
-      return data;
     } catch (error) {
       setUser(null);
       localStorage.removeItem("token");
-      if (error instanceof Error) {
-        return { success: false, message: error.message };
-      }
-      return { success: false, message: "No Current User" };
+    } finally {
+      setIsLoading(false);
     }
   }
 
@@ -81,7 +77,7 @@ export function UserProvider({ children }: UserProviderProp) {
 
   return (
     <UserContext.Provider
-      value={{ user, userLogin, setUser, signUp, getCurrentUser, logout }}
+      value={{ user, userLogin, setUser, signUp, getCurrentUser, logout, isLoading }}
     >
       {children}
     </UserContext.Provider>

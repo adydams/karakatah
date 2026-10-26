@@ -15,6 +15,7 @@ import { useModal } from "../../contexts/hooks/useModal";
 import WalletDetailsModal from "../../components/adminDashboard/WalletDetailsModal";
 import BalanceAdjustmentModal from "../../components/adminDashboard/BalanceAdjustmentModal";
 import ManualPayoutModal from "../../components/adminDashboard/ManualPayoutModal";
+import TransactionDetailsModal from "../../components/adminDashboard/TransactionDetailsModal";
 
 export default function Finance() {
   const navigate = useNavigate();
@@ -22,6 +23,21 @@ export default function Finance() {
   const [searchQuery, setSearchQuery] = useState("");
   const { openModal } = useModal();
   const queryClient = useQueryClient();
+
+  // --- Global Ledger State ---
+  const [ledgerFilters, setLedgerFilters] = useState({
+    search: "",
+    type: "All Types",
+    startDate: "",
+    endDate: "",
+    minAmount: "",
+    maxAmount: "",
+  });
+  const [appliedFilters, setAppliedFilters] = useState({
+    search: "",
+    type: "All Types",
+  });
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   // --- Overview Data ---
   const { data: overview, isLoading: loadingOverview } = useQuery({
@@ -39,6 +55,23 @@ export default function Finance() {
     queryFn: () => apiFinance.getGlobalTransactions(),
   });
 
+  const filteredTransactions = transactions?.data?.filter((txn: any) => {
+    const matchesSearch =
+      !appliedFilters.search ||
+      txn.id.toLowerCase().includes(appliedFilters.search.toLowerCase()) ||
+      txn.store?.name?.toLowerCase().includes(appliedFilters.search.toLowerCase()) ||
+      txn.orderId?.toLowerCase().includes(appliedFilters.search.toLowerCase());
+
+    const matchesType = appliedFilters.type === "All Types" || txn.type === appliedFilters.type;
+
+    return matchesSearch && matchesType;
+  }) || [];
+
+  const handleApplyFilters = () => {
+    setAppliedFilters(ledgerFilters);
+    setIsFilterOpen(false);
+  };
+
   // --- Wallet Data ---
   const { data: wallets, isLoading: loadingWallets } = useQuery({
     queryKey: ["adminFinanceWallets", searchQuery],
@@ -52,7 +85,35 @@ export default function Finance() {
   });
 
   const handleGlobalPayout = async () => {
-    navigate("/dashboard/finance/settlement-review");
+    try {
+      await apiFinance.triggerGlobalPayout();
+      toast.success("Global settlement triggered successfully");
+      queryClient.invalidateQueries({ queryKey: ["adminFinanceOverview"] });
+      queryClient.invalidateQueries({ queryKey: ["adminFinanceWallets"] });
+    } catch (err: any) {
+      toast.error(err.message || "Failed to trigger global payout");
+    }
+  };
+
+  const handleVerifyPayment = async (paymentId: string) => {
+    try {
+      await apiFinance.verifyPayment(paymentId);
+      toast.success("Payment status synchronized successfully");
+      queryClient.invalidateQueries({ queryKey: ["adminGlobalTransactions"] });
+      queryClient.invalidateQueries({ queryKey: ["adminFinanceOverview"] });
+    } catch (err: any) {
+      toast.error(err.message || "Failed to verify payment");
+    }
+  };
+
+  const handleSettleWallet = async (walletId: string, storeName: string) => {
+    try {
+      await apiFinance.settleWallet(walletId);
+      toast.success(`Settlement authorized for ${storeName}`);
+      queryClient.invalidateQueries({ queryKey: ["adminFinanceWallets"] });
+    } catch (err: any) {
+      toast.error(err.message || "Failed to authorize settlement");
+    }
   };
 
   const handleExportReport = async () => {
@@ -68,6 +129,11 @@ export default function Finance() {
     } catch (err: any) {
       toast.error(err.message || "Failed to export report");
     }
+  };
+
+  const calcPercent = (num: number, den: number) => {
+    const result = ((num / (den || 1)) * 100).toFixed(1);
+    return result === "NaN" ? "0.0" : result;
   };
 
   if (loadingOverview || loadingTrans || loadingWallets || loadingPayouts || loadingChart) {
@@ -91,36 +157,56 @@ export default function Finance() {
 
   return (
     <div className="font-primary w-full bg-white min-h-screen">
+      {/* Operational Status Bar */}
+      <div className="bg-[#574235] text-white py-2 px-4 flex justify-between items-center text-[10px] font-bold uppercase tracking-widest">
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-1">
+            <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+            <span>Core Engine: Online</span>
+          </div>
+          <div className="flex items-center gap-1 border-l border-white/20 pl-4">
+            <span>SLA: 99.98%</span>
+          </div>
+          <div className="flex items-center gap-1 border-l border-white/20 pl-4">
+            <span>Settlement Window: Open</span>
+          </div>
+        </div>
+        <div className="hidden md:block opacity-60">
+          System Clock: {new Date().toLocaleTimeString()}
+        </div>
+      </div>
 
       <div className="p-4 md:p-6 max-w-7xl mx-auto space-y-6">
         {/* Header */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-[#dec1af]">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-[#f57c00] rounded-xl text-white shrink-0">
-              <FiPieChart size={24} />
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-6 rounded-3xl shadow-sm border border-gray-200 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-orange-50 rounded-full -mr-16 -mt-16 blur-3xl opacity-50" />
+          <div className="flex items-center gap-4 relative z-10">
+            <div className="p-4 bg-gradient-to-br from-orange-500 to-orange-700 rounded-2xl text-white shadow-lg">
+              <FiPieChart size={28} />
             </div>
-            <div className="min-w-0">
-              <h1 className="text-xl md:text-2xl font-extrabold text-[#574235] tracking-tight truncate">Finance Control Center</h1>
-              <p className="text-[#574235]/70 text-xs md:text-sm truncate">Orchestrate ecosystem revenue, manage vendor funds, and monitor platform liquidity.</p>
+            <div className="min-w-0 relative z-10">
+              <h1 className="text-2xl md:text-3xl font-black text-gray-900 tracking-tight truncate">Financial Intelligence</h1>
+              <p className="text-gray-500 text-sm truncate">Real-time liquidity monitoring and global revenue orchestration.</p>
             </div>
           </div>
-          <div className="flex flex-col sm:flex-row w-full md:w-auto gap-3">
+          <div className="flex flex-col sm:flex-row w-full md:w-auto gap-3 relative z-10">
             <button
               onClick={handleExportReport}
-              className="px-4 py-2 bg-white border border-[#dec1af] text-[#574235] rounded-xl hover:bg-gray-50 transition-all text-sm font-semibold shadow-sm flex items-center justify-center gap-2 w-full sm:w-auto"
+              className="px-5 py-2.5 bg-white border border-gray-200 text-gray-600 rounded-2xl hover:bg-gray-50 transition-all text-sm font-bold shadow-sm flex items-center justify-center gap-2 w-full sm:w-auto group"
             >
-              <FiList size={16} />
-              Export Report
+              <FiList size={16} className="group-hover:text-orange-600 transition-colors" />
+              Export Ledger
             </button>
             <button
               onClick={handleGlobalPayout}
-              className="px-4 py-2 bg-[#f57c00] text-white rounded-xl hover:bg-[#e67300] transition-all text-sm font-semibold shadow-sm flex items-center justify-center gap-2 w-full sm:w-auto"
+              className="px-5 py-2.5 bg-orange-600 text-white rounded-2xl hover:bg-orange-700 transition-all text-sm font-bold shadow-md flex items-center justify-center gap-2 w-full sm:w-auto"
             >
               <FiSend size={16} />
-              Global Payout
+              Settle All Funds
             </button>
           </div>
         </div>
+
 
         {/* Tab Navigation */}
         <div className="flex overflow-x-auto no-scrollbar border-b border-gray-200 gap-4 md:gap-8">
@@ -135,6 +221,12 @@ export default function Finance() {
             onClick={() => setActiveTab("wallets")}
             icon={<FiWalletIcon />}
             label="Store Wallets"
+          />
+          <TabButton
+            active={activeTab === "settlement"}
+            onClick={() => setActiveTab("settlement")}
+            icon={<FiSend />}
+            label="Settlement Review"
           />
           <TabButton
             active={activeTab === "payouts"}
@@ -155,10 +247,10 @@ export default function Finance() {
           {activeTab === "overview" && (
             <div className="space-y-6">
               {/* Stats Grid - Bento Style */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
                 <StatCard
                   title="Platform Revenue"
-                  value={`₦${stats.totalPlatformRevenue?.toLocaleString()}`}
+                  value={`₦${Number(stats.totalPlatformRevenue || 0).toLocaleString()}`}
                   icon={<FiTrendingUp />}
                   color="text-blue-600"
                   bg="bg-blue-50"
@@ -167,7 +259,7 @@ export default function Finance() {
                 />
                 <StatCard
                   title="Store Earnings"
-                  value={`₦${stats.totalStoreEarnings?.toLocaleString()}`}
+                  value={`₦${Number(stats.totalStoreEarnings || 0).toLocaleString()}`}
                   icon={<FiShoppingBag />}
                   color="text-green-600"
                   bg="bg-green-50"
@@ -176,7 +268,7 @@ export default function Finance() {
                 />
                 <StatCard
                   title="Pending Balance"
-                  value={`₦${stats.totalPendingBalance?.toLocaleString()}`}
+                  value={`₦${Number(stats.totalPendingBalance || 0).toLocaleString()}`}
                   icon={<FiWalletIcon />}
                   color="text-amber-600"
                   bg="bg-amber-50"
@@ -185,13 +277,22 @@ export default function Finance() {
                 />
                 <StatCard
                   title="Available for Payout"
-                  value={`₦${stats.totalAvailableBalance?.toLocaleString()}`}
+                  value={`₦${Number(stats.totalAvailableBalance || 0).toLocaleString()}`}
                   icon={<FiCreditCard />}
                   color="text-purple-600"
                   bg="bg-purple-50"
                   trend="Ready to transfer"
                   isUp={null}
                   onClick={() => setActiveTab("wallets")}
+                />
+                <StatCard
+                  title="VAT Collected"
+                  value={`₦${Number(stats.totalVatCollected || 0).toLocaleString() || "0"}`}
+                  icon={<FiPieChart />}
+                  color="text-red-600"
+                  bg="bg-red-50"
+                  trend="Tax Liability"
+                  isUp={null}
                 />
               </div>
 
@@ -220,7 +321,7 @@ export default function Finance() {
                         <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#9ca3af'}} />
                         <YAxis axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#9ca3af'}} />
                         <Tooltip
-                          contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                          contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0, 0 / 0.1)' }}
                         />
                         <Area type="monotone" dataKey="revenue" stroke="#f57c00" fillOpacity={1} fill="url(#colorRev)" strokeWidth={2} />
                         <Area type="monotone" dataKey="platform" stroke="#574235" fill="transparent" strokeWidth={2} strokeDasharray="5 5" />
@@ -237,85 +338,142 @@ export default function Finance() {
                       <div className="flex justify-between text-sm mb-2">
                         <span className="text-gray-500">Platform Margin</span>
                         <span className="font-bold text-gray-800">
-                          {((stats.totalPlatformRevenue / (stats.totalPlatformRevenue + stats.totalStoreEarnings || 1)) * 100).toFixed(1)}%
+                          {calcPercent(stats.totalPlatformRevenue, stats.totalPlatformRevenue + stats.totalStoreEarnings)}%
                         </span>
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-2">
                         <div
                           className="bg-[#f57c00] h-2 rounded-full"
-                          style={{ width: `${(stats.totalPlatformRevenue / (stats.totalPlatformRevenue + stats.totalStoreEarnings || 1)) * 100}%` }}
+                          style={{ width: `${calcPercent(stats.totalPlatformRevenue, stats.totalPlatformRevenue + stats.totalStoreEarnings)}%` }}
                         />
                       </div>
                     </div>
                     <div className="p-4 bg-gray-50 rounded-xl border border-gray-100">
                       <div className="flex justify-between text-sm mb-2">
-                        <span className="text-gray-500">Payout Liquidity</span>
-                        <span className="font-bold text-gray-800">
-                          {((stats.totalAvailableBalance / (stats.totalAvailableBalance + stats.totalPendingBalance || 1)) * 100).toFixed(1)}%
+                        <span className="text-gray-500">Pending Balance</span>
+                        <span className="font-bold text-amber-600">
+                          ₦{Number(stats.totalPendingBalance || 0).toLocaleString()}
                         </span>
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-2">
                         <div
-                          className="bg-purple-600 h-2 rounded-full"
-                          style={{ width: `${(stats.totalAvailableBalance / (stats.totalAvailableBalance + stats.totalPendingBalance || 1)) * 100}%` }}
+                          className="bg-amber-500 h-2 rounded-full"
+                          style={{ width: `${calcPercent(stats.totalPendingBalance, stats.totalPendingBalance + stats.totalAvailableBalance)}%` }}
+                        />
+                      </div>
+                      {Number(stats.totalPendingBalance || 0) > Number(stats.totalAvailableBalance || 0) && (
+                        <p className="text-[10px] text-amber-600 mt-2 font-medium flex items-center gap-1">
+                          ⚠️ High pending ratio: Review settlement windows
+                        </p>
+                      )}
+                    </div>
+                    <div className="p-4 bg-gray-50 rounded-xl border border-gray-100">
+                      <div className="flex justify-between text-sm mb-2">
+                        <span className="text-gray-500">VAT Contribution</span>
+                        <span className="font-bold text-gray-800">
+                          {calcPercent(stats.totalVatCollected, stats.totalPlatformRevenue + stats.totalStoreEarnings + stats.totalVatCollected)}%
+                        </span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div
+                          className="bg-red-500 h-2 rounded-full"
+                          style={{ width: `${calcPercent(stats.totalVatCollected, stats.totalPlatformRevenue + stats.totalStoreEarnings + stats.totalVatCollected)}%` }}
                         />
                       </div>
                     </div>
-                    <div className="text-xs text-gray-400 italic text-center mt-4">
-                      Values are synchronized in real-time from store wallets.
+                  </div>
+                  <div className="mt-6 pt-6 border-t border-gray-100">
+                    <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Tax Liability Breakdown</h4>
+                    <div className="flex items-center justify-between p-3 bg-red-50/50 rounded-xl border border-red-100">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 bg-red-500 rounded-full" />
+                        <span className="text-xs font-medium text-gray-700">Current VAT Period</span>
+                      </div>
+                      <span className="text-sm font-bold text-red-600">₦{Number(stats.totalVatCollected || 0).toLocaleString()}</span>
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* Store Performance Leaderboard */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div className="lg:col-span-1 bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-[#dec1af]">
-                  <h3 className="font-bold text-[#f57c00] mb-4">Top Earning Stores</h3>
-                  <div className="space-y-4">
-                    {topStores.map((store: any, idx: number) => (
-                      <div key={store.id} className="flex items-center justify-between p-3 rounded-xl bg-gray-50 border border-gray-100 hover:bg-gray-100 transition-colors gap-2">
-                        <div className="flex items-center gap-3 min-w-0 flex-1">
-                          <span className="text-sm font-medium text-gray-700 truncate">{store.store?.name}</span>
+              {/* Store Health Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {topStores.map((store: any) => {
+                  const available = Number(store.availableBalance || 0);
+                  const pending = Number(store.pendingBalance || 0);
+                  const total = available + pending;
+                  const availablePercent = total > 0 ? (available / total) * 100 : 0;
+
+                  return (
+                    <div key={store.id} className="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-all group">
+                      <div className="flex justify-between items-start mb-3">
+                        <div className="flex items-center gap-2">
+                          <div className="w-8 h-8 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center font-bold text-xs">
+                            {store.store?.name?.charAt(0).toUpperCase()}
+                          </div>
+                          <p className="text-sm font-bold text-gray-800 truncate max-w-[100px]">{store.store?.name}</p>
                         </div>
-                        <span className="text-sm font-bold text-green-600 shrink-0">₦{store.lifetimeEarnings?.toLocaleString()}</span>
+                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase ${
+                          availablePercent > 80 ? 'bg-green-100 text-green-600' :
+                          availablePercent > 40 ? 'bg-amber-100 text-amber-600' : 'bg-red-100 text-red-600'
+                        }`}>
+                          {availablePercent > 80 ? 'Liquid' : availablePercent > 40 ? 'Moderate' : 'At Risk'}
+                        </span>
                       </div>
-                    ))}
-                    {topStores.length === 0 && <p className="text-xs text-gray-400 text-center">No store data available.</p>}
-                  </div>
-                </div>
-                <div className="lg:col-span-2 bg-[#f57c00] p-6 rounded-2xl shadow-lg text-white relative overflow-hidden">
-                  <div className="relative z-10">
-                    <h3 className="text-lg font-bold mb-2">Platform Liquidity Insight</h3>
-                    <p className="text-orange-100 text-sm mb-6 max-w-md">
-                      Your platform currently holds ₦{stats.totalAvailableBalance?.toLocaleString()} ready for payout.
-                      This represents the current liquidity available to be transferred to vendors.
-                    </p>
-                    <button
-                      onClick={handleGlobalPayout}
-                      className="px-6 py-2 bg-white text-[#f57c00] rounded-xl font-bold text-sm hover:bg-orange-50 transition-all shadow-md"
-                    >
-                      Settle All Eligible Wallets
-                    </button>
-                  </div>
-                  <FiPieChart size={120} className="absolute -right-10 -bottom-10 opacity-10 rotate-12" />
-                </div>
+                      <div className="space-y-3">
+                        <div className="flex justify-between text-xs">
+                          <span className="text-gray-500">Available Balance</span>
+                          <span className="font-bold text-gray-800">₦{available.toLocaleString()}</span>
+                        </div>
+                        <div className="w-full bg-gray-100 rounded-full h-1.5 overflow-hidden">
+                          <div
+                            className={`h-full transition-all duration-500 ${
+                              availablePercent > 80 ? 'bg-green-500' :
+                              availablePercent > 40 ? 'bg-amber-500' : 'bg-red-500'
+                            }`}
+                            style={{ width: `${availablePercent}%` }}
+                          />
+                        </div>
+                        <div className="flex justify-between text-xs">
+                          <span className="text-gray-500">Pending Balance</span>
+                          <span className="font-bold text-amber-600">₦{pending.toLocaleString()}</span>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => openModal(<WalletDetailsModal walletId={store.id} />)}
+                        className="w-full mt-4 py-2 bg-gray-50 text-gray-600 rounded-lg text-xs font-bold hover:bg-gray-100 transition-all opacity-0 group-hover:opacity-100"
+                      >
+                        View Full Ledger
+                      </button>
+                    </div>
+                  );
+                })}
               </div>
 
               {/* Global Ledger */}
               <div className="bg-white rounded-2xl shadow-sm border border-[#dec1af] overflow-hidden">
                 <div className="p-4 md:p-5 border-b border-[#dec1af] flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                  <h3 className="font-bold text-[#574235]">Global Transaction Ledger</h3>
+                  <div className="flex items-center gap-3">
+                    <h3 className="font-bold text-[#574235]">Global Transaction Ledger</h3>
+                    <button
+                      onClick={() => setIsFilterOpen(!isFilterOpen)}
+                      className={`p-2 rounded-lg transition-all ${isFilterOpen ? 'bg-orange-100 text-orange-600' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}
+                    >
+                      <FiList size={16} />
+                    </button>
+                  </div>
                   <div className="flex gap-2 w-full sm:w-auto">
                     <input
                       type="text"
-                      placeholder="Search Txn ID or Store..."
+                      placeholder="Quick search..."
                       className="text-xs border border-[#dec1af] rounded px-2 py-1 outline-none w-full sm:w-48"
-                      onChange={(e) => {
-                        // Filter logic should be handled by state
-                      }}
+                      value={appliedFilters.search}
+                      onChange={(e) => setAppliedFilters({...appliedFilters, search: e.target.value})}
                     />
-                    <select className="text-xs border border-[#dec1af] rounded px-2 py-1 outline-none w-full sm:w-auto">
+                    <select
+                      className="text-xs border border-[#dec1af] rounded px-2 py-1 outline-none w-full sm:w-auto"
+                      value={appliedFilters.type}
+                      onChange={(e) => setAppliedFilters({...appliedFilters, type: e.target.value})}
+                    >
                       <option>All Types</option>
                       <option>SALE_CREDIT</option>
                       <option>PAYOUT_DEBIT</option>
@@ -323,6 +481,46 @@ export default function Finance() {
                     </select>
                   </div>
                 </div>
+                {isFilterOpen && (
+                  <div className="p-4 bg-gray-50 border-b border-gray-200 grid grid-cols-1 sm:grid-cols-3 gap-4 animate-in slide-in-from-top-2 duration-200">
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-gray-400 uppercase">Search Term</label>
+                      <input
+                        type="text"
+                        className="w-full p-2 text-xs border border-gray-200 rounded-lg outline-none focus:ring-1 focus:ring-orange-500"
+                        value={ledgerFilters.search}
+                        onChange={(e) => setLedgerFilters({...ledgerFilters, search: e.target.value})}
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-gray-400 uppercase">Transaction Type</label>
+                      <select
+                        className="w-full p-2 text-xs border border-gray-200 rounded-lg outline-none focus:ring-1 focus:ring-orange-500"
+                        value={ledgerFilters.type}
+                        onChange={(e) => setLedgerFilters({...ledgerFilters, type: e.target.value})}
+                      >
+                        <option>All Types</option>
+                        <option>SALE_CREDIT</option>
+                        <option>PAYOUT_DEBIT</option>
+                        <option>ADJUSTMENT</option>
+                      </select>
+                    </div>
+                    <div className="flex items-end gap-2">
+                      <button
+                        onClick={() => setLedgerFilters({ search: "", type: "All Types", startDate: "", endDate: "", minAmount: "", maxAmount: "" })}
+                        className="flex-1 px-3 py-2 text-xs font-medium text-gray-500 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition"
+                      >
+                        Reset
+                      </button>
+                      <button
+                        onClick={handleApplyFilters}
+                        className="flex-1 px-3 py-2 text-xs font-bold text-white bg-orange-600 rounded-lg hover:bg-orange-700 transition shadow-sm"
+                      >
+                        Apply Filters
+                      </button>
+                    </div>
+                  </div>
+                )}
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-sm">
                     <thead className="bg-gray-50 text-gray-500 text-xs uppercase font-semibold">
@@ -336,13 +534,20 @@ export default function Finance() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100">
-                      {transactions?.data?.map((txn: any) => (
-                        <tr key={txn.id} className="hover:bg-gray-50 transition-colors">
+                      {filteredTransactions.map((txn: any) => (
+                        <tr
+                          key={txn.id}
+                          className="hover:bg-gray-50 transition-colors cursor-pointer"
+                          onClick={() => openModal(<TransactionDetailsModal transaction={txn} />)}
+                        >
                           <td className="px-6 py-4 font-medium text-gray-700">#{txn.id.slice(0, 8)}</td>
                           <td className="px-6 py-4 text-gray-500">{new Date(txn.createdAt).toLocaleDateString()}</td>
                           <td className="px-6 py-4">
                             <div className="font-medium text-gray-800">{txn.store?.name || 'System'}</div>
                             <div className="text-xs text-gray-400">Order: {txn.orderId?.slice(0, 8) || 'N/A'}</div>
+                            {txn.order?.payment && (
+                              <div className="text-[10px] font-mono text-orange-600">Ref: {txn.order.payment.reference?.slice(0, 12)}...</div>
+                            )}
                           </td>
                           <td className="px-6 py-4">
                             <span className={`px-2 py-1 rounded-full text-[10px] font-bold ${
@@ -356,11 +561,24 @@ export default function Finance() {
                             ₦{parseFloat(txn.grossAmount || txn.netAmount || 0).toLocaleString()}
                           </td>
                           <td className="px-6 py-4">
-                            <span className={`px-2 py-1 rounded-full text-xs ${
-                              txn.status === 'COMPLETED' ? 'bg-green-100 text-green-600' : 'bg-amber-100 text-amber-600'
-                            }`}>
-                              {txn.status}
-                            </span>
+                            <div className="flex items-center gap-2">
+                              <span className={`px-2 py-1 rounded-full text-xs ${
+                                txn.status === 'COMPLETED' ? 'bg-green-100 text-green-600' : 'bg-amber-100 text-amber-600'
+                              }`}>
+                                {txn.status}
+                              </span>
+                              {txn.status !== 'COMPLETED' && txn.order?.payment && (
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleVerifyPayment(txn.order.payment.id);
+                                  }}
+                                  className="text-[10px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded border border-blue-200 hover:bg-blue-100 transition"
+                                >
+                                  Verify
+                                </button>
+                              )}
+                            </div>
                           </td>
                         </tr>
                       ))}
@@ -370,7 +588,6 @@ export default function Finance() {
               </div>
             </div>
           )}
-
           {activeTab === "wallets" && (
             <div className="bg-white rounded-2xl shadow-sm border border-[#dec1af] overflow-hidden">
               <div className="p-4 md:p-5 border-b border-[#dec1af] flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -401,9 +618,9 @@ export default function Finance() {
                           <div className="font-medium text-gray-800">{wallet.store?.name || 'Unknown Store'}</div>
                           <div className="text-xs text-gray-400">{wallet.store?.email}</div>
                         </td>
-                        <td className="px-6 py-4 font-bold text-green-600">₦{wallet.availableBalance?.toLocaleString()}</td>
-                        <td className="px-6 py-4 font-bold text-amber-600">₦{wallet.pendingBalance?.toLocaleString()}</td>
-                        <td className="px-6 py-4 text-gray-600">₦{wallet.lifetimeEarnings?.toLocaleString()}</td>
+                        <td className="px-6 py-4 font-bold text-green-600">₦{Number(wallet.availableBalance || 0).toLocaleString()}</td>
+                        <td className="px-6 py-4 font-bold text-amber-600">₦{Number(wallet.pendingBalance || 0).toLocaleString()}</td>
+                        <td className="px-6 py-4 text-gray-600">₦{Number(wallet.lifetimeEarnings || 0).toLocaleString()}</td>
                         <td className="px-6 py-4 text-right">
                           <div className="flex justify-end gap-4">
                             <button
@@ -427,7 +644,63 @@ export default function Finance() {
               </div>
             </div>
           )}
-
+          {activeTab === "settlement" && (
+            <div className="space-y-6">
+              <div className="bg-white rounded-2xl shadow-sm border border-[#dec1af] overflow-hidden">
+                <div className="p-4 md:p-5 border-b border-[#dec1af] flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                  <div>
+                    <h3 className="font-bold text-[#574235]">Settlement Review Queue</h3>
+                    <p className="text-xs text-gray-400">Review and authorize funds transfers to vendor wallets.</p>
+                  </div>
+                  <button
+                    onClick={handleGlobalPayout}
+                    className="px-4 py-2 bg-[#f57c00] text-white rounded-xl font-bold text-sm hover:bg-[#e67300] transition-all shadow-sm"
+                  >
+                    Settle All Eligible
+                  </button>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-sm">
+                    <thead className="bg-gray-50 text-gray-500 text-xs uppercase font-semibold">
+                      <tr className="border-b">
+                        <th className="px-6 py-3">Store Name</th>
+                        <th className="px-6 py-3">Pending Balance</th>
+                        <th className="px-6 py-3">Available Balance</th>
+                        <th className="px-6 py-3 text-right">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {wallets?.data?.filter((w: any) => w.pendingBalance > 0).map((wallet: any) => (
+                        <tr key={wallet.id} className="hover:bg-gray-50 transition-colors">
+                          <td className="px-6 py-4">
+                            <div className="font-medium text-gray-800">{wallet.store?.name || 'Unknown Store'}</div>
+                            <div className="text-xs text-gray-400">{wallet.store?.email}</div>
+                          </td>
+                          <td className="px-6 py-4 font-bold text-amber-600">₦{Number(wallet.pendingBalance || 0).toLocaleString()}</td>
+                          <td className="px-6 py-4 text-gray-600">₦{Number(wallet.availableBalance || 0).toLocaleString()}</td>
+                          <td className="px-6 py-4 text-right">
+                            <button
+                              onClick={() => handleSettleWallet(wallet.id, wallet.store?.name || 'Unknown Store')}
+                              className="px-3 py-1 bg-blue-50 text-blue-600 rounded-lg text-xs font-bold hover:bg-blue-100 transition-colors"
+                            >
+                              Authorize
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                      {wallets?.data?.filter((w: any) => w.pendingBalance > 0).length === 0 && (
+                        <tr>
+                          <td colSpan={4} className="px-6 py-20 text-center text-gray-400 italic">
+                            No pending settlements found.
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
           {activeTab === "payouts" && (
             <div className="bg-white rounded-2xl shadow-sm border border-[#dec1af] overflow-hidden">
               <div className="p-4 md:p-5 border-b border-[#dec1af] flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -455,7 +728,7 @@ export default function Finance() {
                       <tr key={payout.id} className="hover:bg-gray-50 transition-colors">
                         <td className="px-6 py-4 font-medium text-gray-700">#{payout.id.slice(0, 8)}</td>
                         <td className="px-6 py-4 text-gray-800">{payout.store?.name || 'N/A'}</td>
-                        <td className="px-6 py-4 font-bold text-gray-800">₦{payout.amount?.toLocaleString()}</td>
+                        <td className="px-6 py-4 font-bold text-gray-800">₦{Number(payout.amount || 0).toLocaleString()}</td>
                         <td className="px-6 py-4">
                           <span className={`px-2 py-1 rounded-full text-xs ${
                             payout.status === 'PAID' ? 'bg-green-100 text-green-600' :
@@ -474,7 +747,6 @@ export default function Finance() {
               </div>
             </div>
           )}
-
           {activeTab === "audit" && (
             <div className="bg-white rounded-2xl shadow-sm border border-[#dec1af] overflow-hidden">
               <div className="p-4 md:p-5 border-b border-[#dec1af]">
@@ -503,7 +775,7 @@ export default function Finance() {
                           {txn.store?.name || 'System'}
                         </td>
                         <td className="px-6 py-4 text-gray-500 text-xs">
-                          Net: ₦{txn.netAmount?.toLocaleString()} | Gross: ₦{txn.grossAmount?.toLocaleString()}
+                          Net: ₦{Number(txn.netAmount || 0).toLocaleString()} | Gross: ₦{Number(txn.grossAmount || 0).toLocaleString()}
                         </td>
                         <td className="px-6 py-4 text-gray-600">
                           {txn.userId ? `User #${txn.userId.slice(0, 8)}` : 'Automated'}
@@ -545,14 +817,14 @@ function StatCard({ title, value, icon, color, bg, trend, isUp, onClick }: any) 
       <div className="flex justify-between items-start mb-4">
         <div className={`p-3 ${bg} rounded-xl ${color} text-xl`}>{icon}</div>
         {trend && (
-          <span className={`text-xs font-medium px-2 py-1 rounded-lg flex items-center gap-1 ${
+          <div className={`text-xs font-bold px-2 py-1 rounded-lg flex items-center gap-1 ${
             isUp === true ? "bg-green-50 text-green-600" :
             isUp === false ? "bg-red-50 text-red-600" : "bg-gray-50 text-gray-600"
           }`}>
-            {isUp === true && <FiArrowUpRight />}
-            {isUp === false && <FiArrowDownRight />}
+            {isUp === true && <FiArrowUpRight size={10} />}
+            {isUp === false && <FiArrowDownRight size={10} />}
             {trend}
-          </span>
+          </div>
         )}
       </div>
       <div className="text-sm text-gray-500 mb-1">{title}</div>

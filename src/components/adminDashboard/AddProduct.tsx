@@ -21,6 +21,7 @@ import {
 } from "../../services/adminDashboard/apiPickupStation";
 import PickupStationForm from "./PickupStationForm";
 import ImagePreviewList from "./ImagePreviewList";
+import { getHubs } from "../../services/apiAdmin";
 
 type PickupStationOption = {
   id: string;
@@ -52,6 +53,8 @@ export default function AddProduct({
   // Stations assigned to this product in the form. Each entry has stationId and stock
   const [stations, setStations] = useState<Array<{ stationId?: string; stock: string }>>([]);
   const [showStationForm, setShowStationForm] = useState(false);
+  const [fulfillmentMethod, setFulfillmentMethod] = useState<"RIDER_PICKUP" | "HUB_DROPOFF">("RIDER_PICKUP");
+  const [fulfillmentHubId, setFulfillmentHubId] = useState("");
 
   // computed total stock is the sum of all station stocks
   const totalStock = stations.reduce((acc, s) => acc + (Number(s.stock) || 0), 0);
@@ -117,6 +120,8 @@ export default function AddProduct({
     queryFn: getPickupStations,
   });
   const pickupStations = normalizeListData<PickupStationOption>(pickupStationResponse);
+  const { data: hubsResponse } = useQuery({ queryKey: ["hubs"], queryFn: getHubs });
+  const hubs = hubsResponse?.data || [];
   const logisticsCategoryList = normalizeListData(logisticsCategories).map((cat: any) => ({
     id: String(cat.category_id),
     name: cat.category,
@@ -217,6 +222,8 @@ export default function AddProduct({
             stationId: station.stationId,
             initialStock: Number(station.stock) || 0,
           })),
+        fulfillmentMethod,
+        fulfillmentHubId: fulfillmentMethod === "HUB_DROPOFF" ? fulfillmentHubId : undefined,
       });
 
 
@@ -605,6 +612,29 @@ export default function AddProduct({
                 </div>
               </section>
             </div>
+
+            <section className="rounded-[28px] bg-white p-6 shadow-sm ring-1 ring-slate-200">
+              <h3 className="text-lg font-semibold text-slate-900">Fulfillment origin</h3>
+              <p className="mt-1 text-sm text-slate-500">Choose how the rider receives this product. The selected origin is used in distance-based shipping fees.</p>
+              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                <label className={`cursor-pointer rounded-2xl border p-4 ${fulfillmentMethod === "RIDER_PICKUP" ? "border-orange bg-orange/5" : "border-slate-200"}`}>
+                  <input type="radio" className="mr-2" checked={fulfillmentMethod === "RIDER_PICKUP"} onChange={() => { setFulfillmentMethod("RIDER_PICKUP"); setFulfillmentHubId(""); }} />
+                  <span className="font-medium">Rider picks up from my store</span>
+                  <p className="mt-1 text-xs text-slate-500">Use the assigned pickup station/store origin.</p>
+                </label>
+                <label className={`cursor-pointer rounded-2xl border p-4 ${fulfillmentMethod === "HUB_DROPOFF" ? "border-orange bg-orange/5" : "border-slate-200"}`}>
+                  <input type="radio" className="mr-2" checked={fulfillmentMethod === "HUB_DROPOFF"} onChange={() => setFulfillmentMethod("HUB_DROPOFF")} />
+                  <span className="font-medium">I drop off at a hub</span>
+                  <p className="mt-1 text-xs text-slate-500">The hub-to-customer distance is included in shipping.</p>
+                </label>
+              </div>
+              {fulfillmentMethod === "HUB_DROPOFF" && (
+                <select required value={fulfillmentHubId} onChange={(event) => setFulfillmentHubId(event.target.value)} className="mt-4 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm">
+                  <option value="">Select a drop-off hub</option>
+                  {hubs.map((hub: any) => <option key={hub.id} value={hub.id}>{hub.name} - {hub.address}</option>)}
+                </select>
+              )}
+            </section>
 
             <section className="rounded-[28px] bg-white p-6 shadow-sm ring-1 ring-slate-200">
               <div className="mb-5 flex items-center justify-between">

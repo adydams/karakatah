@@ -18,6 +18,7 @@ type Response = {
 
 type UserContextType = {
   user: User | null;
+  isLoading: boolean;
   setUser: React.Dispatch<React.SetStateAction<User | null>>;
   userLogin: (email: string, password: string) => Promise<Response>;
   signUp: (params: CreateUserParams) => Promise<Response>;

@@ -328,7 +328,8 @@ export default function Orders() {
               </div>
             ) : (
               <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-                <table className="w-full text-left">
+                <div className="overflow-x-auto">
+                  <table className="w-full min-w-[720px] text-left">
                   <thead className="bg-gray-50 text-gray-500 text-xs uppercase font-bold">
                     <tr>
                       <th className="px-6 py-3">Order ID</th>
@@ -354,7 +355,8 @@ export default function Orders() {
                       />
                     ))}
                   </tbody>
-                </table>
+                  </table>
+                </div>
               </div>
             )
           ) : (

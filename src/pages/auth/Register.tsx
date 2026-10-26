@@ -4,9 +4,11 @@ import Spinner from "../../components/Spinner";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useUser } from "../../contexts/hooks/useUser";
 import toast from "react-hot-toast";
-import SignUpWithGoogle from "../../components/SignUpWithGoogle";
+import SocialLogin from "../../components/SocialLogin";
 import AuthSideImage from "../../components/AuthSideImage";
 import { signUpSchema, type TSignUpSchema } from "../../types/formSchema";
+import PasswordField from "../../components/ui/PasswordField";
+
 
 export default function Register() {
   const { signUp } = useUser();
@@ -107,21 +109,14 @@ export default function Register() {
                 <p className="text-xs text-red-500">{`${errors.phone.message}`}</p>
               )}
             </div>
-            <div className="flex flex-col items-start space-y-1">
-              <label className="text-sm font-medium text-gray-600" htmlFor="password">
-                Password
-              </label>
-              <input
-                className="bg-white border-gray-300 text-dark-gray w-full rounded-full border px-5 py-3 text-sm transition-all focus:border-muted-green focus:ring-1 focus:ring-muted-green outline-none"
-                type="password"
-                placeholder="Enter your password"
-                id="password"
-                {...register("password")}
-              />
-              {errors.password && (
-                <p className="text-xs text-red-500">{`${errors.password.message}`}</p>
-              )}
-            </div>
+            <PasswordField
+              label="Password"
+              placeholder="Enter your password"
+              id="password"
+              error={errors.password?.message}
+              className="bg-white border-gray-300 text-dark-gray w-full rounded-full border px-5 py-3 text-sm transition-all focus:border-muted-green focus:ring-1 focus:ring-muted-green outline-none"
+              {...register("password")}
+            />
 
             <button className="bg-muted-green hover:bg-muted-green/90 w-full cursor-pointer rounded-full px-5 py-3 text-sm font-bold text-white transition-all shadow-md">
               {isSubmitting ? <Spinner size="small" /> : "Sign up"}
@@ -129,7 +124,7 @@ export default function Register() {
           </form>
 
           <div className="w-full mt-8 flex flex-col items-center space-y-6">
-            <SignUpWithGoogle isSubmitting={isSubmitting} status="up" />
+            <SocialLogin isSubmitting={isSubmitting} status="up" />
 
             <p className="text-sm text-gray-600">
               Have an account?{" "}

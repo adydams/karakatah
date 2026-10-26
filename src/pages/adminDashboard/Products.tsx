@@ -1,6 +1,7 @@
 ﻿import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { keepPreviousData } from "@tanstack/react-query";
+import toast from "react-hot-toast";
 
 import { getProducts, deleteProduct, getCategories } from "../../services/adminDashboard/apiProducts";
 
@@ -99,7 +100,7 @@ export default function Products() {
   };
 
   return (
-    <div className="font-primary w-full relative">
+    <div className="font-primary relative w-full min-w-0 max-w-full overflow-hidden">
       {/* Loading Overlay */}
       {(isFetching || isApplying) && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-white/70 backdrop-blur-sm transition-opacity duration-200">
@@ -138,7 +139,7 @@ export default function Products() {
         />
       )}
 
-      <div className="my-10 flex w-full flex-col rounded-xl bg-white px-3 py-3 shadow-sm/5">
+      <div className="my-10 flex min-w-0 w-full max-w-full flex-col rounded-xl bg-white px-3 py-3 shadow-sm/5">
         {/* Header */}
         <div className="flex w-full flex-col gap-4 py-2 text-sm md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-6">
@@ -235,8 +236,11 @@ export default function Products() {
         </div>
 
         {/* Table wrapper for responsiveness */}
-        <div className="overflow-x-auto mt-3">
-          <div className="min-w-[1000px]">
+        <div
+          className="horizontal-scrollbar mt-3 w-full max-w-full"
+          style={{ overflowX: "scroll", overflowY: "hidden" }}
+        >
+          <div className="min-w-[1000px]" style={{ width: "1000px" }}>
             {/* Table header */}
             <div className="bg-light-gray/40 border-dark-gray/10 grid w-full grid-cols-[3fr_1fr_1fr_1fr_1fr_120px_120px] rounded-md border px-2 py-3 text-sm font-medium">
               {tableHeaders.map((item) => (
@@ -277,13 +281,14 @@ export default function Products() {
                     onEdit={(id) => setEditProductId(id)}
                     onDelete={async (id) => {
                       if (!id) return;
-                      if (!confirm('Delete this product?')) return;
+                      if (!window.confirm('Delete this product?')) return;
                       try {
                         await deleteProduct(id);
                         await refetch();
+                        toast.success("Product deleted successfully");
                       } catch (err) {
                         console.error(err);
-                        alert('Failed to delete product');
+                        toast.error('Failed to delete product');
                       }
                     }}
                   />
@@ -296,4 +301,3 @@ export default function Products() {
     </div>
   );
 }
-

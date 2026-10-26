@@ -1,12 +1,22 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Outlet, useLocation } from "react-router";
 import Sidebar from "../../components/adminDashboard/Sidebar";
 import NavBar from "../../components/adminDashboard/NavBar";
 import Modal from "../../components/Modal";
 
 export default function AdminHomeLayout() {
-  const [showSidebar, setShowSidebar] = useState(true);
+  const [showSidebar, setShowSidebar] = useState(() =>
+    typeof window !== "undefined" ? window.matchMedia("(min-width: 1024px)").matches : true
+  );
   const location = useLocation();
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(min-width: 1024px)");
+    const handleViewportChange = () => setShowSidebar(mediaQuery.matches);
+
+    mediaQuery.addEventListener("change", handleViewportChange);
+    return () => mediaQuery.removeEventListener("change", handleViewportChange);
+  }, []);
 
   const pageTitles: Record<string, string> = {
     "/dashboard": "Dashboard",
@@ -20,8 +30,10 @@ export default function AdminHomeLayout() {
     "/dashboard/stores": "Stores",
     "/dashboard/transactions": "Transactions",
     "/dashboard/finance": "Finance",
+    "/dashboard/discounts": "Discounts",
     "/dashboard/shipment": "Fleet Management",
     "/dashboard/pickup-stations": "Pickup Stations",
+    "/dashboard/hubs": "Hubs",
     "/dashboard/audit-trail": "System Audit Trail",
     "/dashboard/permissions": "Permissions Management",
     "/dashboard/help": "Help",
@@ -67,7 +79,7 @@ export default function AdminHomeLayout() {
         `}
       >
         {/* Navbar - Now a direct child of Layout, not the Page */}
-        <header className="sticky top-0 z-[800] bg-white px-4 py-4 shadow-sm w-full">
+        <header className="sticky top-0 z-[800] w-full bg-white px-3 py-3 shadow-sm sm:px-4 sm:py-4">
           <NavBar
             title={title}
             handleSidebar={handleSidebar}
@@ -76,7 +88,7 @@ export default function AdminHomeLayout() {
         </header>
 
         {/* Page content */}
-        <main className="p-4 flex-1">
+        <main className="min-w-0 flex-1 p-3 sm:p-4 lg:p-6">
           <Outlet />
         </main>
       </div>

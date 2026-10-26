@@ -19,6 +19,18 @@ export const downloadOrderInvoice = async (orderId: string) => {
   return response.data as Blob;
 };
 
+export const downloadInvoiceBundle = async () => {
+  const response = await axiosInstance.get(`${ORDERS_BASE}/invoices/bundle/pdf`, {
+    responseType: "blob",
+  });
+  return response.data as Blob;
+};
+
+export const getMyOrders = async () => {
+  const response = await axiosInstance.get(`${ORDERS_BASE}/my-orders`);
+  return response.data;
+};
+
 export const getAdminOrders = async ({
   limit = 10,
   offset = 0,
@@ -46,4 +58,31 @@ export const getAdminOrders = async ({
 
   const response = await axiosInstance.get(`${ORDERS_BASE}?${params.toString()}`);
   return response.data;
+};
+
+export const previewDiscount = async (data: { code?: string; orderTotal: number }) => {
+  const response = await axiosInstance.post(`${ORDERS_BASE}/preview`, data);
+  return response.data;
+};
+
+export type CheckoutQuote = {
+  itemsSubtotal: number;
+  discountAmount: number;
+  discountCode: string | null;
+  discountLabel: string | null;
+  shippingFee: number;
+  vatPercentage: number;
+  vatAmount: number;
+  totalAmount: number;
+};
+
+export const getCheckoutQuote = async (data: {
+  shippingAddressId?: string;
+  shippingMethod: "pickup" | "shipping";
+  chosenHubId?: string;
+  discountCode?: string;
+  courierFee?: number;
+}) => {
+  const response = await axiosInstance.post(`${ORDERS_BASE}/checkout-quote`, data);
+  return response.data as { success: boolean; data: CheckoutQuote; message?: string };
 };

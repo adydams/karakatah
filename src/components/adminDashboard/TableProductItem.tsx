@@ -58,7 +58,7 @@ export default function TableProductItem({
         >
           <FaEllipsisV size={14} />
         </button>
-        <div className="invisible absolute right-0 top-full z-20 mt-1 min-w-32 rounded-lg border border-gray-100 bg-white p-1 opacity-0 shadow-lg transition-all group-hover:visible group-hover:opacity-100">
+        <div className="invisible absolute right-0 bottom-full z-20 mb-1 min-w-32 rounded-lg border border-gray-100 bg-white p-1 opacity-0 shadow-lg transition-all group-hover:visible group-hover:opacity-100">
           <button
             type="button"
             onClick={() => onView(id)}

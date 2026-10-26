@@ -19,9 +19,10 @@ type AddItemVariables = {
   name: string;
 };
 
-export default function ProductCard({ id, image, name, price, isDiscounted, currentPrice, discounts }: ProductProp & { discounts?: any[] }) {
+export default function ProductCard({ id, image, name, price, isDiscounted, currentPrice, discounts, availableStock }: ProductProp & { discounts?: any[] }) {
   const [addWish, setAddWish] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
+  const outOfStock = availableStock !== undefined && availableStock <= 0;
 
   // Calculate the absolute best price available across all tiers
   const getBestPrice = () => {
@@ -102,6 +103,10 @@ export default function ProductCard({ id, image, name, price, isDiscounted, curr
   });
 
   function handleAddToCart() {
+    if (outOfStock) {
+      toast.error(`${name} is out of stock`);
+      return;
+    }
     if (user && ["SuperAdmin", "SystemAdmin", "Admin"].includes(user.role)) {
       return; // Do nothing for admins
     }
@@ -140,6 +145,11 @@ export default function ProductCard({ id, image, name, price, isDiscounted, curr
         <div className="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
 
         <div className="absolute left-2 top-2 flex flex gap-1 z-10">
+          {outOfStock && (
+            <div className="rounded-md bg-gray-700 px-2 py-1 text-[10px] font-bold text-white shadow-sm">
+              Out of Stock
+            </div>
+          )}
           {discountTeaser && (
             <div className="rounded-md bg-orange-600 px-2 py-1 text-[10px] font-bold text-white shadow-sm">
               {discountTeaser}
@@ -192,9 +202,13 @@ export default function ProductCard({ id, image, name, price, isDiscounted, curr
               event.stopPropagation();
               handleAddToCart();
             }}
-            disabled={isAddingToCart}
-            className="flex h-8 w-8 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-700 shadow-sm transition-all duration-200 hover:bg-gray-50 disabled:opacity-70"
-            aria-label="Add to cart"
+            disabled={isAddingToCart || outOfStock}
+            className={`flex h-8 w-8 items-center justify-center rounded-full border shadow-sm transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-40 ${
+              outOfStock
+                ? "border-gray-200 bg-gray-100 text-gray-400"
+                : "border-gray-200 bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-70"
+            }`}
+            aria-label={outOfStock ? "Out of stock" : "Add to cart"}
           >
             {isAddingToCart ? (
               <Spinner size="small" />

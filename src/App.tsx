@@ -14,6 +14,8 @@ import { CartProvider } from "./contexts/CartProvider";
 import Checkout from "./pages/Checkout";
 import ProtectedRoute from "./components/ProtectedRoute";
 import CheckoutAddress from "./pages/CheckoutAddress";
+import Analytics from "./pages/adminDashboard/Analytics";
+import Logistics from "./pages/adminDashboard/Logistics";
 import Overview from "./pages/adminDashboard/Overview";
 import Finance from "./pages/adminDashboard/Finance";
 import AdminHomeLayout from "./pages/adminDashboard/AdminHomeLayout";
@@ -26,6 +28,9 @@ import Customer from "./pages/adminDashboard/Customer";
 import Transactions from "./pages/adminDashboard/Transactions";
 import Shipment from "./pages/adminDashboard/Shipment";
 import SettlementReview from "./pages/adminDashboard/SettlementReview";
+import Discounts from "./pages/adminDashboard/Discounts";
+import Returns from "./pages/adminDashboard/Returns";
+import RestockApprovals from "./pages/adminDashboard/RestockApprovals";
 import AuditTrail from "./pages/adminDashboard/AuditTrail";
 import Permissions from "./pages/adminDashboard/Permissions";
 import Help from "./pages/adminDashboard/Help";
@@ -44,11 +49,21 @@ import StoreDetails from "./pages/adminDashboard/StoreDetails";
 import StoreHome from "./pages/adminDashboard/StoreHome";
 import StoreAdd from "./pages/adminDashboard/StoreAdd";
 import StoreEdit from "./pages/adminDashboard/StoreEdit";
+import Captains from "./pages/adminDashboard/Captains";
 import BecomeSeller from "./pages/BecomeSeller";
 import DriverDashboard from "./pages/DriverDashboard";
 import InvoiceTracking from "./pages/InvoiceTracking";
+import MyOrders from "./pages/customer/MyOrders";
+import InitiateReturn from "./pages/customer/InitiateReturn";
+import ReturnStatus from "./pages/customer/ReturnStatus";
 import Profile from "./pages/Profile";
+import AuthCallback from "./pages/auth/AuthCallback";
 import VendorFinance from "./pages/VendorFinance";
+
+import StoreOrderApprovals from "./pages/StoreOrderApprovals";
+import ProductApprovals from "./pages/adminDashboard/ProductApprovals";
+import Hubs from "./pages/adminDashboard/Hubs";
+import StoreReturnApprovals from "./pages/StoreReturnApprovals";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -123,6 +138,54 @@ export default function App() {
       element: <PaymentFailed />,
     },
     {
+      path: "/customer/orders",
+      element: (
+        <ProtectedRoute>
+          <MyOrders />
+        </ProtectedRoute>
+      ),
+    },
+    {
+      path: "/store/order-approvals",
+      element: (
+        <ProtectedRoute>
+          <StoreOrderApprovals />
+        </ProtectedRoute>
+      ),
+    },
+    {
+      path: "/store/return-approvals",
+      element: (
+        <ProtectedRoute>
+          <StoreReturnApprovals />
+        </ProtectedRoute>
+      ),
+    },
+    {
+      path: "/dashboard/product-approvals",
+      element: (
+        <ProtectedRoute>
+          <ProductApprovals />
+        </ProtectedRoute>
+      ),
+    },
+    {
+      path: "/customer/returns/initiate/:itemId",
+      element: (
+        <ProtectedRoute>
+          <InitiateReturn />
+        </ProtectedRoute>
+      ),
+    },
+    {
+      path: "/customer/returns/status/:returnId",
+      element: (
+        <ProtectedRoute>
+          <ReturnStatus />
+        </ProtectedRoute>
+      ),
+    },
+    {
       path: "/invoice/:orderId",
       element: <InvoiceTracking />,
     },
@@ -143,7 +206,12 @@ export default function App() {
       ),
     },
     {
+      path: "/auth/callback",
+      element: <AuthCallback />,
+    },
+    {
       path: "/register",
+
       element: (
         <GuestOnly>
           <Register />
@@ -171,6 +239,14 @@ export default function App() {
             {
               index: true,
               element: <Overview />,
+            },
+            {
+              path: "analytics",
+              element: <Analytics />,
+            },
+            {
+              path: "logistics",
+              element: <Logistics />,
             },
             {
               path: "overview",
@@ -231,8 +307,16 @@ export default function App() {
               element: <Finance />,
             },
             {
+              path: "discounts",
+              element: <Discounts />,
+            },
+            {
               path: "finance/settlement-review",
               element: <SettlementReview />,
+            },
+            {
+              path: "captains",
+              element: <Captains />,
             },
             {
               path: "shipment",
@@ -243,8 +327,20 @@ export default function App() {
               element: <PickupStations />,
             },
             {
+              path: "hubs",
+              element: <Hubs />,
+            },
+            {
               path: "audit-trail",
               element: <AuditTrail />,
+            },
+            {
+              path: "returns",
+              element: <Returns />,
+            },
+            {
+              path: "restock-approvals",
+              element: <RestockApprovals />,
             },
             {
               path: "permissions",
@@ -300,8 +396,11 @@ export default function App() {
                   style: {
                     fontSize: "14px",
                     maxWidth: "500px",
-                    padding: "8px 24px",
-                    backgroundColor: "#f1f5f9",
+                    padding: "10px 16px",
+                    backgroundColor: "#ffffff",
+                    color: "#334155",
+                    border: "1px solid #fed7aa",
+                    boxShadow: "0 10px 25px rgba(15, 23, 42, 0.12)",
                   },
                 }}
               />

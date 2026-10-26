@@ -64,6 +64,10 @@ export default function ProductDetailModal({ productId }: { productId: string })
 
   const { price: currentPrice, isDiscounted: hasDiscount } = calculatePriceForQty(quantity);
 
+  const availableStock = Number(product?.availableStock ?? 0);
+  const outOfStock = availableStock <= 0;
+  const maxQuantity = Math.max(availableStock, 1);
+
   type AddItemVariables = {
     productId: string | undefined;
     quantity: number;
@@ -83,6 +87,15 @@ export default function ProductDetailModal({ productId }: { productId: string })
   });
 
   function handleAddToCart() {
+    if (outOfStock) {
+      toast.error(`${name || "This product"} is out of stock`);
+      return;
+    }
+    if (quantity > availableStock) {
+      toast.error(`Only ${availableStock} unit(s) available`);
+      setQuantity(availableStock);
+      return;
+    }
     mutate({ name, productId, quantity });
   }
 
@@ -115,7 +128,13 @@ export default function ProductDetailModal({ productId }: { productId: string })
             <div className="mt-6 space-y-2">
               <p className="text-darkshade text-sm leading-relaxed font-light">
                 Availability:{" "}
-                <span className="text-muted-green font-medium">In stock</span>
+                {outOfStock ? (
+                  <span className="font-medium text-red-500">Out of stock</span>
+                ) : (
+                  <span className="text-muted-green font-medium">
+                    In stock{availableStock > 0 ? ` (${availableStock} available)` : ""}
+                  </span>
+                )}
               </p>
               <p className="text-dark-gray text-sm leading-relaxed font-light">
                 Color:{" "}
@@ -147,7 +166,8 @@ export default function ProductDetailModal({ productId }: { productId: string })
               <div className="mt-6 w-full">
                 <h3 className="text-sm font-bold text-gray-800 mb-3">Bulk Discount Tiers</h3>
                 <div className="overflow-hidden rounded-xl border border-gray-200">
-                  <table className="w-full text-left text-xs">
+                  <div className="overflow-x-auto">
+                    <table className="w-full min-w-[720px] text-left text-xs">
                     <thead className="bg-gray-50 text-gray-500 font-semibold">
                       <tr>
                         <th className="px-3 py-2">Qty</th>
@@ -170,7 +190,8 @@ export default function ProductDetailModal({ productId }: { productId: string })
                         );
                       })}
                     </tbody>
-                  </table>
+                    </table>
+                  </div>
                 </div>
               </div>
             )}
@@ -186,20 +207,23 @@ export default function ProductDetailModal({ productId }: { productId: string })
                   type="text"
                   placeholder="0"
                   value={quantity}
-                  onChange={(e) => setQuantity(+e.target.value)}
+                  onChange={(e) => setQuantity(Math.min(Math.max(1, +e.target.value || 1), maxQuantity))}
                   className="w-[60px] text-center font-medium focus:outline-none text-lg"
                 />
                 <FaArrowAltCircleRight
-                  onClick={() => setQuantity((prev) => prev + 1)}
+                  onClick={() => setQuantity((prev) => Math.min(maxQuantity, prev + 1))}
                   size={24}
                   className="cursor-pointer text-gray-600 hover:text-orange transition-colors"
                 />
               </div>
               <button
                 onClick={handleAddToCart}
-                className="bg-orange mt-6 w-full max-w-[200px] mx-auto flex items-center justify-center cursor-pointer rounded-md px-5 py-3 text-sm font-bold text-white transition hover:bg-orange/90 shadow-lg shadow-orange/20"
+                disabled={outOfStock}
+                className={`bg-orange mt-6 w-full max-w-[200px] mx-auto flex items-center justify-center rounded-md px-5 py-3 text-sm font-bold text-white transition shadow-lg shadow-orange/20 ${
+                  outOfStock ? "cursor-not-allowed bg-gray-400 shadow-none" : "cursor-pointer hover:bg-orange/90"
+                }`}
               >
-                {isPending ? <Spinner size="small" /> : "ADD TO CART"}
+                {isPending ? <Spinner size="small" /> : outOfStock ? "OUT OF STOCK" : "ADD TO CART"}
               </button>
             </div>
           </div>

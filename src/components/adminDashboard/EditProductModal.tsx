@@ -8,6 +8,7 @@ import toast from "react-hot-toast";
 import type { ProductPayload } from "../../libs/types";
 import { productEditSchema, type TProductEditSchema } from "../../libs/formSchema";
 import { getProductById, getBrands, getCategories, getLogisticsCategories, getSubCategories, updateProduct } from "../../services/adminDashboard/apiProducts";
+import { getHubs } from "../../services/apiAdmin";
 import { getBoxSizes } from "../../services/apiLogistics";
 import { assignProductToStation, getPickupStations, updateStationStock } from "../../services/adminDashboard/apiPickupStation";
 import PickupStationForm from "./PickupStationForm";
@@ -55,6 +56,8 @@ export default function EditProductModal({ open, onClose, productId, onUpdated }
   const [stations, setStations] = useState<StationRow[]>([]);
   const [showStationForm, setShowStationForm] = useState(false);
   const [dimensions, setDimensions] = useState({ weight: "", length: "", width: "", height: "" });
+  const [fulfillmentMethod, setFulfillmentMethod] = useState<"RIDER_PICKUP" | "HUB_DROPOFF">("RIDER_PICKUP");
+  const [fulfillmentHubId, setFulfillmentHubId] = useState("");
   const queryClient = useQueryClient();
 
   const {
@@ -118,6 +121,11 @@ export default function EditProductModal({ open, onClose, productId, onUpdated }
     queryKey: ["pickupStations"],
     queryFn: getPickupStations,
   });
+  const { data: hubsResponse } = useQuery({
+    queryKey: ["pickupHubs"],
+    queryFn: getHubs,
+  });
+  const hubs = hubsResponse?.data || [];
   const pickupStations = normalizeListData<PickupStationOption>(pickupStationResponse);
   const categoriesList = normalizeListData<SelectOption>(categories);
   const subcategoriesList = normalizeListData<SelectOption>(subcategories);
@@ -174,6 +182,9 @@ export default function EditProductModal({ open, onClose, productId, onUpdated }
           width: String(productData.widthCm ?? ""),
           height: String(productData.heightCm ?? ""),
         });
+
+        setFulfillmentMethod(productData.fulfillmentMethod === "HUB_DROPOFF" ? "HUB_DROPOFF" : "RIDER_PICKUP");
+        setFulfillmentHubId(productData.fulfillmentHubId || "");
 
         const initialStations = (productData.inventories ?? []).map((inventory: any) => ({
           stationId: inventory?.productPickupStation?.station?.id || inventory?.pickupStation?.id || "",
@@ -313,6 +324,8 @@ export default function EditProductModal({ open, onClose, productId, onUpdated }
         lengthCm: dimensions.length || undefined,
         widthCm: dimensions.width || undefined,
         heightCm: dimensions.height || undefined,
+        fulfillmentMethod,
+        fulfillmentHubId: fulfillmentMethod === "HUB_DROPOFF" ? fulfillmentHubId : undefined,
         images: selectedFiles,
         removedImageIds,
         discounts: data.discounts,
@@ -608,6 +621,29 @@ export default function EditProductModal({ open, onClose, productId, onUpdated }
                 {errors.brandId && <p className="text-xs text-red-500">{String(errors.brandId?.message ?? "")}</p>}
               </div>
             </div>
+          </section>
+
+          <section className="rounded-[28px] bg-white p-6 shadow-sm ring-1 ring-slate-200">
+            <h3 className="text-lg font-semibold text-slate-900">Fulfillment origin</h3>
+            <p className="mt-1 text-sm text-slate-500">Choose how the rider receives this product. The selected origin is used in distance-based shipping fees.</p>
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              <label className={`cursor-pointer rounded-2xl border p-4 ${fulfillmentMethod === "RIDER_PICKUP" ? "border-orange bg-orange/5" : "border-slate-200"}`}>
+                <input type="radio" className="mr-2" checked={fulfillmentMethod === "RIDER_PICKUP"} onChange={() => { setFulfillmentMethod("RIDER_PICKUP"); setFulfillmentHubId(""); }} />
+                <span className="font-medium">Rider picks up from my store</span>
+                <p className="mt-1 text-xs text-slate-500">Use the assigned pickup station/store origin.</p>
+              </label>
+              <label className={`cursor-pointer rounded-2xl border p-4 ${fulfillmentMethod === "HUB_DROPOFF" ? "border-orange bg-orange/5" : "border-slate-200"}`}>
+                <input type="radio" className="mr-2" checked={fulfillmentMethod === "HUB_DROPOFF"} onChange={() => setFulfillmentMethod("HUB_DROPOFF")} />
+                <span className="font-medium">I drop off at a hub</span>
+                <p className="mt-1 text-xs text-slate-500">The hub-to-customer distance is included in shipping.</p>
+              </label>
+            </div>
+            {fulfillmentMethod === "HUB_DROPOFF" && (
+              <select required value={fulfillmentHubId} onChange={(event) => setFulfillmentHubId(event.target.value)} className="mt-4 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm">
+                <option value="">Select a drop-off hub</option>
+                {hubs.map((hub: any) => <option key={hub.id} value={hub.id}>{hub.name} - {hub.address}</option>)}
+              </select>
+            )}
           </section>
 
           <section className="rounded-[28px] bg-slate-50 p-6 shadow-sm ring-1 ring-slate-200">

@@ -8,7 +8,10 @@ import {
   FaThList,
   FaChevronDown,
   FaUserCircle,
+  FaChartLine,
+  FaClipboardCheck,
 } from "react-icons/fa";
+import { FiGift } from "react-icons/fi";
 import { IoHelpCircle, IoSettings, IoLogOut } from "react-icons/io5";
 import { CgMenuGridR } from "react-icons/cg";
 import { RiStoreFill } from "react-icons/ri";
@@ -36,30 +39,45 @@ type ModuleItem = {
 
 const sidebarModules: ModuleItem[] = [
   {
-    title: "General",
+    title: "Overview",
     icon: <TbLayoutDashboardFilled size={20} />,
     links: [
       {
-        title: "Overview",
+        title: "Dashboard",
         icon: <TbLayoutDashboardFilled size={18} />,
         link: "/dashboard/overview",
+      },
+      {
+        title: "Analytics",
+        icon: <FaChartLine size={18} />,
+        link: "/dashboard/analytics",
       },
       {
         title: "My Profile",
         icon: <FaUserCircle size={18} />,
         link: "/dashboard/profile",
       },
+    ],
+  },
+  {
+    title: "Commerce & Logistics",
+    icon: <MdLocalShipping size={20} />,
+    links: [
+      {
+        title: "Logistics",
+        icon: <MdLocalShipping size={18} />,
+        link: "/dashboard/logistics",
+      },
       {
         title: "Orders",
         icon: <FaShoppingCart size={18} />,
         link: "/dashboard/orders",
       },
-    ],
-  },
-  {
-    title: "Products",
-    icon: <FaThList size={20} />,
-    links: [
+      {
+        title: "Order Approvals",
+        icon: <FaClipboardCheck size={18} />,
+        link: "/store/order-approvals",
+      },
       {
         title: "Categories",
         icon: <FaThList size={18} />,
@@ -77,19 +95,13 @@ const sidebarModules: ModuleItem[] = [
       },
       {
         title: "Products",
-        icon: <FaWindowRestore size={18} />,
+        icon: <FaThList size={18} />,
         link: "/dashboard/products",
       },
-    ],
-  },
-  {
-    title: "Logistics & Stores",
-    icon: <MdLocalShipping size={20} />,
-    links: [
       {
-        title: "Customers",
-        icon: <FaUsers size={18} />,
-        link: "/dashboard/customers",
+        title: "Product Approvals",
+        icon: <FaShieldAlt size={18} />,
+        link: "/dashboard/product-approvals",
       },
       {
         title: "Stores",
@@ -98,19 +110,29 @@ const sidebarModules: ModuleItem[] = [
       },
       {
         title: "Pickup Stations",
-        icon: <MdLocalShipping size={18} />,
+        icon: <RiStoreFill size={18} />,
         link: "/dashboard/pickup-stations",
       },
       {
-        title: "Shipment",
+        title: "Hubs",
+        icon: <MdLocalShipping size={18} />,
+        link: "/dashboard/hubs",
+      },
+      {
+        title: "Captains",
+        icon: <FaUsers size={18} />,
+        link: "/dashboard/captains",
+      },
+      {
+        title: "Shipments",
         icon: <MdLocalShipping size={18} />,
         link: "/dashboard/shipment",
       },
     ],
   },
   {
-    title: "Account",
-    icon: <FaShieldAlt size={20} />,
+    title: "Finance & Settlement",
+    icon: <GrMoney size={20} />,
     links: [
       {
         title: "Finance",
@@ -118,20 +140,42 @@ const sidebarModules: ModuleItem[] = [
         link: "/dashboard/finance",
       },
       {
-        title: "Permissions",
+        title: "Discounts",
+        icon: <FiGift size={18} />,
+        link: "/dashboard/discounts",
+      },
+      {
+        title: "Settlement Review",
         icon: <FaShieldAlt size={18} />,
-        link: "/dashboard/permissions",
+        link: "/dashboard/finance/settlement-review",
+      },
+    ],
+  },
+  {
+    title: "Disputes & Operations",
+    icon: <FaShieldAlt size={20} />,
+    links: [
+      {
+        title: "Return Requests",
+        icon: <FaShoppingCart size={18} />,
+        link: "/dashboard/returns",
       },
       {
-        title: "Transactions",
-        icon: <GrMoney size={18} />,
-        link: "/dashboard/transactions",
+        title: "Restock Approvals",
+        icon: <FaThList size={18} />,
+        link: "/dashboard/restock-approvals",
       },
       {
-        title: "Admin Management",
-        icon: <MdGroup size={18} />,
-        link: "/dashboard/admin-management",
+        title: "Store Return Pickups",
+        icon: <FaThList size={18} />,
+        link: "/store/return-approvals",
       },
+    ],
+  },
+  {
+    title: "System & Security",
+    icon: <IoSettings size={20} />,
+    links: [
       {
         title: "Settings",
         icon: <IoSettings size={18} />,
@@ -144,21 +188,10 @@ const sidebarModules: ModuleItem[] = [
       },
     ],
   },
-  {
-    title: "System",
-    icon: <IoLogOut size={20} />,
-    links: [
-      {
-        title: "Logout",
-        icon: <IoLogOut size={18} />,
-        link: "/logout",
-      },
-    ],
-  },
 ];
 
 export default function Sidebar({ showSidebar, handleSidebar }: SidebarProps) {
-  const [openModule, setOpenModule] = useState<string | null>("General");
+  const [openModule, setOpenModule] = useState<string | null>("Overview");
   const { logout } = useLogin();
 
   const toggleModule = (title: string) => {

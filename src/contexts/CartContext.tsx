@@ -10,6 +10,9 @@ type Item = {
     id: string;
     name: string;
     price: string;
+    currentPrice?: number | string;
+    originalPrice?: number | string;
+    isDiscounted?: boolean;
     images: images[];
   };
 };

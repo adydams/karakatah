@@ -133,7 +133,8 @@ export default function OrderDetailsModal({ orderId, initialTab = "details" }: O
               <div className="px-5 py-4 border-b border-gray-50">
                 <h3 className="text-sm font-bold text-gray-800">Ordered Items</h3>
               </div>
-              <table className="w-full text-left text-sm">
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[720px] text-left text-sm">
                 <thead className="bg-gray-50 text-gray-500 uppercase text-[10px] font-bold">
                   <tr>
                     <th className="px-5 py-3">Product</th>
@@ -145,14 +146,24 @@ export default function OrderDetailsModal({ orderId, initialTab = "details" }: O
                 <tbody className="divide-y divide-gray-50">
                   {items.map((item: any) => (
                     <tr key={item.id} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-5 py-4 font-medium text-gray-800">{item.product.name}</td>
+                      <td className="px-5 py-4 font-medium text-gray-800">
+                        {item.product.name}
+                        {item.approvalStatus && item.approvalStatus !== "approved" && (
+                          <span className={`ml-2 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase ${
+                            item.approvalStatus === "pending" ? "bg-amber-100 text-amber-700" : "bg-red-100 text-red-700"
+                          }`}>
+                            {item.approvalStatus}
+                          </span>
+                        )}
+                      </td>
                       <td className="px-5 py-4 text-center text-gray-600">{item.quantity}</td>
                       <td className="px-5 py-4 text-right text-gray-600">₦{item.price}</td>
                       <td className="px-5 py-4 text-right font-bold text-gray-800">₦{item.subtotal?.toLocaleString()}</td>
                     </tr>
                   ))}
                 </tbody>
-              </table>
+                </table>
+              </div>
             </div>
           </div>
         )}

@@ -40,12 +40,14 @@ export async function addItemToCart(
   const cartId = getCartIdFromToken();
   if (!cartId) throw new Error("No cartId in token");
 
+  const normalizedQuantity =
+    Number.isInteger(quantity) && quantity > 0 ? quantity : 1;
   const response = await axiosInstance.post(`/api/cart-items`, {
     cartId,
     items: [
       {
         productId,
-        quantity,
+        quantity: normalizedQuantity,
         name,
       },
     ],

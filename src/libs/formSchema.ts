@@ -15,16 +15,14 @@ export const categorySchema = z.object({
     .instanceof(File, {
       message: "Display picture is required",
     })
+    .optional()
     .refine(
-      (file) =>
-        ["image/jpeg", "image/png", "image/jpg", "image/gif"].includes(
-          file.type,
-        ),
+      (file) => !file || ["image/jpeg", "image/png", "image/jpg", "image/gif"].includes(file.type),
       {
         message: "Only JPG, PNG or GIF images are allowed",
       },
     )
-    .refine((file) => file.size <= 2 * 1024 * 1024, {
+    .refine((file) => !file || file.size <= 2 * 1024 * 1024, {
       message: "Image size must be less than 2MB",
     }),
 

@@ -86,10 +86,28 @@ export default function PickupStations() {
         {filteredStations.length > 0 ? (
           filteredStations.map((station: any) => (
             <div key={station.id} className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all">
-              <h3 className="font-bold text-gray-800 text-sm mb-2">{station.name}</h3>
+              <div className="flex items-start justify-between gap-2 mb-2">
+        <h3 className="font-bold text-gray-800 text-sm">{station.name}</h3>
+        {station.store?.name && (
+          <span className="shrink-0 rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-semibold text-blue-700">
+            {station.store.name}
+          </span>
+        )}
+              </div>
               <p className="text-xs text-gray-500 mb-4">{station.address}</p>
 
               <div className="space-y-2 mb-6">
+                <div className="flex items-center gap-2 text-xs text-gray-600">
+                  <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium ${
+                    station.latitude != null && station.longitude != null
+                      ? "bg-green-50 text-green-700"
+                      : "bg-amber-50 text-amber-700"
+                  }`}>
+                    {station.latitude != null && station.longitude != null
+                      ? `Pinned: ${Number(station.latitude).toFixed(4)}, ${Number(station.longitude).toFixed(4)}`
+                      : "Location not pinned — update coordinates"}
+                  </span>
+                </div>
                 <div className="flex items-center gap-2 text-xs text-gray-600">
                   <span className="font-semibold">Mon-Fri:</span> 9:00 AM - 6:00 PM
                 </div>

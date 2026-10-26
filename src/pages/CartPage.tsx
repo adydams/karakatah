@@ -109,6 +109,9 @@ export default function CartPage() {
                   ₦{formatPrice(totalAmount)}
                 </p>
               </div>
+              <p className="py-3 text-xs leading-relaxed text-gray-500">
+                This is the items subtotal. Checkout may add pickup or delivery fees and applicable taxes, or apply order discounts.
+              </p>
               <div className="border-dark-gray/10 flex items-center justify-between border-b py-3">
                 <p className="text-sm text-gray-600">Pickup / delivery</p>
                 <p className="font-primary text-sm font-semibold text-gray-700">

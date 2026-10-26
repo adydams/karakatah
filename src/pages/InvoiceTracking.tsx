@@ -2,7 +2,9 @@ import { useState, useEffect } from "react";
 import { useParams } from "react-router";
 import { getOrderInvoice } from "../services/apiOrders";
 import Spinner from "../components/Spinner";
-import { FaWhatsapp, FaEnvelope, FaShareAlt, FaDownload } from "react-icons/fa";
+import { FaWhatsapp, FaEnvelope, FaShareAlt, FaDownload, FaBox, FaUser, FaMapMarkerAlt, FaReceipt } from "react-icons/fa";
+import toast from "react-hot-toast";
+import CustomerChrome from "../components/customer/CustomerChrome";
 
 interface TrackingEvent {
   status: string;
@@ -20,34 +22,65 @@ interface ShippingDetails {
   events: TrackingEvent[];
 }
 
-interface InvoiceData {
+interface InvoiceItem {
   id: string;
-  createdAt: string;
-  customer: {
-    fullName: string;
-    email: string;
-    phone: string;
+  quantity: number;
+  price: number;
+  subtotal: number;
+  product: {
+    id: string;
+    name: string;
+    image: string | null;
   };
-  shippingAddress: {
-    address: string;
-  };
-  shippingFee: number;
-  shippingDetails: ShippingDetails;
+  discount: {
+    name: string;
+    value: string;
+    type: string;
+  } | null;
 }
 
-export default function InvoiceTracking() {
-  const { orderId } = useParams();
+interface InvoiceData {
+  order: {
+    id: string;
+    createdAt: string;
+    totalAmount: number;
+    vatAmount: number;
+    discountAmount: number;
+    status: string;
+    customer: {
+      fullName: string;
+      email: string;
+      phone: string;
+    };
+    shippingAddress: {
+      address: string;
+    };
+    shippingFee: number;
+    shippingDetails: ShippingDetails;
+  };
+  items: InvoiceItem[];
+}
+
+export default function InvoiceTracking({ orderId: propOrderId }: { orderId?: string }) {
+  const { orderId: paramOrderId } = useParams();
+  const orderId = propOrderId || paramOrderId;
+  const isEmbedded = Boolean(propOrderId);
   const [data, setData] = useState<InvoiceData | null>(null);
   const [loading, setLoading] = useState(true);
   const [showShareMenu, setShowShareMenu] = useState(false);
 
   useEffect(() => {
     const fetchInvoice = async () => {
+      if (!orderId) {
+        setLoading(false);
+        return;
+      }
       try {
-        const res = await getOrderInvoice(orderId!);
-        setData(res.data?.order);
+        const res = await getOrderInvoice(orderId);
+        setData(res.data); // ✅ Save full data (order + items)
       } catch (err) {
         console.error("Error fetching invoice:", err);
+        toast.error("Failed to load invoice details");
       } finally {
         setLoading(false);
       }
@@ -74,7 +107,7 @@ export default function InvoiceTracking() {
       window.URL.revokeObjectURL(url);
     } catch (err) {
       console.error("Download error:", err);
-      alert("Failed to download PDF");
+      toast.error("Failed to download PDF");
     }
   };
 
@@ -88,153 +121,273 @@ export default function InvoiceTracking() {
       window.location.href = `mailto:?subject=My Order Invoice #${orderId?.slice(0, 8)}&body=${encodeURIComponent(text)}`;
     } else if (platform === 'link') {
       navigator.clipboard.writeText(shareUrl);
-      alert("Link copied to clipboard!");
+      toast.success("Link copied to clipboard!");
     }
     setShowShareMenu(false);
   };
 
-  if (loading) return <Spinner type="big" />;
-  if (!data) return <div className="p-10 text-center text-red-500">Invoice not found.</div>;
+  if (loading) {
+    return (
+      <>
+      {!isEmbedded && <CustomerChrome />}
+      <div className="flex min-h-screen w-full items-center justify-center bg-gray-50">
+        <div className="flex flex-col items-center gap-4 rounded-2xl border border-orange-100 bg-white px-10 py-8 shadow-lg">
+          <Spinner type="big" color="#f97316" />
+          <p className="text-sm font-semibold text-orange-700 animate-pulse">Loading your invoice...</p>
+        </div>
+      </div>
+      </>
+    );
+  }
+  if (!data) return (
+    <>
+      {!isEmbedded && <CustomerChrome />}
+      <div className="p-10 text-center text-red-500">Invoice not found.</div>
+    </>
+  );
+
+  const { order, items } = data;
+  const itemsSubtotal = items.reduce((sum, item) => sum + Number(item.subtotal || 0), 0);
 
   return (
-    <div className="font-primary w-full p-4 md:p-10 bg-gray-50 min-h-screen">
-      <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
-        {/* Header */}
-        <div className="p-6 md:p-10 border-b border-gray-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-orange-600 rounded-xl text-white shadow-sm">
-               <FaDownload size={20} />
+    <>
+    {!isEmbedded && <CustomerChrome />}
+    <div className="invoice-print-surface invoice-brand-background font-primary w-full p-4 md:p-10 min-h-screen relative overflow-hidden">
+      {/* Soft pastel shapes mirror the printed invoice design. */}
+      <div className="absolute top-[-8%] right-[-8%] h-72 w-72 rounded-full bg-[#f4dff2] opacity-80 blur-2xl pointer-events-none" />
+      <div className="absolute top-[28%] right-[-7%] h-64 w-64 rounded-full bg-[#eee2f2] opacity-75 blur-2xl pointer-events-none" />
+      <div className="absolute bottom-[-5%] left-[-5%] h-64 w-64 rounded-full bg-[#f8efe2] opacity-90 blur-2xl pointer-events-none" />
+      <div className="absolute bottom-[-5%] right-[8%] h-72 w-72 rounded-full bg-[#e8f5f3] opacity-90 blur-2xl pointer-events-none" />
+      <div className="absolute top-[38%] left-[-3%] h-28 w-28 rounded-full border-[14px] border-[#f7a400]/20 pointer-events-none" />
+
+      <div className="invoice-content-card max-w-5xl mx-auto rounded-3xl shadow-2xl border overflow-hidden relative z-10">
+        {/* Header Section */}
+        <div className="p-6 md:p-12 border-b border-gray-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 bg-white/45">
+          <div className="flex items-center gap-5">
+            <div className="p-4 bg-orange-600 rounded-2xl text-white shadow-lg shadow-orange-200">
+               <FaReceipt size={28} />
             </div>
             <div>
-              <h1 className="text-2xl font-black text-gray-800">Invoice & Tracking</h1>
-              <p className="text-gray-500">Order #{data.id.slice(0, 8)} • {new Date(data.createdAt).toLocaleDateString()}</p>
+              <h1 className="text-3xl font-black text-gray-900 tracking-tight">Order Invoice</h1>
+              <div className="flex items-center gap-3 text-gray-500 text-sm mt-1">
+                <span className="font-mono bg-gray-100 px-2 py-0.5 rounded">#{order.id.slice(0, 8)}</span>
+                <span className="text-gray-300">•</span>
+                <span>{new Date(order.createdAt).toLocaleDateString(undefined, { dateStyle: 'long' })}</span>
+              </div>
             </div>
           </div>
 
           <div className="flex gap-3 relative">
             <button
               onClick={() => setShowShareMenu(!showShareMenu)}
-              className="px-4 py-2 text-sm font-medium text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition flex items-center gap-2"
+              className="px-5 py-2.5 text-sm font-semibold text-gray-600 border border-gray-300 rounded-xl hover:bg-gray-50 transition flex items-center gap-2 bg-white"
             >
               <FaShareAlt size={14} />
               Share
             </button>
             <button
               onClick={handleDownloadPdf}
-              className="px-4 py-2 text-sm font-bold text-white bg-orange-600 rounded-lg hover:bg-orange-700 transition shadow-md flex items-center gap-2"
+              className="px-5 py-2.5 text-sm font-bold text-white bg-orange-600 rounded-xl hover:bg-orange-700 transition shadow-lg shadow-orange-200 flex items-center gap-2"
             >
               <FaDownload size={14} />
               Download PDF
             </button>
 
             {showShareMenu && (
-              <div className="absolute right-0 top-full mt-2 w-48 bg-white border border-gray-200 rounded-xl shadow-xl z-50 py-2">
+              <div className="absolute right-0 top-full mt-3 w-56 bg-white border border-gray-200 rounded-2xl shadow-2xl z-50 py-3 animate-in fade-in slide-in-from-top-2">
                 <button
                   onClick={() => shareInvoice('whatsapp')}
-                  className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-3 text-gray-700"
+                  className="w-full px-5 py-3 text-left text-sm hover:bg-gray-50 flex items-center gap-3 text-gray-700 transition"
                 >
-                  <FaWhatsapp className="text-green-500" size={16} /> WhatsApp
+                  <FaWhatsapp className="text-green-500" size={18} /> WhatsApp
                 </button>
                 <button
                   onClick={() => shareInvoice('email')}
-                  className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-3 text-gray-700"
+                  className="w-full px-5 py-3 text-left text-sm hover:bg-gray-50 flex items-center gap-3 text-gray-700 transition"
                 >
-                  <FaEnvelope className="text-blue-500" size={16} /> Email
+                  <FaEnvelope className="text-blue-500" size={18} /> Email
                 </button>
                 <button
                   onClick={() => shareInvoice('link')}
-                  className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-3 text-gray-700"
+                  className="w-full px-5 py-3 text-left text-sm hover:bg-gray-50 flex items-center gap-3 text-gray-700 transition"
                 >
-                  <FaShareAlt className="text-gray-500" size={16} /> Copy Link
+                  <FaShareAlt className="text-gray-500" size={18} /> Copy Link
                 </button>
               </div>
             )}
           </div>
         </div>
 
-        <div className="p-6 md:p-10 grid grid-cols-1 lg:grid-cols-3 gap-10">
-          {/* Customer and Fee Details */}
-          <div className="lg:col-span-2 space-y-10">
-            {/* Customer Details */}
-            <section>
-              <h3 className="text-sm uppercase font-bold text-gray-400 mb-4 tracking-wider">Customer Details</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-                <div className="flex flex-col">
-                  <p className="text-xs text-gray-400 mb-1">Full Name</p>
-                  <p className="font-semibold text-gray-800 break-words">{data.customer?.fullName || "N/A"}</p>
-                </div>
-                <div className="flex flex-col">
-                  <p className="text-xs text-gray-400 mb-1">Email</p>
-                  <p className="font-medium text-gray-800 break-all">{data.customer?.email || "N/A"}</p>
-                </div>
-                <div className="flex flex-col">
-                  <p className="text-xs text-gray-400 mb-1">Phone</p>
-                  <p className="font-medium text-gray-800 break-all">{data.customer?.phone || "N/A"}</p>
-                </div>
-              </div>
-            </section>
+        <div className="p-6 md:p-12 grid grid-cols-1 lg:grid-cols-3 gap-12">
+          {/* Left Column: Order Details */}
+          <div className="lg:col-span-2 space-y-12">
 
-            {/* Shipping Address */}
-            <section>
-              <h3 className="text-sm uppercase font-bold text-gray-400 mb-4 tracking-wider">Shipping Address</h3>
-              <div className="p-4 bg-gray-50 rounded-xl border border-gray-200">
-                <p className="text-gray-800 font-medium">{data.shippingAddress?.address || "No address provided"}</p>
-              </div>
-            </section>
+            {/* Customer Info Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+              <section className="space-y-4">
+                <div className="flex items-center gap-2 text-gray-400 uppercase text-xs font-black tracking-widest">
+                  <FaUser size={12} />
+                  <span>Bill To</span>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-lg font-bold text-gray-900">{order.customer?.fullName || "Customer"}</p>
+                  <p className="text-sm text-gray-600">{order.customer?.email || "N/A"}</p>
+                  <p className="text-sm text-gray-600">{order.customer?.phone || "N/A"}</p>
+                </div>
+              </section>
 
-            {/* Fee Breakdown */}
-            <section>
-              <h3 className="text-sm uppercase font-bold text-gray-400 mb-4 tracking-wider">Fee Breakdown</h3>
-              <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+              <section className="space-y-4">
+                <div className="flex items-center gap-2 text-gray-400 uppercase text-xs font-black tracking-widest">
+                  <FaMapMarkerAlt size={12} />
+                  <span>Shipping Address</span>
+                </div>
+                <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                  <p className="text-sm text-gray-700 leading-relaxed">
+                    {order.shippingAddress?.address || "No address provided"}
+                  </p>
+                </div>
+              </section>
+            </div>
+
+            {/* Items Table */}
+            <section className="space-y-4">
+              <div className="flex items-center gap-2 text-gray-400 uppercase text-xs font-black tracking-widest">
+                <FaBox size={12} />
+                <span>Order Items ({items.length})</span>
+              </div>
+              <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
                 <table className="w-full text-left">
+                  <thead className="bg-gray-50 border-b border-gray-200">
+                    <tr>
+                      <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Product</th>
+                      <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-center">Qty</th>
+                      <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-right">Price</th>
+                      <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-right">Subtotal</th>
+                    </tr>
+                  </thead>
                   <tbody className="divide-y divide-gray-100">
-                    <tr>
-                      <td className="px-4 py-3 text-sm text-gray-600">Base Courier Fee</td>
-                      <td className="px-4 py-3 text-sm font-medium text-right text-gray-800">₦{data.shippingDetails?.baseFee?.toLocaleString() || 0}</td>
-                    </tr>
-                    <tr>
-                      <td className="px-4 py-3 text-sm text-gray-600">Sourcing / Fetch Fee</td>
-                      <td className="px-4 py-3 text-sm font-medium text-right text-gray-800">₦{data.shippingDetails?.sourcingFee?.toLocaleString() || 0}</td>
-                    </tr>
-                    <tr className="bg-orange-50">
-                      <td className="px-4 py-3 text-sm font-bold text-gray-800">Total Shipping</td>
-                      <td className="px-4 py-3 text-sm font-bold text-right text-orange-600">₦{data.shippingFee?.toLocaleString()}</td>
-                    </tr>
+                    {items.map((item) => (
+                      <tr key={item.id} className="hover:bg-gray-50/50 transition-colors">
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-4">
+                            {item.product.image && (
+                              <img src={item.product.image} alt={item.product.name} className="w-12 h-12 rounded-lg object-cover border border-gray-100" />
+                            )}
+                            <div className="flex flex-col">
+                              <p className="text-sm font-bold text-gray-800">{item.product.name}</p>
+                              {item.discount && (
+                                <span className="text-[10px] font-medium text-green-600 bg-green-50 px-1.5 py-0.5 rounded w-fit mt-1">
+                                  -{item.discount.value} {item.discount.type === 'PERCENTAGE' ? '%' : '₦'}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-center text-sm text-gray-600 font-medium">{item.quantity}</td>
+                        <td className="px-6 py-4 text-right text-sm text-gray-600">₦{item.price?.toLocaleString()}</td>
+                        <td className="px-6 py-4 text-right text-sm font-bold text-gray-900">₦{item.subtotal?.toLocaleString()}</td>
+                      </tr>
+                    ))}
                   </tbody>
                 </table>
               </div>
             </section>
+
+            {/* Bottom Row: Totals and Shipping */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
+              <section className="space-y-4">
+                <div className="flex items-center gap-2 text-gray-400 uppercase text-xs font-black tracking-widest">
+                  <FaReceipt size={12} />
+                  <span>Logistics Breakdown</span>
+                </div>
+                <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
+                  <table className="w-full text-left">
+                    <tbody className="divide-y divide-gray-100">
+                      <tr>
+                        <td className="px-4 py-3 text-sm text-gray-600">Base Courier Fee</td>
+                        <td className="px-4 py-3 text-sm font-medium text-right text-gray-800">₦{order.shippingDetails?.baseFee?.toLocaleString() || 0}</td>
+                      </tr>
+                      <tr>
+                        <td className="px-4 py-3 text-sm text-gray-600">Sourcing / Fetch Fee</td>
+                        <td className="px-4 py-3 text-sm font-medium text-right text-gray-800">₦{order.shippingDetails?.sourcingFee?.toLocaleString() || 0}</td>
+                      </tr>
+                      <tr className="bg-orange-50/50">
+                        <td className="px-4 py-3 text-sm font-bold text-gray-800">Total Shipping</td>
+                        <td className="px-4 py-3 text-sm font-bold text-right text-orange-600">₦{order.shippingFee?.toLocaleString()}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </section>
+
+              <section className="flex flex-col justify-end space-y-3">
+                <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                  <span className="text-sm text-gray-500">Items subtotal</span>
+                  <span className="text-sm font-medium text-gray-800">₦{itemsSubtotal.toLocaleString()}</span>
+                </div>
+                {order.discountAmount > 0 && (
+                  <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                    <span className="text-sm text-gray-500">Order discount</span>
+                    <span className="text-sm font-medium text-green-700">−₦{order.discountAmount.toLocaleString()}</span>
+                  </div>
+                )}
+                {order.shippingFee > 0 && (
+                  <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                    <span className="text-sm text-gray-500">Pickup / shipping fees</span>
+                    <span className="text-sm font-medium text-gray-800">₦{order.shippingFee.toLocaleString()}</span>
+                  </div>
+                )}
+                <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                  <span className="text-sm text-gray-500">VAT (Value Added Tax)</span>
+                  <span className="text-sm font-medium text-gray-800">₦{order.vatAmount?.toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between items-center py-4">
+                  <span className="text-lg font-black text-gray-900">Grand Total</span>
+                  <span className="text-2xl font-black text-orange-600">₦{order.totalAmount?.toLocaleString()}</span>
+                </div>
+              </section>
+            </div>
           </div>
 
-          {/* Tracking Timeline */}
+          {/* Right Column: Tracking Timeline */}
           <div className="lg:col-span-1">
-            <h3 className="text-sm uppercase font-bold text-gray-400 mb-6 tracking-wider">Shipment Progress</h3>
-            <div className="relative space-y-8 before:absolute before:left-3 before:top-2 before:bottom-2 before:w-0.5 before:bg-gray-200">
-              {data.shippingDetails?.events?.length > 0 ? data.shippingDetails.events.map((event, index) => (
-                <div key={index} className="relative pl-10">
-                  <div className={`absolute left-0 top-1 w-6 h-6 rounded-full border-4 border-white shadow-sm ${
-                    index === 0 ? 'bg-green-500' : 'bg-gray-300'
-                  }`} />
-                  <div className="flex flex-col">
-                    <p className="text-sm font-bold text-gray-800">{event.status}</p>
-                    <p className="text-xs text-gray-500">{event.location}</p>
-                    <p className="text-[10px] text-gray-400 mt-1">{new Date(event.timestamp).toLocaleString()}</p>
-                    {event.note && <p className="text-xs text-gray-600 italic mt-1">{event.note}</p>}
+            <div className="bg-gray-50 rounded-3xl p-6 border border-gray-100 h-full flex flex-col">
+              <h3 className="text-sm uppercase font-bold text-gray-400 mb-8 tracking-wider flex items-center gap-2">
+                <FaBox size={14} />
+                <span>Shipment Progress</span>
+              </h3>
+
+              <div className="relative flex-1 space-y-10 before:absolute before:left-3 before:top-2 before:bottom-2 before:w-0.5 before:bg-gray-200">
+                {order.shippingDetails?.events?.length > 0 ? order.shippingDetails.events.map((event, index) => (
+                  <div key={index} className="relative pl-10">
+                    <div className={`absolute left-0 top-1 w-6 h-6 rounded-full border-4 border-white shadow-sm z-10 transition-colors duration-500 ${
+                      index === 0 ? 'bg-green-500' : 'bg-gray-300'
+                    }`} />
+                    <div className="flex flex-col">
+                      <p className="text-sm font-bold text-gray-800 leading-tight">{event.status}</p>
+                      <p className="text-xs text-gray-500">{event.location}</p>
+                      <p className="text-[10px] text-gray-400 mt-1 font-mono">{new Date(event.timestamp).toLocaleString()}</p>
+                      {event.note && <p className="text-xs text-gray-600 italic mt-2 bg-white p-2 rounded-lg border border-gray-100 shadow-sm">{event.note}</p>}
+                    </div>
                   </div>
-                </div>
-              )) : (
-                <div className="text-center py-10 text-gray-400 text-sm italic">
-                  No tracking events available yet.
-                </div>
-              )}
-            </div>
-            <div className="mt-10 p-4 bg-orange-50 rounded-xl border border-orange-100 text-center">
-              <p className="text-xs text-orange-600 font-medium mb-2">Current Status</p>
-              <p className="text-lg font-black text-orange-800 uppercase">{data.shippingDetails?.status || 'Processing'}</p>
+                )) : (
+                  <div className="text-center py-10 text-gray-400 text-sm italic">
+                    No tracking events available yet.
+                  </div>
+                )}
+              </div>
+
+              <div className="mt-12 p-5 bg-white rounded-2xl border border-orange-100 text-center shadow-sm">
+                <p className="text-xs text-orange-600 font-bold uppercase tracking-widest mb-2">Current Status</p>
+                <p className="text-xl font-black text-orange-800 uppercase tracking-tight">
+                  {order.shippingDetails?.events?.[0]?.status || order.shippingDetails?.status || 'Processing'}
+                </p>
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
+    </>
   );
 }

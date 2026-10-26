@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router";
-import Navbar from "../components/Navbar";
+import CustomerChrome from "../components/customer/CustomerChrome";
 import Footer from "../components/Footer";
 
 export default function PaymentFailed() {
@@ -18,7 +18,7 @@ export default function PaymentFailed() {
 
   return (
     <>
-      <Navbar />
+      <CustomerChrome />
       <main className="flex h-[90vh] w-full items-center justify-center tracking-wide">
         <div className="flex flex-col items-center justify-center">
           <img

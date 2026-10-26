@@ -36,6 +36,11 @@ export default function ProductDetail() {
   const product = productData?.data;
   const name = product?.name;
 
+  // Live sellable stock from inventory (quantityOnHand - quantityReserved).
+  // stockQuantity is a stale create-time snapshot and must not drive availability.
+  const availableStock = Number(product?.availableStock ?? product?.stockQuantity ?? 0);
+  const outOfStock = availableStock <= 0;
+
   // Add item to cart
   type AddItemVariables = {
     productId: string | undefined;
@@ -93,8 +98,8 @@ export default function ProductDetail() {
               </p>
               <p className="text-darkshade mt-2 text-sm leading-relaxed font-light">
                 Availability:{" "}
-                <span className={`${(product?.stockQuantity ?? 0) > 0 ? "text-muted-green" : "text-red-600"} font-medium`}>
-                  {(product?.stockQuantity ?? 0) > 0 ? "In stock" : "Out of Stock"}
+                <span className={`${availableStock > 0 ? "text-muted-green" : "text-red-600"} font-medium`}>
+                  {availableStock > 0 ? `In stock (${availableStock} available)` : "Out of Stock"}
                 </span>
               </p>
               <p className="text-dark-gray mt-2 text-sm leading-relaxed font-light">
@@ -148,14 +153,14 @@ export default function ProductDetail() {
                 </div>
                 <button
                   onClick={handleAddToCart}
-                  disabled={(product?.stockQuantity ?? 0) <= 0}
+                  disabled={outOfStock}
                   className={`mt-3 w-[150px] rounded-md px-5 py-2 text-xs font-medium text-white transition ${
-                    (product?.stockQuantity ?? 0) <= 0
+                    outOfStock
                       ? "bg-gray-400 cursor-not-allowed"
                       : "bg-orange cursor-pointer hover:bg-orange/90"
                   }`}
                 >
-                  {(product?.stockQuantity ?? 0) <= 0
+                  {outOfStock
                     ? "OUT OF STOCK"
                     : isPending ? <Spinner size="medium" /> : "ADD TO CART"}
                 </button>

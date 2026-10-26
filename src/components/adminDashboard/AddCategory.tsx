@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { FaCloudUploadAlt } from "react-icons/fa";
+import { FaTimes } from "react-icons/fa";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import toast from "react-hot-toast";
@@ -11,23 +11,21 @@ import { useModal } from "../../contexts/hooks/useModal";
 
 export default function AddCategory() {
   const { closeModal } = useModal();
-  const [fileName, setFileName] = useState("");
   const queryClient = useQueryClient();
 
   const {
     register,
     handleSubmit,
-    setValue,
     formState: { errors, isSubmitting },
   } = useForm<TCategorySchema>({
     resolver: zodResolver(categorySchema),
   });
 
   async function onSubmit(data: TCategorySchema) {
-    const { name, description, image } = data;
+    const { name, description } = data;
 
     try {
-      const success = await createCategory({ name, description, image });
+      const success = await createCategory({ name, description, image: undefined });
 
       if (success) {
         toast.success("Category Added Successfully");
@@ -44,7 +42,13 @@ export default function AddCategory() {
   }
 
   return (
-    <div className="bg-white rounded-xl p-6 shadow-lg border border-[#dec1af] max-w-md mx-auto">
+    <div className="relative bg-white rounded-xl p-6 shadow-lg border border-[#dec1af] max-w-md mx-auto">
+      <button
+        onClick={closeModal}
+        className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+      >
+        <FaTimes size={20} />
+      </button>
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
         <h2 className="text-xl font-bold text-[#574235] mb-4">Add New Category</h2>
 
@@ -72,42 +76,6 @@ export default function AddCategory() {
             ></textarea>
             {errors.description && (
               <p className="text-xs text-red-500">{`${errors.description.message}`}</p>
-            )}
-          </div>
-
-          <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium text-[#574235]/70">Thumbnail Photo</label>
-            <div className="border-dark-gray/40 flex h-[200px] w-full cursor-pointer flex-col items-center justify-center rounded-md border border-dashed p-10">
-              <FaCloudUploadAlt size={40} className="text-orange" />
-              <h2 className="mt-10 text-lg font-medium">
-                Drop your images here, or{" "}
-                <span className="text-orange font-semibold">click to browse</span>
-              </h2>
-              <p className="mt-1 text-xs text-gray-500">
-                1600 x 1200 (4:3) recommended. PNG, JPG and GIF files are allowed
-              </p>
-              {fileName && (
-                <p className="text-orange mt-3 text-xs font-medium">{fileName}</p>
-              )}
-            </div>
-            <input
-              type="file"
-              hidden
-              accept="image/*"
-              {...register("image")}
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (file) {
-                  setFileName(file.name);
-                  setValue("image", file, {
-                    shouldValidate: true,
-                    shouldDirty: true,
-                  });
-                }
-              }}
-            />
-            {errors.image && (
-              <p className="text-xs text-red-500">{`${errors.image.message}`}</p>
             )}
           </div>
         </div>

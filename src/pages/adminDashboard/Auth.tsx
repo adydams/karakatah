@@ -10,7 +10,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 import toast from "react-hot-toast";
 import Spinner from "../../components/Spinner";
-import SignUpWithGoogle from "../../components/SignUpWithGoogle";
+import SocialLogin from "../../components/SocialLogin";
 import { useLogin } from "../../contexts/hooks/useLogin";
 
 const signUpSchema = z.object({
@@ -136,7 +136,7 @@ export default function Auth() {
         <hr className="border-dark-gray/5 my-10 w-full rounded-full border" />
 
         <div className="flex w-full flex-col items-center">
-          <SignUpWithGoogle isSubmitting={false} status="in" />
+          <SocialLogin isSubmitting={false} status="in" />
 
           {/* <p className="mt-[10px] text-xs">
             Don't have an account?{" "}

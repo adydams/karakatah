@@ -86,6 +86,18 @@ export function googleAuth() {
   window.location.href = `${ROOT_URL}/api/auth/google`;
 }
 
+export function facebookAuth() {
+  window.location.href = `${ROOT_URL}/api/auth/facebook`;
+}
+
+export function twitterAuth() {
+  window.location.href = `${ROOT_URL}/api/auth/twitter`;
+}
+
+export function instagramAuth() {
+  window.location.href = `${ROOT_URL}/api/auth/instagram`;
+}
+
 // GET CURRENT USER
 import axiosInstance from "./apiClient";
 export async function currentUser() {

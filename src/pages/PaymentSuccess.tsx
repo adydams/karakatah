@@ -1,6 +1,6 @@
 import { useNavigate, useSearchParams } from "react-router";
 import Footer from "../components/Footer";
-import Navbar from "../components/Navbar";
+import CustomerChrome from "../components/customer/CustomerChrome";
 import { formatPrice } from "../utils/utils";
 import { getOrder } from "../services/apiCheckout";
 import { useQuery } from "@tanstack/react-query";
@@ -57,7 +57,7 @@ export default function PaymentSuccess() {
   if (isError) {
     return (
       <>
-        <Navbar />
+        <CustomerChrome />
         <div className="flex h-[60vh] items-center justify-center">
           <p className="font-semibold text-red-500">
             Failed to load order. Please try again.
@@ -167,7 +167,7 @@ export default function PaymentSuccess() {
 
   return (
     <>
-      <Navbar />
+      <CustomerChrome />
 
       <main
         style={{
@@ -324,7 +324,7 @@ export default function PaymentSuccess() {
                   </p>
                   {globalDiscount && (
                     <p className="flex w-full items-center justify-between text-green-600">
-                      {globalDiscount.code} (-₦{formatPrice(globalDiscount.value)})
+                      {globalDiscount.title || globalDiscount.code} (-₦{formatPrice(globalDiscount.value)})
                     </p>
                   )}
                     <div className="flex flex-col gap-1">

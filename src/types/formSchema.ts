@@ -3,7 +3,10 @@ import { z } from "zod";
 export const sellarSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
   email: z.string().trim().email("Enter a valid email"),
-  phone: z.string().regex(/^\+?[0-9]{7,15}$/, "Enter a valid phone number"), // supports intl format
+  phone: z.preprocess(
+    (value) => (value === "" || value === null ? undefined : value),
+    z.string().regex(/^\+?[0-9]{7,15}$/, "Enter a valid phone number").optional()
+  ),
   // password: z.string().min(8, "Password must be at least 8 characters"),
 });
 
@@ -33,8 +36,12 @@ export const checkoutSchema = z
       .refine((value) => ["pickup", "shipping"].includes(value), {
         message: "Select a delivery method",
       }),
-    chosenStationId: z.string().optional().or(z.literal("")),
-    phone: z.string().regex(/^\+?[0-9]{7,15}$/, "Enter a valid phone number"), // supports intl format
+    chosenHubId: z.string().optional().or(z.literal("")),
+    phone: z
+      .string()
+      .optional()
+      .or(z.literal(""))
+      .refine((value) => !value || /^\+?[0-9]{7,15}$/.test(value), "Enter a valid phone number"),
     notes: z.string().optional().or(z.literal("")),
     gateway: z
       .string()
@@ -51,11 +58,11 @@ export const checkoutSchema = z
       });
     }
 
-    if (values.shippingMethod === "pickup" && !values.chosenStationId) {
+    if (values.shippingMethod === "pickup" && !values.chosenHubId) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        path: ["chosenStationId"],
-        message: "Pickup station is required",
+        path: ["chosenHubId"],
+        message: "Pickup hub is required",
       });
     }
   });

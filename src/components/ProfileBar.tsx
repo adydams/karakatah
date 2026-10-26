@@ -1,6 +1,6 @@
 // import { MdKeyboardArrowDown } from "react-icons/md";
 
-import { FaUserCircle } from "react-icons/fa";
+import { FaUserCircle, FaBoxOpen } from "react-icons/fa";
 import NotificationBell from "./NotificationBell";
 
 import { Link } from "react-router";
@@ -37,6 +37,13 @@ export default function ProfileBar() {
 
   return (
     <div className="relative flex items-center justify-between gap-4">
+      <Link
+        to="/customer/orders"
+        className="flex items-center gap-1 text-sm font-medium text-dark-gray hover:text-orange transition-colors"
+      >
+        <FaBoxOpen size={20} />
+        <span className="hidden lg:block">My Orders</span>
+      </Link>
       <NotificationBell />
       <div
         onClick={handleMenu}
@@ -63,9 +70,9 @@ export default function ProfileBar() {
           <Link
             onClick={handleMenu}
             className="hover:text-beige transition-all duration-1000 hover:font-medium"
-            to="orders"
+            to="/customer/orders"
           >
-            Orders
+            My Orders
           </Link>
           <Link
             onClick={handleMenu}
