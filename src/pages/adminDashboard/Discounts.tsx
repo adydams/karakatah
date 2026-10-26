@@ -14,10 +14,10 @@ import { FiPlus, FiEdit, FiTrash2, FiPower } from "react-icons/fi";
 // For now, I'll assume they exist or I'll add them in the next step.
 
 export default function Discounts() {
-  const [discounts, setDiscounts] = useState([]);
+  const [discounts, setDiscounts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingDiscount, setEditingDiscount] = useState(null);
+  const [editingDiscount, setEditingDiscount] = useState<any>(null);
   const [formData, setFormData] = useState({
     title: "",
     code: "",
@@ -49,7 +49,7 @@ export default function Discounts() {
     }
   };
 
-  const handleSave = async (e) => {
+  const handleSave = async (e: any) => {
     e.preventDefault();
     try {
       if (editingDiscount) {
@@ -63,12 +63,12 @@ export default function Discounts() {
       setEditingDiscount(null);
       setFormData({ title: "", code: "", type: "PERCENTAGE", value: "", minOrderAmount: 0, maxUses: "", expiresAt: "", isActive: true, isAutomatic: false, displayInAdverts: false, advertStartDate: "", advertEndDate: "" });
       fetchDiscounts();
-    } catch {
+    } catch (err: any) {
       toast.error(err.message || "An error occurred");
     }
   };
 
-  const handleToggleStatus = async (id) => {
+  const handleToggleStatus = async (id: string) => {
     try {
       await toggleDiscountStatus(id);
       fetchDiscounts();
@@ -78,7 +78,7 @@ export default function Discounts() {
     }
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = async (id: string) => {
     if (!window.confirm("Are you sure you want to delete this discount?")) return;
     try {
       await deleteDiscount(id);

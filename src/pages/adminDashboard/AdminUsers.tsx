@@ -12,7 +12,7 @@ export default function AdminUsers() {
 
   const { data: adminsData, isLoading } = useQuery({
     queryKey: ["adminUsers"],
-    queryFn: getAdmins,
+    queryFn: () => getAdmins(),
   });
 
   const deleteMutation = useMutation({
@@ -25,7 +25,7 @@ export default function AdminUsers() {
   });
 
   const roleMutation = useMutation({
-    mutationFn: ({ id, role }) => updateAdminRole(id, role),
+    mutationFn: ({ id, role }: { id: string; role: string }) => updateAdminRole(id, role),
     onSuccess: () => {
       toast.success("Role updated successfully");
       queryClient.invalidateQueries({ queryKey: ["adminUsers"] });
@@ -78,7 +78,7 @@ export default function AdminUsers() {
               </thead>
               <tbody className="divide-y divide-gray-50 text-sm">
                 {admins.length > 0 ? (
-                  admins.map((admin: any, i) => (
+                  admins.map((admin: any, i: number) => (
                     <tr key={i} className="hover:bg-gray-50 transition-colors group">
                       <td className="py-4 px-6 font-semibold text-gray-900">{admin.fullName}</td>
                       <td className="py-4 px-6 text-gray-600">{admin.email}</td>

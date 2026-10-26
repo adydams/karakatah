@@ -1,6 +1,6 @@
 ﻿import axiosInstance from "../apiClient";
 
-export async function getPickupStations() {
+export async function getPickupStations(_params?: unknown) {
   const token = localStorage.getItem("token");
   const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
   const response = await axiosInstance.get(`/api/pickup-stations`, { headers });

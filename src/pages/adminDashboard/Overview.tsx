@@ -297,7 +297,7 @@ export default function Overview() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50 text-sm">
-                  {topProducts.slice(0, 4).map((product, idx) => (
+                  {topProducts.slice(0, 4).map((product: any, idx: number) => (
                     <tr key={idx} className="hover:bg-gray-50 transition-colors group">
                       <td className="py-4 px-4">
                         <div className="flex flex-col">

@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import NavBar from "../../components/NavBar";
 import {
   LineChart, Line, AreaChart, Area, BarChart, Bar,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend
@@ -45,8 +44,6 @@ export default function Analytics() {
 
   return (
     <div className="font-primary w-full bg-gray-50 min-h-screen pb-10">
-      <NavBar title="Marketplace Analytics" />
-
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
         {/* KPI Header */}
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
@@ -183,7 +180,7 @@ export default function Analytics() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50 text-sm">
-                {topProducts.map((product, idx) => {
+                {topProducts.map((product: any, idx: number) => {
                   const contribution = ((product.revenue / 50000000) * 100).toFixed(2); // Simulated total GMV for %
                   return (
                     <tr key={idx} className="hover:bg-gray-50 transition-colors group">

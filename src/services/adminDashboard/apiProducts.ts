@@ -10,17 +10,16 @@ export async function createCategory({ name, description, image }: categoryItem)
   const formData = new FormData();
   formData.append("name", name);
   formData.append("description", description);
-  formData.append("image", image);
+  if (image) formData.append("image", image);
 
   const response = await axiosInstance.post(`/api/categories`, formData);
   return response.data;
 }
 
-export async function getCategories() {
+export async function getCategories(_params?: unknown) {
   const response = await axiosInstance.get(`/api/categories`);
   return response.data;
 }
-
 export async function deleteCategory({ id }: { id: string }) {
   const response = await axiosInstance.delete(`/api/categories/${id}`);
   return response.data;
@@ -57,8 +56,14 @@ export async function createSubCategory({ categoryId, name, description }: SubCa
   return response.data;
 }
 
-export async function getSubCategories() {
-  const response = await axiosInstance.get(`/api/subcategories`);
+export async function getSubCategories(params?: { limit?: number; offset?: number; search?: string; categoryId?: string }) {
+  const query = new URLSearchParams();
+  if (params?.limit !== undefined) query.set("limit", String(params.limit));
+  if (params?.offset !== undefined) query.set("offset", String(params.offset));
+  if (params?.search) query.set("search", params.search);
+  if (params?.categoryId) query.set("categoryId", params.categoryId);
+  const qs = query.toString();
+  const response = await axiosInstance.get(`/api/subcategories${qs ? `?${qs}` : ""}`);
   return response.data;
 }
 
@@ -72,12 +77,17 @@ export async function createBrand({ name, description, logo }: BrandItem) {
   return response.data;
 }
 
-export async function getBrands() {
-  const response = await axiosInstance.get(`/api/brands`);
+export async function getBrands(params?: { limit?: number; offset?: number; search?: string }) {
+  const query = new URLSearchParams();
+  if (params?.limit !== undefined) query.set("limit", String(params.limit));
+  if (params?.offset !== undefined) query.set("offset", String(params.offset));
+  if (params?.search) query.set("search", params.search);
+  const qs = query.toString();
+  const response = await axiosInstance.get(`/api/brands${qs ? `?${qs}` : ""}`);
   return response.data;
 }
 
-export async function getLogisticsCategories() {
+export async function getLogisticsCategories(_params?: unknown) {
   const response = await axiosInstance.get(`/api/logistics/categories`);
   return response.data;
 }

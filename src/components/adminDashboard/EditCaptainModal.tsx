@@ -118,7 +118,7 @@ export default function EditCaptainModal({ captain }: EditCaptainModalProps) {
             disabled={loading}
             className="flex-1 py-3 px-4 bg-orange-500 text-white rounded-xl font-bold hover:bg-orange-600 transition-all disabled:bg-orange-300 flex items-center justify-center gap-2"
           >
-            {loading && <Spinner size={16} />}
+            {loading && <Spinner size="small" />}
             Save Changes
           </button>
         </div>

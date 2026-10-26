@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { apiFinance } from "../../services/adminDashboard/apiFinance";
-import NavBar from "../../components/NavBar";
 import Spinner from "../../components/Spinner";
 import toast from "react-hot-toast";
 import { FiCheckCircle, FiAlertCircle, FiArrowLeft } from "react-icons/fi";
@@ -58,8 +57,6 @@ export default function SettlementReview() {
 
   return (
     <div className="font-primary w-full bg-gray-50 min-h-screen">
-      <NavBar title="Settlement Review" />
-
       <div className="max-w-6xl mx-auto p-6">
         <div className="flex items-center gap-4 mb-6">
           <button
@@ -151,7 +148,7 @@ export default function SettlementReview() {
                 <p className="text-2xl font-black text-gray-800">
                   ₦{eligibleWallets
                     .filter((w: any) => selectedWallets.includes(w.walletId))
-                    .reduce((sum, w) => sum + (w.settleableAmount || 0), 0)
+                    .reduce((sum: number, w: any) => sum + (w.settleableAmount || 0), 0)
                     .toLocaleString()}
                 </p>
               </div>

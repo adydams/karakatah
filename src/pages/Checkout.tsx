@@ -253,7 +253,7 @@ export default function Checkout() {
       try {
         const res = await getCheckoutQuote({
           shippingAddressId: shippingAddressId || undefined,
-          shippingMethod,
+          shippingMethod: shippingMethod as "pickup" | "shipping",
           chosenHubId: chosenHubId || undefined,
           discountCode: discountCode || undefined,
           courierFee:

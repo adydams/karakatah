@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import NavBar from "../../components/NavBar";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getReturns, markPickedUp } from "../../services/apiReturns";
 import { getHubs, type Hub } from "../../services/apiAdmin";
@@ -59,8 +58,6 @@ export default function RestockApprovals() {
 
   return (
     <div className="font-primary w-full bg-gray-50 min-h-screen">
-      <NavBar title="Restock Approvals" />
-
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>

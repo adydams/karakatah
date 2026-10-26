@@ -40,6 +40,12 @@ export default function AdminHomeLayout() {
     "/dashboard/settings": "Logistics Settings",
     "/dashboard/admin-management": "Admin Management",
     "/dashboard/profile": "My Profile",
+    "/dashboard/analytics": "Marketplace Analytics",
+    "/dashboard/logistics": "Logistics Orchestration",
+    "/dashboard/finance/settlement-review": "Settlement Review",
+    "/dashboard/captains": "Captains Management",
+    "/dashboard/returns": "Return Requests",
+    "/dashboard/restock-approvals": "Restock Approvals",
   };
 
   const title =

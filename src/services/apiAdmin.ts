@@ -64,7 +64,7 @@ export const getCaptains = async (params: Record<string, unknown> = {}) => {
   return response.data;
 };
 
-export const getDriversSummary = async () => {
+export const getDriversSummary = async (_params?: unknown) => {
   const response = await axiosInstance.get(`${ADMIN_BASE}/drivers/summary`);
   return response.data;
 };
@@ -160,7 +160,7 @@ export type Hub = {
   isActive: boolean;
 };
 
-export const getHubs = async () => {
+export const getHubs = async (_params?: unknown) => {
   const response = await axiosInstance.get("/api/hubs");
   return response.data;
 };
@@ -189,7 +189,7 @@ export const deleteHub = async (id: string) => {
 
 
 
-export const getTopProducts = async () => {
+export const getTopProducts = async (_params?: unknown) => {
 
   const response = await axiosInstance.get(`${ADMIN_BASE}/overview/top-products`);
   return response.data;
@@ -197,7 +197,7 @@ export const getTopProducts = async () => {
   
 };
 
-export const getCustomerStats = async () => {
+export const getCustomerStats = async (_params?: unknown) => {
   const response = await axiosInstance.get(`${ADMIN_BASE}/overview/customer-stats`);
   return response.data;
 };

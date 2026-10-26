@@ -183,7 +183,7 @@ export default function Categories() {
                       <button
                         className="text-blue-600 hover:text-blue-800 transition-colors"
                         title="View"
-                        onClick={() => openModal(<CategoryDetailsModal categoryId={category.id} />)}
+                        onClick={() => openModal(<CategoryDetailsModal categoryId={category.id} categoryName={category.name} />)}
                       >
                         <FaEye size={14} />
                       </button>

@@ -99,19 +99,19 @@ export default function EditProductModal({ open, onClose, productId, onUpdated }
 
   const { data: categories, isLoading: isFetchingCategories } = useQuery({
     queryKey: ["categories"],
-    queryFn: getCategories,
+    queryFn: () => getCategories(),
   });
   const { data: subcategories, isLoading: isFetchingSubCategories } = useQuery({
     queryKey: ["subcategories"],
-    queryFn: getSubCategories,
+    queryFn: () => getSubCategories(),
   });
   const { data: brands, isLoading: isFetchingBrand } = useQuery({
     queryKey: ["brands"],
-    queryFn: getBrands,
+    queryFn: () => getBrands(),
   });
   const { data: logisticsCategories, isLoading: isFetchingLogisticsCategories } = useQuery({
     queryKey: ["logisticsCategories"],
-    queryFn: getLogisticsCategories,
+    queryFn: () => getLogisticsCategories(),
   });
   const { data: boxSizes, isLoading: isFetchingBoxSizes } = useQuery({
     queryKey: ["boxSizes"],

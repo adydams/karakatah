@@ -2,7 +2,7 @@ import axiosInstance from "../apiClient";
 import type { CategoriesResponse } from "../serviceTypes";
 import type { categoryItem } from "../../libs/types";
 
-export async function getCategories(): Promise<CategoriesResponse> {
+export async function getCategories(_params?: unknown): Promise<CategoriesResponse> {
   const response = await axiosInstance.get(`/api/categories`);
   return response.data;
 }
@@ -11,7 +11,7 @@ export async function createCategory({ name, description, image }: categoryItem)
   const formData = new FormData();
   formData.append("name", name);
   formData.append("description", description);
-  formData.append("image", image);
+  if (image) formData.append("image", image);
 
   const response = await axiosInstance.post(`/api/categories`, formData);
   return response.data;

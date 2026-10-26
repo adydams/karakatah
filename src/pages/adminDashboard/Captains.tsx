@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import NavBar from "../../components/NavBar";
 import { getCaptains } from "../../services/apiAdmin";
 import Spinner from "../../components/Spinner";
 import { FaUserEdit, FaPlus, FaSearch, FaFilter } from "react-icons/fa";
@@ -49,8 +48,6 @@ export default function Captains() {
 
   return (
     <div className="font-primary w-full bg-gray-50 min-h-screen">
-      <NavBar title="Captains Management" />
-
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
         {/* Header Section */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">

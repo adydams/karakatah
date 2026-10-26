@@ -10,12 +10,14 @@ import { useModal } from "../../contexts/hooks/useModal";
 import { FaCloudUploadAlt } from "react-icons/fa";
 
 type Props = {
-  category: any;
+  category?: any;
+  categoryId?: string;
 };
 
-export default function EditCategoryModal({ category }: Props) {
+export default function EditCategoryModal({ category, categoryId }: Props) {
+  const resolved = category ?? { id: categoryId, name: "", description: "", categoryImage: null };
   const { closeModal } = useModal();
-  const [fileName, setFileName] = useState(category.categoryImage ? "Image already uploaded" : "");
+  const [fileName, setFileName] = useState(resolved.categoryImage ? "Image already uploaded" : "");
   const queryClient = useQueryClient();
 
   const {
@@ -26,14 +28,14 @@ export default function EditCategoryModal({ category }: Props) {
   } = useForm<TCategorySchema>({
     resolver: zodResolver(categorySchema),
     defaultValues: {
-      name: category.name,
-      description: category.description,
+      name: resolved.name,
+      description: resolved.description,
     },
   });
 
   async function onSubmit(data: TCategorySchema) {
     try {
-      const success = await updateCategory(category.id, { ...data, image: data.image || category.categoryImage });
+      const success = await updateCategory(resolved.id, { ...data, image: data.image || resolved.categoryImage });
 
       if (success) {
         toast.success("Category Updated Successfully");
@@ -82,13 +84,13 @@ export default function EditCategoryModal({ category }: Props) {
           <div className="flex flex-col gap-2">
             <label className="text-sm font-medium text-[#574235]/70">Thumbnail Photo</label>
             <div className="border-dark-gray/40 flex h-[200px] w-full cursor-pointer flex-col items-center justify-center rounded-md border border-dashed p-10">
-              {category.categoryImage ? (
-                <img src={category.categoryImage} className="h-32 w-32 object-cover rounded-md mb-2" alt="Current" />
+              {resolved.categoryImage ? (
+                <img src={resolved.categoryImage} className="h-32 w-32 object-cover rounded-md mb-2" alt="Current" />
               ) : (
                 <FaCloudUploadAlt size={40} className="text-orange" />
               )}
               <h2 className="mt-2 text-sm font-medium">
-                {category.categoryImage ? "Change image" : "Drop your images here, or "}
+                {resolved.categoryImage ? "Change image" : "Drop your images here, or "}
                 <span className="text-orange font-semibold">click to browse</span>
               </h2>
               {fileName && (

@@ -1,5 +1,4 @@
 import React from "react";
-import NavBar from "../../components/NavBar";
 import { FaTruck, FaBox, FaClock, FaRoute, FaCheckCircle } from "react-icons/fa";
 import { MdLocalShipping } from "react-icons/md";
 import { useQuery } from "@tanstack/react-query";
@@ -39,8 +38,6 @@ export default function Logistics() {
 
   return (
     <div className="font-primary w-full bg-gray-50 min-h-screen pb-10">
-      <NavBar title="Logistics Orchestration" />
-
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
         {/* Logistics KPI Header */}
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">

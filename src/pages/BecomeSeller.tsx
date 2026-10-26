@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import toast from "react-hot-toast";
-import { sellarSchema, type TsellarSchema } from "../types/formSchema";
+import { sellarSchema } from "../types/formSchema";
 import Spinner from "../components/Spinner";
 import { createSeller } from "../services/apiAuth";
 
@@ -14,15 +14,16 @@ export default function BecomeSeller() {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<TsellarSchema>({
+  } = useForm({
     resolver: zodResolver(sellarSchema),
+    defaultValues: { name: "", email: "", phone: "" },
   });
 
-  async function onSubmit(data: TsellarSchema) {
+  async function onSubmit(data: { name: string; email: string; phone?: string }) {
     const { name, email, phone } = data;
 
     try {
-      const success = await createSeller({ name, email, phone });
+      const success = await createSeller({ name, email, phone: phone || "" });
 
       if (success) {
         console.log(success)

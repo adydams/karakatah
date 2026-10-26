@@ -25,6 +25,7 @@ export type Product = {
   currentPrice?: string;
   isDiscounted?: boolean;
   stockQuantity: number;
+  availableStock?: number;
   categoryId: string;
   storeId: string | null;
   subCategoryId: string;

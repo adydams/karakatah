@@ -6,7 +6,7 @@ import Spinner from "../Spinner";
 import { useModal } from "../../contexts/hooks/useModal";
 import AddSubcategoryModal from "./AddSubcategoryModal";
 
-export default function CategoryDetailsModal({ categoryId, categoryName }: { categoryId: string, categoryName: string }) {
+export default function CategoryDetailsModal({ categoryId, categoryName }: { categoryId: string, categoryName?: string }) {
   const { closeModal, openModal } = useModal();
   const queryClient = useQueryClient();
   const [isEditingSub, setIsEditingSub] = useState<string | null>(null);
@@ -15,8 +15,9 @@ export default function CategoryDetailsModal({ categoryId, categoryName }: { cat
   const { data, isLoading } = useQuery({
     queryKey: ["subcategories", categoryId],
     queryFn: async () => {
-      const res = await getSubCategories();
-      return res.data.filter((sub: any) => sub.categoryId === categoryId);
+      const res = await getSubCategories({ categoryId });
+      const list = res.data ?? [];
+      return list.filter((sub: any) => sub.categoryId === categoryId);
     },
   });
 
@@ -45,7 +46,7 @@ export default function CategoryDetailsModal({ categoryId, categoryName }: { cat
       <div className="flex justify-between items-center mb-6">
         <div>
           <h2 className="text-xl font-bold text-[#574235]">Category Details</h2>
-          <p className="text-sm text-gray-500">Managing sub-categories for {categoryName}</p>
+          <p className="text-sm text-gray-500">Managing sub-categories for {categoryName || "this category"}</p>
         </div>
         <button onClick={closeModal} className="text-gray-400 hover:text-gray-600">
           <span className="text-2xl">&times;</span>

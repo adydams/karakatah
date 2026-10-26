@@ -77,7 +77,7 @@ export default function TrackingModal({ orderId, onClose }: { orderId: string; o
       <div className="relative pl-8 space-y-12">
         <div className="absolute left-3 top-2 bottom-2 w-0.5 bg-gray-200" />
         {events.length > 0 ? (
-          events.map((event, i) => (
+          events.map((event: any, i: number) => (
             <div key={i} className="relative flex items-start gap-6">
               <div className={`absolute -left-7 top-0 w-6 h-6 rounded-full border-4 border-white flex items-center justify-center text-[10px] font-bold transition-all ${
                 i === 0 ? 'bg-green-500 text-white' : 'bg-gray-300 text-gray-600'

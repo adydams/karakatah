@@ -8,7 +8,7 @@ export type ApiLoginType = {
 export type categoryItem = {
   name: string;
   description: string;
-  image: File;
+  image?: File;
 };
 
 export type SubCategoryItem = {

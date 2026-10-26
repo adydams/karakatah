@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { FaMoneyBillTransfer, FaArrowRight, FaCheckCircle } from "react-icons/fa";
+import { FaMoneyBillWave, FaArrowRight, FaCheckCircle } from "react-icons/fa";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiFinance } from "../../services/adminDashboard/apiFinance";
 import Spinner from "../../components/Spinner";
@@ -9,11 +9,11 @@ export default function Payouts() {
   const queryClient = useQueryClient();
   const { data: payoutsData, isLoading } = useQuery({
     queryKey: ["adminPayouts"],
-    queryFn: apiFinance.getPayouts,
+    queryFn: () => apiFinance.getPayouts(),
   });
 
   const triggerMutation = useMutation({
-    mutationFn: (payoutData) => apiFinance.triggerPayout(payoutData),
+    mutationFn: (payoutData: any) => apiFinance.triggerPayout(payoutData),
     onSuccess: () => {
       toast.success("Payout triggered successfully");
       queryClient.invalidateQueries({ queryKey: ["adminPayouts"] });
@@ -46,7 +46,7 @@ export default function Payouts() {
           }}
           className="flex items-center gap-2 px-4 py-2 rounded-lg bg-orange-500 text-white shadow-md hover:bg-orange-600 transition-all text-xs font-semibold"
         >
-          <FaMoneyBillTransfer size={14} />
+          <FaMoneyBillWave size={14} />
           Trigger Global Payout
         </button>
       </div>
@@ -54,7 +54,7 @@ export default function Payouts() {
       <div className="grid grid-cols-1 gap-8">
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
           <div className="p-6 border-b border-gray-100 flex items-center gap-3">
-            <FaMoneyBillTransfer className="text-orange-500" />
+            <FaMoneyBillWave className="text-orange-500" />
             <h3 className="text-lg font-bold text-gray-900 tracking-tight">Payout History</h3>
           </div>
           <div className="overflow-x-auto">
@@ -71,7 +71,7 @@ export default function Payouts() {
               </thead>
               <tbody className="divide-y divide-gray-50 text-sm">
                 {payouts.length > 0 ? (
-                  payouts.map((payout: any, i) => (
+                  payouts.map((payout: any, i: number) => (
                     <tr key={i} className="hover:bg-gray-50 transition-colors group">
                       <td className="py-4 px-6 font-mono font-bold text-gray-900">{payout.id}</td>
                       <td className="py-4 px-6 text-gray-600">{payout.store?.name || "Unknown Store"}</td>

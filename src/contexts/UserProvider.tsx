@@ -62,9 +62,11 @@ export function UserProvider({ children }: UserProviderProp) {
       if (data.success) {
         setUser(data.user);
       }
+      return data;
     } catch (error) {
       setUser(null);
       localStorage.removeItem("token");
+      return { success: false, message: "Failed to load user" };
     } finally {
       setIsLoading(false);
     }

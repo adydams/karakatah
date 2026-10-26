@@ -2,7 +2,7 @@ import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getReturns } from "../services/apiReturns";
 import Spinner from "../components/Spinner";
-import NavBar from "../components/NavBar";
+import NavBar from "../components/Navbar";
 
 export default function StoreReturnApprovals() {
   const { data, isLoading } = useQuery({
@@ -13,7 +13,7 @@ export default function StoreReturnApprovals() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <NavBar title="Pending Returned Products" />
+      <NavBar />
       <main className="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Pending Returned Products</h1>

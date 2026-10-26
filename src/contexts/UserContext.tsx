@@ -10,19 +10,20 @@ export type User = {
   role: string;
 };
 
-type Response = {
+type AuthResponse = {
   success: boolean;
-  user: User;
-  token: string;
+  user?: User;
+  token?: string;
+  message?: string;
 };
 
 type UserContextType = {
   user: User | null;
   isLoading: boolean;
   setUser: React.Dispatch<React.SetStateAction<User | null>>;
-  userLogin: (email: string, password: string) => Promise<Response>;
-  signUp: (params: CreateUserParams) => Promise<Response>;
-  getCurrentUser: () => Promise<Response>;
+  userLogin: (email: string, password: string) => Promise<AuthResponse>;
+  signUp: (params: CreateUserParams) => Promise<AuthResponse>;
+  getCurrentUser: () => Promise<AuthResponse>;
   logout: () => void;
 };
 

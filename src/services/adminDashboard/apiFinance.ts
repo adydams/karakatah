@@ -51,4 +51,12 @@ export const apiFinance = {
     const response = await axiosInstance.post(`/api/admin/finance/verify-payment/${paymentId}`);
     return response.data;
   },
+  getSettlementEligible: async () => {
+    const response = await axiosInstance.get("/api/admin/finance/settlement-eligible");
+    return response.data;
+  },
+  confirmSettlement: async (payload: { walletIds: string[] | null }) => {
+    const response = await axiosInstance.post("/api/admin/finance/confirm-settlement", payload);
+    return response.data;
+  },
 };
