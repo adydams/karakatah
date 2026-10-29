@@ -76,6 +76,38 @@ export default function ProductViewModal({ open, onClose, product }: Props) {
               </div>
             </div>
 
+            {displayProduct.store && (
+              <div className="rounded-xl border border-gray-200 bg-gray-50/60 p-4">
+                <div className="mb-3 flex items-center justify-between">
+                  <h4 className="text-sm font-bold uppercase tracking-wide text-gray-500">Store Details</h4>
+                  <span className="rounded-full bg-orange-100 px-3 py-1 text-xs font-bold text-orange-700">
+                    {displayProduct.store.name || "Unnamed store"}
+                  </span>
+                </div>
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <div>
+                    <p className="text-xs text-gray-400 uppercase font-semibold">Owner</p>
+                    <p className="text-sm font-semibold text-gray-800">{displayProduct.store.owner?.name || "N/A"}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-400 uppercase font-semibold">Store Email</p>
+                    <p className="text-sm text-gray-800">{displayProduct.store.email || "N/A"}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-400 uppercase font-semibold">Store Phone</p>
+                    <p className="text-sm text-gray-800">{displayProduct.store.phone || "N/A"}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-400 uppercase font-semibold">Address</p>
+                    <p className="text-sm text-gray-800">{displayProduct.store.address || "N/A"}</p>
+                  </div>
+                </div>
+                {displayProduct.store.description && (
+                  <p className="mt-3 text-sm text-gray-600 leading-relaxed">{displayProduct.store.description}</p>
+                )}
+              </div>
+            )}
+
             <div className="pt-6 border-t border-gray-100">
                <button
                  onClick={onClose}
